@@ -18,6 +18,7 @@
  */
 
 #include <QApplication>
+#include <QCommandLineParser>
 #include "qmlapplicationviewer.h"
 #include "systemtray.h"
 
@@ -52,7 +53,13 @@ int main(int argc, char *argv[])
         return 0;
     }
 #endif
-
+    
+    QCommandLineParser parser;
+    parser.setApplicationDescription("Dukto is a simple, fast and multi-platform file transfer tool for LAN users.");
+    parser.addHelpOption();
+    QCommandLineOption hideOption(QStringList() << "H" << "hide", "Hide when launched");
+    parser.addOption(hideOption);
+    
     DuktoWindow viewer;
 #if !defined(SYMBIAN) && defined(SINGLE_APP)
     app.setActivationWindow(&viewer, true);
@@ -68,6 +75,10 @@ int main(int argc, char *argv[])
     viewer.showFullScreen();
     gb.initConnection();
 #endif
-
+    
+    parser.process(app);
+    if (parser.isSet(hideOption))
+        viewer.setVisible(false);
+    
     return app.exec();
 }
