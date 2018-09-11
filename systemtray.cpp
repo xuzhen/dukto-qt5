@@ -24,6 +24,9 @@
 #include "systemtray.h"
 
 #include <QWidget>
+#include <QMenu>
+#include <QAction>
+#include <QApplication>
 
 SystemTray* SystemTray::tray = NULL;
 
@@ -36,6 +39,16 @@ SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
 #endif
     connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_activated(QSystemTrayIcon::ActivationReason)));
     SystemTray::tray = this;
+    
+    QMenu *trayMenu = new QMenu(&window);
+    QAction *ShowHide = new QAction(QString("Show/Hide"), trayMenu);
+    connect(ShowHide, &QAction::triggered, [=]() { on_activated(QSystemTrayIcon::Trigger); });
+    trayMenu->addAction(ShowHide);
+    QAction *Exit = new QAction(QString("Exit"), trayMenu);
+    connect(Exit, &QAction::triggered, [=]() { QApplication::quit(); });
+    trayMenu->addAction(Exit);
+    this->setContextMenu(trayMenu);
+    
 }
 
 SystemTray::~SystemTray()
@@ -54,6 +67,10 @@ void SystemTray::on_activated(QSystemTrayIcon::ActivationReason reason)
             break;
         case QSystemTrayIcon::MiddleClick:
             window.close();
+            QApplication::quit();
+            break;
+        case QSystemTrayIcon::Context:
+            this->contextMenu()->exec();
             break;
         default:
             break;
