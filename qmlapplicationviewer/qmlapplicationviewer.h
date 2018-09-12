@@ -11,9 +11,9 @@
 #ifndef QMLAPPLICATIONVIEWER_H
 #define QMLAPPLICATIONVIEWER_H
 
-#include <QDeclarativeView>
+#include <QQuickWidget>
 
-class QmlApplicationViewer : public QDeclarativeView
+class QmlApplicationViewer : public QQuickWidget
 {
     Q_OBJECT
 

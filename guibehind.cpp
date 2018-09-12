@@ -25,20 +25,21 @@
 #include "systemtray.h"
 
 #include <QHash>
-#include <QDeclarativeView>
-#include <QDeclarativeContext>
+#include <QQuickWidget>
+#include <QQmlContext>
 #include <QTimer>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileDialog>
 #include <QClipboard>
 #include <QApplication>
-#include <QDeclarativeProperty>
+#include <QQmlProperty>
 #include <QGraphicsObject>
 #include <QRegExp>
 #include <QThread>
 #include <QTemporaryFile>
 #include <QDesktopWidget>
+#include <QDateTime>
 #if defined(Q_WS_S60)
 #define SYMBIAN
 #endif

@@ -68,7 +68,9 @@ HEADERS += \
 RESOURCES += \
     qml.qrc
 
-DEFINES += UPDATER SINGLE_APP
+#//FIXME
+#UPDATER
+DEFINES += SINGLE_APP
 include(qtsingleapplication/qtsingleapplication.pri)
 
 OTHER_FILES += CMakeLists.txt

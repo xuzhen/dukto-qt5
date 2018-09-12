@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-import QtQuick 1.0
+import QtQuick 2.3
 
 Flipable {
    id: contactDelegateItem

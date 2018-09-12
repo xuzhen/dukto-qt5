@@ -45,7 +45,7 @@ SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
     connect(ShowHide, &QAction::triggered, [=]() { on_activated(QSystemTrayIcon::Trigger); });
     trayMenu->addAction(ShowHide);
     QAction *Exit = new QAction(QString("Exit"), trayMenu);
-    connect(Exit, &QAction::triggered, [=]() { QApplication::quit(); });
+    connect(Exit, &QAction::triggered, [=]() { on_activated(QSystemTrayIcon::MiddleClick); });
     trayMenu->addAction(Exit);
     this->setContextMenu(trayMenu);
     

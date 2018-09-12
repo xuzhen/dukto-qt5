@@ -1,5 +1,5 @@
 // Vertical "slider" control used in colorpicker
-import QtQuick 1.0
+import QtQuick 2.3
 Item {
     id: root
     property real value: (1 - pickerCursor.y/height)
