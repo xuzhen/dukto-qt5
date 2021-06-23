@@ -45,25 +45,9 @@ typedef struct _USER_INFO_24 {
 
 #endif
 
-#if defined(Q_WS_S60)
-#define SYMBIAN
-#include <QSystemDeviceInfo>
-QTM_USE_NAMESPACE
-#endif
-
-#if defined(Q_WS_SIMULATOR)
-#define SYMBIAN
-#endif
-
 // Returns the system username
 QString Platform::getSystemUsername()
 {
-#if defined(SYMBIAN)
-    // Get username from settings
-    Settings s;
-    return s.buddyName();
-#else
-
     // Save in a static variable so that It's always ready
     static QString username;
     if (!username.isEmpty()) return username;
@@ -79,7 +63,6 @@ QString Platform::getSystemUsername()
     username = uname.left(1).toUpper() + uname.mid(1);
 
     return username;
-#endif
 }
 
 // Returns the hostname
@@ -89,18 +72,9 @@ QString Platform::getHostname()
     static QString hostname;
     if (!hostname.isEmpty()) return hostname;
 
-#if defined(Q_WS_S60)
-
-    QSystemDeviceInfo info;
-    hostname = info.model();
-
-#else
-
     // Get the hostname
     // (replace ".local" for MacOSX)
     hostname = QHostInfo::localHostName().replace(".local", "");
-
-#endif
 
     return hostname;
 }
@@ -114,8 +88,6 @@ QString Platform::getPlatformName()
     return "Macintosh";
 #elif defined(Q_OS_LINUX)
     return "Linux";
-#elif defined(Q_WS_S60)
-    return "Symbian";
 #else
     return "Unknown";
 #endif
@@ -140,8 +112,6 @@ QString Platform::getAvatarPath()
     return getMacTempAvatarPath();
 #elif defined(Q_OS_LINUX)
     return getLinuxAvatarPath();
-#elif defined(Q_WS_S60)
-    return "";
 #else
     return "";
 #endif
@@ -157,10 +127,6 @@ QString Platform::getDefaultPath()
     return QString(getenv("HOME")) + "/Desktop";
 #elif defined(Q_OS_UNIX)
     return QString(getenv("HOME"));
-#elif defined(Q_WS_S60)
-    return "E:\\Dukto";
-#elif defined(Q_WS_SIMULATOR)
-    return "D:\\";
 #else
     #error "Unknown default path for this platform"
 #endif

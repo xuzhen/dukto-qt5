@@ -17,12 +17,6 @@
 #include <QQmlEngine>
 #include <QQmlContext>
 
-#include <qplatformdefs.h> // MEEGO_EDITION_HARMATTAN
-
-#ifdef HARMATTAN_BOOSTER
-#include <MDeclarativeCache>
-#endif
-
 #if defined(QMLJSDEBUGGER) && QT_VERSION < 0x040800
 
 #include <qt_private/qdeclarativedebughelper_p.h>
@@ -158,9 +152,7 @@ void QmlApplicationViewer::setOrientation(ScreenOrientation orientation)
 
 void QmlApplicationViewer::showExpanded()
 {
-#if defined(MEEGO_EDITION_HARMATTAN) || defined(Q_WS_SIMULATOR)
-    showFullScreen();
-#elif defined(Q_WS_MAEMO_5) || defined(Q_OS_QNX)
+#if defined(Q_OS_QNX)
     showMaximized();
 #else
     show();
