@@ -67,14 +67,17 @@ OTHER_FILES += CMakeLists.txt
 
 win32 {
     RC_FILE = dukto.rc
-    LIBS += libWs2_32 libole32 libNetapi32
+    msvc:LIBS += ws2_32.lib ole32.lib netapi32.lib user32.lib
+    gcc:LIBS += -lws2_32 -lole32 -lnetapi32 -luser32
     HEADERS += ecwin7.h
     SOURCES += ecwin7.cpp
 }
 
 mac:ICON = dukto.icns
 
-### libnotify
-CONFIG+=link_pkgconfig
-PKGCONFIG+=libnotify
-DEFINES+=NOTIFY_LIBNOTIFY
+linux {
+    ### libnotify
+    CONFIG+=link_pkgconfig
+    PKGCONFIG+=libnotify
+    DEFINES+=NOTIFY_LIBNOTIFY
+}

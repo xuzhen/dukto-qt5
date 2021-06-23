@@ -129,7 +129,7 @@ public:
     void setProgressState(ToolBarProgressState state);
 
 private:
-    WId mWindowId;
+    HWND mWindowId;
     UINT mTaskbarMessageId;
     ITaskbarList3 *mTaskbar;
     HICON mOverlayIcon;

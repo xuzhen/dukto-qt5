@@ -33,16 +33,6 @@
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #include <lmaccess.h>
-
-typedef struct _USER_INFO_24 {
-  BOOL   usri24_internet_identity;
-  DWORD  usri24_flags;
-  LPWSTR usri24_internet_provider_name;
-  LPWSTR usri24_internet_principal_name;
-  PSID   usri24_user_sid;
-} USER_INFO_24, *PUSER_INFO_24, *LPUSER_INFO_24;
-
-
 #endif
 
 // Returns the system username
@@ -203,9 +193,11 @@ QString Platform::getMacTempAvatarPath()
 
 #include <objbase.h>
 
+#ifndef ARRAYSIZE
 #define ARRAYSIZE(a) \
   ((sizeof(a) / sizeof(*(a))) / \
   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+#endif
 
 typedef HRESULT (WINAPI*pfnSHGetUserPicturePathEx)(
     LPCWSTR pwszUserOrPicName,
