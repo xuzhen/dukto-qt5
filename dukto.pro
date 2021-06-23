@@ -58,7 +58,10 @@ RESOURCES += \
 #//FIXME
 #UPDATER
 DEFINES += SINGLE_APP
-include(qtsingleapplication/qtsingleapplication.pri)
+contains(DEFINES, SINGLE_APP) {
+    include(modules/SingleApplication/singleapplication.pri)
+    DEFINES += QAPPLICATION_CLASS=QApplication
+}
 
 OTHER_FILES += CMakeLists.txt
 
