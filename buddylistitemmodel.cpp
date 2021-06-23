@@ -19,7 +19,7 @@
 #include "buddylistitemmodel.h"
 
 #include <QUrl>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QtGlobal>
 
 #include "platform.h"
@@ -132,13 +132,12 @@ void BuddyListItemModel::addBuddy(QString ip, qint16 port, QString username, QSt
 
 void BuddyListItemModel::addBuddy(Peer &peer)
 {
-    QRegExp rx("^(.*)\\sat\\s(.*)\\s\\((.*)\\)$");
-    rx.indexIn(peer.name);
-    QStringList data = rx.capturedTexts();
+    static QRegularExpression rx("^(.*)\\sat\\s(.*)\\s\\((.*)\\)$");
+    QRegularExpressionMatch match = rx.match(peer.name);
 
-    QString username = data[1];
-    QString system = data[2];
-    QString platform = data[3];
+    QString username = match.captured(1);
+    QString system = match.captured(2);
+    QString platform = match.captured(3);
     QUrl avatarPath = QUrl("http://" + peer.address.toString() + ":" + QString::number(peer.port + 1) + "/dukto/avatar");
 
     addBuddy(peer.address.toString(),

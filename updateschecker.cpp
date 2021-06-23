@@ -43,10 +43,14 @@ void UpdatesChecker::run()
     // Get platform data
     QString osver;
     QString os = Platform::getPlatformName().toLower();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    osver = QSysInfo::kernelVersion();
+#else
 #if defined(Q_OS_WIN)
     osver = QString::number(QSysInfo::WindowsVersion);
 #elif defined(Q_OS_MAC)
     osver = QString::number(QSysInfo::MacintoshVersion);
+#endif
 #endif
     QString ver = "6.0";
     QString locale = QLocale::system().name();

@@ -23,7 +23,7 @@
 #include <QFile>
 #include <QDir>
 #include <QMessageBox>
-#include <QtGlobal>
+#include <QRegularExpression>
 
 #if defined(Q_OS_MAC)
 #include <QTemporaryFile>
@@ -143,10 +143,10 @@ QString Platform::getLinuxAvatarPath()
         line = ts.readLine();
         if (line.isNull()) break;
         if (line.startsWith("Icon=")) {
-            QRegExp re("^Icon=(.*)$");
-            if (re.indexIn(line) == -1) continue;
-            QStringList pathlist = re.capturedTexts();
-            path = pathlist[1];
+            static const QRegularExpression re("^Icon=(.*)$");
+            QRegularExpressionMatch match = re.match(line);
+            if (match.hasMatch() == false) continue;
+            path = match.captured(1);
             found = true;
             break;
         }

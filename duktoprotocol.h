@@ -74,7 +74,7 @@ signals:
      void transferStatusUpdate(qint64 total, qint64 partial);
 
 private:
-    QString getSystemSignature();
+    QByteArray getSystemSignature();
     QStringList expandTree(const QStringList& files);
     void addRecursive(QStringList& e, QString path);
     qint64 computeTotalSize(const QStringList& e);

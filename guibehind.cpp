@@ -35,11 +35,16 @@
 #include <QApplication>
 #include <QQmlProperty>
 #include <QGraphicsObject>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QThread>
 #include <QTemporaryFile>
-#include <QDesktopWidget>
+#include <QScreen>
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10 ,0)
+#include <QRandomGenerator>
+#else
 #include <QDateTime>
+#endif
 
 #define NETWORK_PORT 4644 // 6742
 
@@ -121,7 +126,9 @@ GuiBehind::GuiBehind(DuktoWindow* view) :
     // Start random rotate
     mShowBackTimer = new QTimer(this);
     connect(mShowBackTimer, SIGNAL(timeout()), this, SLOT(showRandomBack()));
-    qsrand(QDateTime::currentDateTime().toTime_t());;
+#if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
+    qsrand(QDateTime::currentDateTime().toTime_t());
+#endif
     mShowBackTimer->start(10000);
 
 #ifdef UPDATER
@@ -172,11 +179,19 @@ void GuiBehind::peerListRemoved(Peer peer) {
 
 void GuiBehind::showRandomBack()
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    // Look for a random element
+    int i = QRandomGenerator::global()->bounded(mBuddiesList.rowCount());
+
+    // Show back
+    mBuddiesList.showSingleBack(i);
+#else
     // Look for a random element
     int i = (qrand() * 1.0 / RAND_MAX) * (mBuddiesList.rowCount() + 1);
 
     // Show back
     if (i < mBuddiesList.rowCount()) mBuddiesList.showSingleBack(i);
+#endif
 }
 
 void GuiBehind::clipboardChanged()
@@ -384,7 +399,7 @@ void GuiBehind::sendScreen()
 void GuiBehind::sendScreenStage2() {
 
     // Screenshot
-    QPixmap screen = QPixmap::grabWindow(QApplication::desktop()->winId());
+    QPixmap screen = qApp->primaryScreen()->grabWindow(0);
 
     // Restore window
     mView->setWindowState(Qt::WindowActive);
@@ -440,8 +455,9 @@ bool GuiBehind::prepareStartTransfer(QString *ip, qint16 *port)
         if (dest.contains(":")) {
 
             // Port is specified or destination is malformed...
-            QRegExp rx("^(.*):([0-9]+)$");
-            if (rx.indexIn(dest) == -1) {
+            static const QRegularExpression rx("^(.*):([0-9]+)$");
+            QRegularExpressionMatch match = rx.match(dest);
+            if (match.hasMatch() == false) {
 
                 // Malformed destination
                 setMessagePageTitle("Send");
@@ -452,9 +468,8 @@ bool GuiBehind::prepareStartTransfer(QString *ip, qint16 *port)
             }
 
             // Get IP (or hostname) and port
-             QStringList capt = rx.capturedTexts();
-             *ip = capt[1];
-             *port = capt[2].toInt();
+            *ip = match.captured(1);
+            *port = match.captured(2).toInt();
         }
         else {
 

@@ -19,6 +19,7 @@
 #include "recentlistitemmodel.h"
 
 #include <QDateTime>
+#include <QLocale>
 
 RecentListItemModel::RecentListItemModel() :
     QStandardItemModel(NULL)
@@ -47,7 +48,11 @@ void RecentListItemModel::addRecent(QString name, QString value, QString type, Q
 
     // Format timestamp
     QDateTime now = QDateTime::currentDateTime();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    QString datetime = QLocale::system().toString(now, QLocale::ShortFormat);
+#else
     QString datetime = now.toString(Qt::SystemLocaleShortDate);
+#endif
 
     // Convert size data
     QString sizeFormatted;

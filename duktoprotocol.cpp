@@ -78,14 +78,14 @@ void DuktoProtocol::setPorts(qint16 udp, qint16 tcp)
     mLocalTcpPort = tcp;
 }
 
-QString DuktoProtocol::getSystemSignature()
+QByteArray DuktoProtocol::getSystemSignature()
 {
-    static QString signature;
+    static QByteArray signature;
     if (!signature.isEmpty()) return signature;
 
-    signature = Platform::getSystemUsername()
+    signature = (Platform::getSystemUsername()
               + " at " + Platform::getHostname()
-              + " (" + Platform::getPlatformName() + ")";
+              + " (" + Platform::getPlatformName() + ")").toUtf8();
     return signature;
 }
 
