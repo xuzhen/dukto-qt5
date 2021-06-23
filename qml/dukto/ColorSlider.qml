@@ -8,6 +8,10 @@ Item {
     signal changed()
 
     function setValue(value) {
+        if (value < 0)
+            value = 0
+        else if (value > 1)
+            value = 1
         pickerCursor.y = (1 - value) * height;
     }
 
