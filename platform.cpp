@@ -218,9 +218,10 @@ QString Platform::getWinTempAvatarPath()
     pfnSHGetUserPicturePathEx picPathFn = (pfnSHGetUserPicturePathEx)GetProcAddress(hMod, (LPCSTR)810);
     WCHAR picPath[500] = {0}, srcPath[500] = {0};
     HRESULT ret = picPathFn(NULL, 0, NULL, picPath, ARRAYSIZE(picPath), srcPath, ARRAYSIZE(srcPath));
+    FreeLibrary(hMod);
+    CoUninitialize();
     if (ret != S_OK) return "C:\\missing.bmp";
     QString result = QString::fromWCharArray(picPath, -1);
-    CoUninitialize();
     return result;
 }
 
