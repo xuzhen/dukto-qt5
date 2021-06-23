@@ -22,9 +22,8 @@
 #include <QQuickWidget>
 
 #ifdef Q_OS_WIN
-#include "ecwin7.h"
+class EcWin7;
 #endif
-
 class GuiBehind;
 
 class DuktoWindow : public QQuickWidget
@@ -32,26 +31,27 @@ class DuktoWindow : public QQuickWidget
     Q_OBJECT
 public:
     explicit DuktoWindow(QWidget *parent = 0);
+    virtual ~DuktoWindow();
     void setGuiBehindReference(GuiBehind* ref);
-#ifdef Q_OS_WIN
-    inline EcWin7* win7() { return &mWin7; }
-#endif
+    void showTaskbarProgress(uint percent);
+    void hideTaskbarProgress();
+    void stopTaskbarProgress();
 
 protected:
 #ifdef Q_OS_WIN
-    bool winEvent(MSG * message, long * result);
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 #endif
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
     void dragLeaveEvent(QDragLeaveEvent *event);
     void dropEvent(QDropEvent *event);
     void closeEvent(QCloseEvent *);
+    void showEvent(QShowEvent *event);
 
 private:
     GuiBehind *mGuiBehind;
-
 #ifdef Q_OS_WIN
-    EcWin7 mWin7;
+    EcWin7 *mWin7 = nullptr;
 #endif
 };
 

@@ -25,17 +25,14 @@ DEFINE_GUID(CLSID_TaskbarList,0x56fdf344,0xfd6d,0x11d0,0x95,0x8a,0x0,0x60,0x97,0
 DEFINE_GUID(IID_ITaskbarList3,0xea1afb91,0x9e28,0x4b86,0x90,0xE9,0x9e,0x9f,0x8a,0x5e,0xef,0xaf);
 
 // Constructor: variabiles initialization
-EcWin7::EcWin7()
+EcWin7::EcWin7(QWindow *window)
 {
-    mTaskbar = NULL;
-    mOverlayIcon = NULL;
-}
-
-// Init taskbar communication
-void EcWin7::init(WId wid)
-{
-    mWindowId = reinterpret_cast<HWND>(wid);
+#ifdef Q_OS_WIN
+    mWindowId = reinterpret_cast<HWND>(window->winId());
     mTaskbarMessageId = RegisterWindowMessage(L"TaskbarButtonCreated");
+#else
+    Q_UNUSED(window)
+#endif
 }
 
 // Windows event handler callback function
