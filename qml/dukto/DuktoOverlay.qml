@@ -45,7 +45,7 @@ Rectangle {
         anchors.topMargin: 10
         anchors.bottom: parent.bottom
         width: parent.width
-        x: -50
+        x: -parent.width
         opacity: 0
         onBack: parent.state = ""
     }
@@ -56,7 +56,7 @@ Rectangle {
         anchors.topMargin: 10
         anchors.bottom: parent.bottom
         width: parent.width
-        x: -50
+        x: -parent.width
         opacity: 0
     }
 
@@ -65,7 +65,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: parent.width
-        x: -50
+        x: -parent.width
         opacity: 0
         onBack: parent.state = ""
         onBackOnSend: {
@@ -78,7 +78,7 @@ Rectangle {
         id: settingsPage
         width: parent.width
         height: parent.height
-        x: -50
+        x: -parent.width
         opacity: 0
         onBack: parent.state = ""
     }
@@ -89,7 +89,7 @@ Rectangle {
         anchors.bottom: parent.bottom
         width: parent.width
         height: parent.height
-        x: -50
+        x: -parent.width
         opacity: 0
         onBack: parent.state = ""
         onShowTextPage: {
@@ -104,7 +104,7 @@ Rectangle {
         anchors.topMargin: 10
         anchors.bottom: parent.bottom
         width: parent.width
-        x: -50
+        x: -parent.width
         opacity: 0
         onBack: parent.state = backState
     }
@@ -114,7 +114,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         width: parent.width
-        x: -50
+        x: -parent.width
         opacity: 0
         onOk: {
             guiBehind.showTermsOnStart = false;
