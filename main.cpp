@@ -19,7 +19,6 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
-#include "qmlapplicationviewer.h"
 #include "systemtray.h"
 
 #include "guibehind.h"
@@ -70,13 +69,10 @@ int main(int argc, char *argv[])
     SystemTray tray(viewer);
     tray.show();
     GuiBehind gb(&viewer);
-
-    viewer.showExpanded();
     app.installEventFilter(&gb);
 
     parser.process(app);
-    if (parser.isSet(hideOption))
-        viewer.setVisible(false);
+    viewer.setVisible(!parser.isSet(hideOption));
     
     return app.exec();
 }

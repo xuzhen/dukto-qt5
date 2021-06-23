@@ -21,6 +21,7 @@
 #include "platform.h"
 #include "settings.h"
 
+#include <QQmlEngine>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDragLeaveEvent>
@@ -28,7 +29,7 @@
 #include <QMimeData>
 
 DuktoWindow::DuktoWindow(QWidget *parent) :
-    QmlApplicationViewer(parent), mGuiBehind(NULL)
+    QQuickWidget(parent), mGuiBehind(NULL)
 {
     // Configure window
     setAcceptDrops(true);
@@ -36,7 +37,8 @@ DuktoWindow::DuktoWindow(QWidget *parent) :
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
     setMaximumSize(350, 5000);
     setMinimumSize(350, 500);
-    setOrientation(QmlApplicationViewer::ScreenOrientationLockPortrait);
+    setResizeMode(QQuickWidget::SizeRootObjectToView);
+    connect(engine(), &QQmlEngine::quit, this, &DuktoWindow::close);
 
 #ifdef Q_OS_WIN
     // Taskbar integration with Win7

@@ -1,5 +1,4 @@
-QT += network
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += network qml quickwidgets
 
 TARGET = dukto
 TEMPLATE = app
@@ -32,10 +31,6 @@ SOURCES += main.cpp \
     theme.cpp \
     updateschecker.cpp \
     systemtray.cpp
-
-# Please do not modify the following two lines. Required for deployment.
-include(qmlapplicationviewer/qmlapplicationviewer.pri)
-qtcAddDeployment()
 
 HEADERS += \
     guibehind.h \
