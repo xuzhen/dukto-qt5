@@ -48,7 +48,18 @@ HEADERS += \
     systemtray.h
 
 RESOURCES += \
-    qml.qrc
+    qml.qrc \
+    qml/common/common.qrc
+
+greaterThan(QT_MAJOR_VERSION, 5) {
+    RESOURCES += qml/new/main.qrc
+} else {
+    lessThan(QT_MINOR_VERSION, 15) {
+        RESOURCES += qml/old/main.qrc
+    } else {
+        RESOURCES += qml/new/main.qrc
+    }
+}
 
 #//FIXME
 #UPDATER

@@ -1,0 +1,36 @@
+<RCC>
+    <qresource prefix="/qml/dukto">
+        <file>AndroidLogo.png</file>
+        <file>AppleLogo.png</file>
+        <file>BackIcon.png</file>
+        <file>BackIconDark.png</file>
+        <file>BackTile.png</file>
+        <file>BlackberryLogo.png</file>
+        <file>BottomShadow.png</file>
+        <file>ColorUtils.js</file>
+        <file>ConfigIcon.png</file>
+        <file>DuktoMetroIcon.png</file>
+        <file>IosLogo.png</file>
+        <file>IpLogo.png</file>
+        <file>KGLikeASkyscraper.ttf</file>
+        <file>Klill-Light.ttf</file>
+        <file>LiberationSans-Regular.ttf</file>
+        <file>LinuxLogo.png</file>
+        <file>MoreIcon.png</file>
+        <file>OpenFolderIcon.png</file>
+        <file>PanelGradient.png</file>
+        <file>PcLogo.png</file>
+        <file>RecentFile.png</file>
+        <file>RecentFiles.png</file>
+        <file>RecentText.png</file>
+        <file>ShowIpIcon - Copia.png</file>
+        <file>ShowIpIcon.png</file>
+        <file>SmartphoneLogo.png</file>
+        <file>SymbianLogo.png</file>
+        <file>TileGradient.png</file>
+        <file>TopShadow.png</file>
+        <file>UnknownLogo.png</file>
+        <file>WindowsLogo.png</file>
+        <file>WindowsPhoneLogo.png</file>
+    </qresource>
+</RCC>

@@ -37,6 +37,9 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
     qputenv("QML_ENABLE_TEXT_IMAGE_CACHE", "true");
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    qputenv("QSG_RHI_BACKEND", "gl");
+#endif
 
 #ifndef SINGLE_APP
     QApplication app(argc, argv);
