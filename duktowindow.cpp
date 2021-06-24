@@ -32,8 +32,8 @@
 #include <QDropEvent>
 #include <QMimeData>
 
-DuktoWindow::DuktoWindow(QWidget *parent) :
-    QQuickWidget(parent), mGuiBehind(NULL)
+DuktoWindow::DuktoWindow(GuiBehind *gb, Settings *settings, QWidget *parent) :
+    QQuickWidget(parent), mGuiBehind(gb), mSettings(settings)
 {
     // Configure window
     setAcceptDrops(true);
@@ -49,11 +49,6 @@ DuktoWindow::~DuktoWindow() {
 #ifdef Q_OS_WIN
     delete mWin7;
 #endif
-}
-
-void DuktoWindow::setGuiBehindReference(GuiBehind* ref)
-{
-    mGuiBehind = ref;
 }
 
 void DuktoWindow::showTaskbarProgress(uint percent) {
@@ -126,8 +121,7 @@ void DuktoWindow::dropEvent(QDropEvent *event)
 
 void DuktoWindow::closeEvent(QCloseEvent *)
 {
-    mGuiBehind->settings()->saveWindowGeometry(saveGeometry());
-    mGuiBehind->close();
+    mSettings->saveWindowGeometry(saveGeometry());
 }
 
 void DuktoWindow::showEvent(QShowEvent *event) {

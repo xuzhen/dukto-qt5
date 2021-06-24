@@ -28,8 +28,6 @@
 #include <QAction>
 #include <QApplication>
 
-SystemTray* SystemTray::tray = NULL;
-
 SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
     QSystemTrayIcon(QIcon(":/dukto.png"), parent),
     window(window)
@@ -38,7 +36,6 @@ SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
     notify_init ("Dukto");
 #endif
     connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_activated(QSystemTrayIcon::ActivationReason)));
-    SystemTray::tray = this;
     
     QMenu *trayMenu = new QMenu(&window);
     QAction *ShowHide = new QAction(QString("Show/Hide"), trayMenu);

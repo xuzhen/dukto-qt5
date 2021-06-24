@@ -34,6 +34,7 @@ class UpdatesChecker;
 class MiniWebServer;
 class Settings;
 class DuktoWindow;
+class SystemTray;
 class QNetworkAccessManager;
 class QNetworkReply;
 
@@ -59,12 +60,12 @@ class GuiBehind : public QObject
     Q_PROPERTY(QString buddyName READ buddyName WRITE setBuddyName NOTIFY buddyNameChanged)
 
 public:
-    explicit GuiBehind(DuktoWindow* view);
+    explicit GuiBehind(Settings* settings);
     virtual ~GuiBehind();
 
+    void setViewer(DuktoWindow *view, SystemTray *tray);
     bool canAcceptDrop();
     void sendDroppedFiles(QStringList *files);
-    inline Settings* settings() { return mSettings; }
     void close();
 
     QString currentTransferBuddy();

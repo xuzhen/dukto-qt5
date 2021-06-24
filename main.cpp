@@ -21,6 +21,7 @@
 #include <QCommandLineParser>
 #include "systemtray.h"
 
+#include "settings.h"
 #include "guibehind.h"
 #include "duktowindow.h"
 
@@ -56,8 +57,14 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     QCommandLineOption hideOption(QStringList() << "H" << "hide", "Hide when launched");
     parser.addOption(hideOption);
+    parser.process(app);
+
+    Settings settings;
+
+    GuiBehind gb(&settings);
+    app.installEventFilter(&gb);
     
-    DuktoWindow viewer;
+    DuktoWindow viewer(&gb, &settings);
 #ifdef SINGLE_APP
     QObject::connect(&app, &SingleApplication::receivedMessage, [&viewer]()->void {
         if (viewer.isMinimized()) {
@@ -66,12 +73,11 @@ int main(int argc, char *argv[])
         viewer.activateWindow();
     });
 #endif
+
     SystemTray tray(viewer);
     tray.show();
-    GuiBehind gb(&viewer);
-    app.installEventFilter(&gb);
 
-    parser.process(app);
+    gb.setViewer(&viewer, &tray);
     viewer.setVisible(!parser.isSet(hideOption));
     
     return app.exec();

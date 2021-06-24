@@ -48,15 +48,14 @@
 
 #define NETWORK_PORT 4644 // 6742
 
-GuiBehind::GuiBehind(DuktoWindow* view) :
-    QObject(NULL), mView(view), mShowBackTimer(NULL), mPeriodicHelloTimer(NULL),
-    mSettings(NULL), mDestBuddy(NULL)
+GuiBehind::GuiBehind(Settings *settings) :
+    QObject(NULL), mView(NULL), mShowBackTimer(NULL), mPeriodicHelloTimer(NULL),
+    mDestBuddy(NULL), mSettings(settings)
 #ifdef UPDATER
     ,mUpdatesChecker(NULL)
 #endif
 {
     // Status variables
-    mView->setGuiBehindReference(this);
     mCurrentTransferProgress = 0;
     mTextSnippetSending = false;
     mShowUpdateBanner = false;
@@ -71,9 +70,6 @@ GuiBehind::GuiBehind(DuktoWindow* view) :
     // Add "Ip" entry
     mBuddiesList.addIpElement();
 
-    // Settings
-    mSettings = new Settings(this);
-
     // Destination buddy
     mDestBuddy = new DestinationBuddy(this);
 
@@ -82,14 +78,6 @@ GuiBehind::GuiBehind(DuktoWindow* view) :
 
     // Set current theme color
     mTheme.setThemeColor(mSettings->themeColor());
-
-    // Init buddy list
-    view->rootContext()->setContextProperty("buddiesListData", &mBuddiesList);
-    view->rootContext()->setContextProperty("recentListData", &mRecentList);
-    view->rootContext()->setContextProperty("ipAddressesData", &mIpAddresses);
-    view->rootContext()->setContextProperty("guiBehind", this);
-    view->rootContext()->setContextProperty("destinationBuddy", mDestBuddy);
-    view->rootContext()->setContextProperty("theme", &mTheme);
 
     // Register protocol signals
     connect(&mDuktoProtocol, SIGNAL(peerListAdded(Peer)), this, SLOT(peerListAdded(Peer)));
@@ -103,9 +91,6 @@ GuiBehind::GuiBehind(DuktoWindow* view) :
     connect(&mDuktoProtocol, SIGNAL(receiveFileCancelled()), this, SLOT(receiveFileCancelled()));
     connect(&mDuktoProtocol, SIGNAL(sendFileAborted()), this, SLOT(sendFileAborted()));
 
-    connect(&mDuktoProtocol, SIGNAL(receiveTextComplete(QString*,qint64)), SystemTray::tray, SLOT(received_text(QString*,qint64)));
-    connect(&mDuktoProtocol, SIGNAL(receiveFileComplete(QStringList*,qint64)), SystemTray::tray, SLOT(received_file(QStringList*,qint64)));
-
     // Register other signals
     connect(this, SIGNAL(remoteDestinationAddressChanged()), this, SLOT(remoteDestinationAddressHandler()));
 
@@ -118,10 +103,6 @@ GuiBehind::GuiBehind(DuktoWindow* view) :
     mPeriodicHelloTimer = new QTimer(this);
     connect(mPeriodicHelloTimer, SIGNAL(timeout()), this, SLOT(periodicHello()));
     mPeriodicHelloTimer->start(60000);
-
-    // Load GUI
-    view->setSource(QUrl("qrc:/qml/dukto/Dukto.qml"));
-    view->restoreGeometry(mSettings->windowGeometry());
 
     // Start random rotate
     mShowBackTimer = new QTimer(this);
@@ -148,9 +129,26 @@ GuiBehind::~GuiBehind()
 #endif
     if (mShowBackTimer) mShowBackTimer->deleteLater();
     if (mPeriodicHelloTimer) mPeriodicHelloTimer->deleteLater();
-    if (mView) mView->deleteLater();
-    if (mSettings) mSettings->deleteLater();
     if (mDestBuddy) mDestBuddy->deleteLater();
+}
+
+void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
+    mView = view;
+
+    // Init buddy list
+    view->rootContext()->setContextProperty("buddiesListData", &mBuddiesList);
+    view->rootContext()->setContextProperty("recentListData", &mRecentList);
+    view->rootContext()->setContextProperty("ipAddressesData", &mIpAddresses);
+    view->rootContext()->setContextProperty("guiBehind", this);
+    view->rootContext()->setContextProperty("destinationBuddy", mDestBuddy);
+    view->rootContext()->setContextProperty("theme", &mTheme);
+
+    // Load GUI
+    view->setSource(QUrl("qrc:/qml/dukto/Dukto.qml"));
+    view->restoreGeometry(mSettings->windowGeometry());
+
+    connect(&mDuktoProtocol, SIGNAL(receiveTextComplete(QString*,qint64)), tray, SLOT(received_text(QString*,qint64)));
+    connect(&mDuktoProtocol, SIGNAL(receiveFileComplete(QStringList*,qint64)), tray, SLOT(received_file(QStringList*,qint64)));
 }
 
 // Add the new buddy to the buddy list

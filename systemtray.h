@@ -27,8 +27,6 @@ class SystemTray : public QSystemTrayIcon
 {
         Q_OBJECT
     public:
-        static SystemTray* tray;
-
         SystemTray(DuktoWindow& window, QObject *parent = 0);
         ~SystemTray();
 
