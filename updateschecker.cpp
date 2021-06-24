@@ -57,7 +57,7 @@ void UpdatesChecker::run()
     // Send check request
     QNetworkRequest request(QUrl("http://www.msec.it/dukto/r5check.php?ver=" + ver + "&locale=" + locale + "&os=" + os + "&osver=" + osver));
     mNetworkAccessManager = new QNetworkAccessManager();
-    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(updatedDataReady(QNetworkReply*)));
+    connect(mNetworkAccessManager, &QNetworkAccessManager::finished, this, &UpdatesChecker::updatedDataReady);
     mNetworkAccessManager->get(request);
 
     exec();

@@ -65,11 +65,11 @@ void DuktoProtocol::initialize()
 {
     mSocket = new QUdpSocket(this);
     mSocket->bind(QHostAddress::Any, mLocalUdpPort);
-    connect(mSocket, SIGNAL(readyRead()), this, SLOT(newUdpData()));
+    connect(mSocket, &QUdpSocket::readyRead, this, &DuktoProtocol::newUdpData);
 
     mTcpServer = new QTcpServer(this);
     mTcpServer->listen(QHostAddress::Any, mLocalTcpPort);
-    connect(mTcpServer, SIGNAL(newConnection()), this, SLOT(newIncomingConnection()));
+    connect(mTcpServer, &QTcpServer::newConnection, this, &DuktoProtocol::newIncomingConnection);
 }
 
 void DuktoProtocol::setPorts(qint16 udp, qint16 tcp)
@@ -218,8 +218,8 @@ void DuktoProtocol::newIncomingConnection()
     mCurrentSocket = s;
 
     // Register socket's event handlers
-    connect(mCurrentSocket, SIGNAL(readyRead()), this, SLOT(readNewData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(disconnected()), this, SLOT(closedConnectionTmp()), Qt::QueuedConnection);
+    connect(mCurrentSocket, &QTcpSocket::readyRead, this, &DuktoProtocol::readNewData, Qt::DirectConnection);
+    connect(mCurrentSocket, &QTcpSocket::disconnected, this, &DuktoProtocol::closedConnectionTmp, Qt::QueuedConnection);
 
     // Initialize variables
     mIsReceiving = true;
@@ -413,7 +413,7 @@ void DuktoProtocol::readNewData()
 
 void DuktoProtocol::closedConnectionTmp()
 {
-    QTimer::singleShot(500, this, SLOT(closedConnection()));
+    QTimer::singleShot(500, this, &DuktoProtocol::closedConnection);
 }
 
 // Chiusura della connessione TCP in ricezione
@@ -480,9 +480,13 @@ void DuktoProtocol::sendFile(QString ipDest, qint16 port, QStringList files)
     mCurrentSocket = new QTcpSocket(this);
 
     // Gestione segnali
-    connect(mCurrentSocket, SIGNAL(connected()), this, SLOT(sendMetaData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(sendConnectError(QAbstractSocket::SocketError)), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(sendData(qint64)), Qt::DirectConnection);
+    connect(mCurrentSocket, &QTcpSocket::connected, this, &DuktoProtocol::sendMetaData, Qt::DirectConnection);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(mCurrentSocket, &QTcpSocket::errorOccurred, this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#else
+    connect(mCurrentSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#endif
+    connect(mCurrentSocket, &QTcpSocket::bytesWritten, this, &DuktoProtocol::sendData, Qt::DirectConnection);
 
     // Connessione
     mCurrentSocket->connectToHost(ipDest, port);
@@ -505,9 +509,13 @@ void DuktoProtocol::sendText(QString ipDest, qint16 port, QString text)
 
     // Connessione al destinatario
     mCurrentSocket = new QTcpSocket(this);
-    connect(mCurrentSocket, SIGNAL(connected()), this, SLOT(sendMetaData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(sendConnectError(QAbstractSocket::SocketError)), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(sendData(qint64)), Qt::DirectConnection);
+    connect(mCurrentSocket, &QTcpSocket::connected, this, &DuktoProtocol::sendMetaData, Qt::DirectConnection);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(mCurrentSocket, &QTcpSocket::errorOccurred, this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#else
+    connect(mCurrentSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#endif
+    connect(mCurrentSocket, &QTcpSocket::bytesWritten, this, &DuktoProtocol::sendData, Qt::DirectConnection);
     mCurrentSocket->connectToHost(ipDest, port);
 }
 
@@ -531,9 +539,13 @@ void DuktoProtocol::sendScreen(QString ipDest, qint16 port, QString path)
     mCurrentSocket = new QTcpSocket(this);
 
     // Gestione segnali
-    connect(mCurrentSocket, SIGNAL(connected()), this, SLOT(sendMetaData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(sendConnectError(QAbstractSocket::SocketError)), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(sendData(qint64)), Qt::DirectConnection);
+    connect(mCurrentSocket, &QTcpSocket::connected, this, &DuktoProtocol::sendMetaData, Qt::DirectConnection);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(mCurrentSocket, &QTcpSocket::errorOccurred, this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#else
+    connect(mCurrentSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#endif
+    connect(mCurrentSocket, &QTcpSocket::bytesWritten, this, &DuktoProtocol::sendData, Qt::DirectConnection);
 
     // Connessione
     mCurrentSocket->connectToHost(ipDest, port);

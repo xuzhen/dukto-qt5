@@ -35,7 +35,7 @@ SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
 #if defined(NOTIFY_LIBNOTIFY)
     notify_init ("Dukto");
 #endif
-    connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_activated(QSystemTrayIcon::ActivationReason)));
+    connect(this, &SystemTray::activated, this, &SystemTray::on_activated);
     
     QMenu *trayMenu = new QMenu(&window);
     QAction *ShowHide = new QAction(QString("Show/Hide"), trayMenu);

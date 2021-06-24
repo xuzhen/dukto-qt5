@@ -61,7 +61,7 @@ GuiBehind::GuiBehind(Settings *settings) :
     mShowUpdateBanner = false;
 
     // Clipboard object
-    connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardChanged()));
+    connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &GuiBehind::clipboardChanged);
     clipboardChanged();
 
     // Add "Me" entry
@@ -80,19 +80,19 @@ GuiBehind::GuiBehind(Settings *settings) :
     mTheme.setThemeColor(mSettings->themeColor());
 
     // Register protocol signals
-    connect(&mDuktoProtocol, SIGNAL(peerListAdded(Peer)), this, SLOT(peerListAdded(Peer)));
-    connect(&mDuktoProtocol, SIGNAL(peerListRemoved(Peer)), this, SLOT(peerListRemoved(Peer)));
-    connect(&mDuktoProtocol, SIGNAL(receiveFileStart(QString)), this, SLOT(receiveFileStart(QString)));
-    connect(&mDuktoProtocol, SIGNAL(transferStatusUpdate(qint64,qint64)), this, SLOT(transferStatusUpdate(qint64,qint64)));
-    connect(&mDuktoProtocol, SIGNAL(receiveFileComplete(QStringList*,qint64)), this, SLOT(receiveFileComplete(QStringList*,qint64)));
-    connect(&mDuktoProtocol, SIGNAL(receiveTextComplete(QString*,qint64)), this, SLOT(receiveTextComplete(QString*,qint64)));
-    connect(&mDuktoProtocol, SIGNAL(sendFileComplete()), this, SLOT(sendFileComplete()));
-    connect(&mDuktoProtocol, SIGNAL(sendFileError(int)), this, SLOT(sendFileError(int)));
-    connect(&mDuktoProtocol, SIGNAL(receiveFileCancelled()), this, SLOT(receiveFileCancelled()));
-    connect(&mDuktoProtocol, SIGNAL(sendFileAborted()), this, SLOT(sendFileAborted()));
+    connect(&mDuktoProtocol, &DuktoProtocol::peerListAdded, this, &GuiBehind::peerListAdded);
+    connect(&mDuktoProtocol, &DuktoProtocol::peerListRemoved, this, &GuiBehind::peerListRemoved);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileStart, this, &GuiBehind::receiveFileStart);
+    connect(&mDuktoProtocol, &DuktoProtocol::transferStatusUpdate, this, &GuiBehind::transferStatusUpdate);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileComplete, this, &GuiBehind::receiveFileComplete);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveTextComplete, this, &GuiBehind::receiveTextComplete);
+    connect(&mDuktoProtocol, &DuktoProtocol::sendFileComplete, this, &GuiBehind::sendFileComplete);
+    connect(&mDuktoProtocol, &DuktoProtocol::sendFileError, this, &GuiBehind::sendFileError);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileCancelled, this, &GuiBehind::receiveFileCancelled);
+    connect(&mDuktoProtocol, &DuktoProtocol::sendFileAborted, this, &GuiBehind::sendFileAborted);
 
     // Register other signals
-    connect(this, SIGNAL(remoteDestinationAddressChanged()), this, SLOT(remoteDestinationAddressHandler()));
+    connect(this, &GuiBehind::remoteDestinationAddressChanged, this, &GuiBehind::remoteDestinationAddressHandler);
 
     // Say "hello"
     mDuktoProtocol.setPorts(NETWORK_PORT, NETWORK_PORT);
@@ -101,12 +101,12 @@ GuiBehind::GuiBehind(Settings *settings) :
 
     // Periodic "hello" timer
     mPeriodicHelloTimer = new QTimer(this);
-    connect(mPeriodicHelloTimer, SIGNAL(timeout()), this, SLOT(periodicHello()));
+    connect(mPeriodicHelloTimer, &QTimer::timeout, this, &GuiBehind::periodicHello);
     mPeriodicHelloTimer->start(60000);
 
     // Start random rotate
     mShowBackTimer = new QTimer(this);
-    connect(mShowBackTimer, SIGNAL(timeout()), this, SLOT(showRandomBack()));
+    connect(mShowBackTimer, &QTimer::timeout, this, &GuiBehind::showRandomBack);
 #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
     qsrand(QDateTime::currentDateTime().toTime_t());
 #endif
@@ -115,8 +115,10 @@ GuiBehind::GuiBehind(Settings *settings) :
 #ifdef UPDATER
     // Enqueue check for updates
     mUpdatesChecker = new UpdatesChecker();
-    connect(mUpdatesChecker, SIGNAL(updatesAvailable()), this, SLOT(showUpdatesMessage()));
-    QTimer::singleShot(2000, mUpdatesChecker, SLOT(start()));
+    connect(mUpdatesChecker, &UpdatesChecker::updatesAvailable, this, &GuiBehind::showUpdatesMessage);
+    QTimer::singleShot(2000, [this]()->void {
+        mUpdatesChecker->start();
+    });
 #endif
 }
 
@@ -147,8 +149,8 @@ void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
     view->setSource(QUrl("qrc:/qml/dukto/Dukto.qml"));
     view->restoreGeometry(mSettings->windowGeometry());
 
-    connect(&mDuktoProtocol, SIGNAL(receiveTextComplete(QString*,qint64)), tray, SLOT(received_text(QString*,qint64)));
-    connect(&mDuktoProtocol, SIGNAL(receiveFileComplete(QStringList*,qint64)), tray, SLOT(received_file(QStringList*,qint64)));
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveTextComplete, tray, &SystemTray::received_text);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileComplete, tray, &SystemTray::received_file);
 }
 
 // Add the new buddy to the buddy list
@@ -391,7 +393,7 @@ void GuiBehind::sendScreen()
     // Minimize window
     mView->setWindowState(Qt::WindowMinimized);
 
-    QTimer::singleShot(500, this, SLOT(sendScreenStage2()));
+    QTimer::singleShot(500, this, &GuiBehind::sendScreenStage2);
 }
 
 void GuiBehind::sendScreenStage2() {

@@ -30,10 +30,12 @@ class SystemTray : public QSystemTrayIcon
         SystemTray(DuktoWindow& window, QObject *parent = 0);
         ~SystemTray();
 
-    private slots:
-        void on_activated(QSystemTrayIcon::ActivationReason reason);
+    public slots:
         void received_file(QStringList *files, qint64);
         void received_text(QString *text, qint64);
+
+    private slots:
+        void on_activated(QSystemTrayIcon::ActivationReason reason);
 
     private:
         DuktoWindow& window;
