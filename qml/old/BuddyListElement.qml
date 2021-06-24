@@ -20,7 +20,7 @@ import QtQuick 2.3
 
 Flipable {
    id: contactDelegateItem
-   width: parent.width
+   width: parent == null ? 0 : parent.width
    height: buddyIp == "" ? 94 : 64
 
    property string buddyIp
