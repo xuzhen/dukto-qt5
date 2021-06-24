@@ -75,6 +75,9 @@ contains(DEFINES, SINGLE_APP) {
     DEFINES += QAPPLICATION_CLASS=QApplication
 }
 
+# Get notifications from system tray
+#DEFINES += NOTIFY_NATIVE_TRAY
+
 OTHER_FILES += CMakeLists.txt
 
 win32 {
@@ -88,8 +91,10 @@ win32 {
 mac:ICON = dukto.icns
 
 linux {
-    ### libnotify
-    CONFIG+=link_pkgconfig
-    PKGCONFIG+=libnotify
-    DEFINES+=NOTIFY_LIBNOTIFY
+    !contains(DEFINES, NOTIFY_NATIVE_TRAY) {
+        ### libnotify
+        CONFIG+=link_pkgconfig
+        PKGCONFIG+=libnotify
+        DEFINES+=NOTIFY_LIBNOTIFY
+    }
 }
