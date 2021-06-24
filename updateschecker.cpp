@@ -26,7 +26,6 @@
 #include <QNetworkAccessManager>
 #include <QSysInfo>
 #include <QLocale>
-#include <QDebug>
 
 UpdatesChecker::UpdatesChecker() :
     mNetworkAccessManager(NULL)

@@ -32,11 +32,7 @@ RecentListItemModel::RecentListItemModel() :
     roleNames[DateTime] = "dateTime";
     roleNames[Sender] = "sender";
     roleNames[Size] = "size";
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
     setItemRoleNames(roleNames);
-#else
-    setRoleNames(roleNames);
-#endif
 }
 
 const double BYTES_TO_KB = 1.0 / 1024;

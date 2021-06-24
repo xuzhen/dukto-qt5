@@ -18,7 +18,6 @@
 
 #include "theme.h"
 
-#include <QDebug>
 #include <QColor>
 
 const QString Theme::DEFAULT_THEME_COLOR = "#248b00";

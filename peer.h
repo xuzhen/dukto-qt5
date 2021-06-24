@@ -19,7 +19,7 @@
 #ifndef PEER_H
 #define PEER_H
 
-#include <QtNetwork/QHostInfo>
+#include <QtNetwork/QHostAddress>
 
 class Peer
 {

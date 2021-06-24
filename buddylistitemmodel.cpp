@@ -20,7 +20,6 @@
 
 #include <QUrl>
 #include <QRegularExpression>
-#include <QtGlobal>
 
 #include "platform.h"
 #include "peer.h"
@@ -39,11 +38,7 @@ BuddyListItemModel::BuddyListItemModel() :
     roleNames[OsLogo] = "oslogo";
     roleNames[ShowBack] = "showback";
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
     setItemRoleNames(roleNames);
-#else
-    setRoleNames(roleNames);
-#endif
 }
 
 void BuddyListItemModel::addMeElement()

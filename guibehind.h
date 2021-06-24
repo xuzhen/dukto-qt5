@@ -31,12 +31,9 @@
 #ifdef UPDATER
 class UpdatesChecker;
 #endif
-class MiniWebServer;
 class Settings;
 class DuktoWindow;
 class SystemTray;
-class QNetworkAccessManager;
-class QNetworkReply;
 
 class GuiBehind : public QObject
 {

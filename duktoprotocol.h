@@ -24,7 +24,6 @@
 #include <QtNetwork/QUdpSocket>
 #include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QTcpServer>
-#include <QtNetwork/QHostInfo>
 #include <QHash>
 #include <QFile>
 #include <QStringList>

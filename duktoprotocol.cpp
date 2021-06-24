@@ -212,7 +212,7 @@ void DuktoProtocol::newIncomingConnection()
     }
 
     // Update GUI
-    receiveFileStart(s->peerAddress().toString());
+    emit receiveFileStart(s->peerAddress().toString());
 
     // set current TCP socket
     mCurrentSocket = s;
@@ -431,17 +431,17 @@ void DuktoProtocol::closedConnection()
         delete mCurrentFile;
         mCurrentFile = NULL;
         QFile::remove(name);
-        receiveFileCancelled();
+        emit receiveFileCancelled();
     }
     else if (!mReceivingText) // Receiving file ended
     {
-        receiveFileComplete(mReceivedFiles, mTotalSize);
+        emit receiveFileComplete(mReceivedFiles, mTotalSize);
         // TODO: notify for recieving file
     }
     else // Receiving text ended
     {
         QString rec = QString::fromUtf8(mTextToReceive);
-        receiveTextComplete(&rec, mTotalSize);
+        emit receiveTextComplete(&rec, mTotalSize);
         // TODO: notify for recieving text
     }
 
@@ -683,7 +683,7 @@ void DuktoProtocol::sendConnectError(QAbstractSocket::SocketError e)
         mCurrentFile = NULL;
     }
     mIsSending = false;
-    sendFileError(e);
+    emit sendFileError(e);
 }
 
 // Dato un elenco di file e cartelle, viene espanso in modo da

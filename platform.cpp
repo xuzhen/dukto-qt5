@@ -22,7 +22,6 @@
 #include <QHostInfo>
 #include <QFile>
 #include <QDir>
-#include <QMessageBox>
 #include <QRegularExpression>
 
 #if defined(Q_OS_MAC)
