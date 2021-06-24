@@ -25,7 +25,7 @@ class RecentListItemModel : public QStandardItemModel
 {
 public:
     explicit RecentListItemModel();
-    void addRecent(QString name, QString value, QString type, QString sender, qint64 size);
+    void addRecent(const QString &name, const QString &value, const QString &type, const QString &sender, qint64 size);
 
     enum RecentRoles {
         Name = Qt::UserRole + 1,

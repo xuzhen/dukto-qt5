@@ -212,11 +212,11 @@ typedef HRESULT (WINAPI*pfnSHGetUserPicturePathEx)(
 QString Platform::getWinTempAvatarPath()
 {
     // Get file path
-    CoInitialize(NULL);
+    CoInitialize(nullptr);
     HMODULE hMod = LoadLibrary(L"shell32.dll");
     pfnSHGetUserPicturePathEx picPathFn = (pfnSHGetUserPicturePathEx)GetProcAddress(hMod, (LPCSTR)810);
     WCHAR picPath[500] = {0}, srcPath[500] = {0};
-    HRESULT ret = picPathFn(NULL, 0, NULL, picPath, ARRAYSIZE(picPath), srcPath, ARRAYSIZE(srcPath));
+    HRESULT ret = picPathFn(nullptr, 0, nullptr, picPath, ARRAYSIZE(picPath), srcPath, ARRAYSIZE(srcPath));
     FreeLibrary(hMod);
     CoUninitialize();
     if (ret != S_OK) return "C:\\missing.bmp";

@@ -68,27 +68,27 @@ void EcWin7::setProgressState(ToolBarProgressState state)
 
 // Set new overlay icon and corresponding description (for accessibility)
 // (call with iconName == "" and description == "" to remove any previous overlay icon)
-void EcWin7::setOverlayIcon(QString iconName, QString description)
+void EcWin7::setOverlayIcon(const QString &iconName, const QString &description)
 {
     if (!mTaskbar) return;
-    HICON oldIcon = NULL;
-    if (mOverlayIcon != NULL) oldIcon = mOverlayIcon;
+    HICON oldIcon = nullptr;
+    if (mOverlayIcon != nullptr) oldIcon = mOverlayIcon;
     if (iconName.isEmpty())
     {
-        mTaskbar->SetOverlayIcon(mWindowId, NULL, NULL);
-        mOverlayIcon = NULL;
+        mTaskbar->SetOverlayIcon(mWindowId, nullptr, nullptr);
+        mOverlayIcon = nullptr;
     }
     else
     {
-        mOverlayIcon = (HICON) LoadImage(GetModuleHandle(NULL),
+        mOverlayIcon = (HICON) LoadImage(GetModuleHandle(nullptr),
                                  iconName.toStdWString().c_str(),
                                  IMAGE_ICON,
                                  0,
                                  0,
-                                 NULL);
+                                 0);
         mTaskbar->SetOverlayIcon(mWindowId, mOverlayIcon, description.toStdWString().c_str());
     }
-    if ((oldIcon != NULL) && (oldIcon != mOverlayIcon))
+    if ((oldIcon != nullptr) && (oldIcon != mOverlayIcon))
     {
         DestroyIcon(oldIcon);
     }

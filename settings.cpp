@@ -45,14 +45,14 @@ QString Settings::currentPath()
         return ".";
 }
 
-void Settings::savePath(QString path)
+void Settings::savePath(const QString &path)
 {
     // Save the new path
     mSettings.setValue("DestPath", path);
     mSettings.sync();
 }
 
-void Settings::saveWindowGeometry(QByteArray geo)
+void Settings::saveWindowGeometry(const QByteArray &geo)
 {
     mSettings.setValue("WindowPosAndSize", geo);
     mSettings.sync();
@@ -63,7 +63,7 @@ QByteArray Settings::windowGeometry()
     return mSettings.value("WindowPosAndSize").toByteArray();
 }
 
-void Settings::saveThemeColor(QString color)
+void Settings::saveThemeColor(const QString &color)
 {
     mSettings.setValue("ThemeColor", color);
     mSettings.sync();
@@ -92,7 +92,7 @@ QString Settings::buddyName()
 
 }
 
-void Settings::saveBuddyName(QString name)
+void Settings::saveBuddyName(const QString &name)
 {
     // Save the new name
     mSettings.setValue("BuddyName", name);

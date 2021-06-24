@@ -22,7 +22,7 @@
 #include <QNetworkInterface>
 
 IpAddressItemModel::IpAddressItemModel() :
-    QStandardItemModel(NULL)
+    QStandardItemModel(nullptr)
 {
     QHash<int, QByteArray> roleNames;
     roleNames[Ip] = "ip";

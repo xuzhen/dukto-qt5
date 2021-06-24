@@ -87,13 +87,13 @@ void SystemTray::received_text(QString* text, qint64)
     notify("Recieved Text Snippet", *text);
 }
 
-void SystemTray::notify(QString title, QString body)
+void SystemTray::notify(const QString &title, const QString &body)
 {
 #if defined(NOTIFY_NATIVE_TRAY)
     this->showMessage(title, body);
 #elif defined(NOTIFY_LIBNOTIFY)
-    NotifyNotification* msg = notify_notification_new(title.toUtf8().constData(), body.toUtf8().constData(), NULL);
-    notify_notification_show (msg, NULL);
+    NotifyNotification* msg = notify_notification_new(title.toUtf8().constData(), body.toUtf8().constData(), nullptr);
+    notify_notification_show (msg, nullptr);
     g_object_unref(G_OBJECT(msg));
 #else
     Q_UNUSED(title);

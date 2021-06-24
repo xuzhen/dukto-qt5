@@ -124,15 +124,15 @@ public:
     explicit EcWin7(QWindow *window);
     bool winEvent(MSG * message, long * result);
     // Overlay icon handling
-    void setOverlayIcon(QString iconName, QString description);
+    void setOverlayIcon(const QString &iconName, const QString &description);
     void setProgressValue(int value, int max);
     void setProgressState(ToolBarProgressState state);
 
 private:
     HWND mWindowId;
     UINT mTaskbarMessageId;
-    ITaskbarList3 *mTaskbar;
-    HICON mOverlayIcon;
+    ITaskbarList3 *mTaskbar = nullptr;
+    HICON mOverlayIcon = nullptr;
 };
 #endif
 

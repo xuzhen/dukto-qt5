@@ -27,14 +27,14 @@
 #include <QSysInfo>
 #include <QLocale>
 
-UpdatesChecker::UpdatesChecker() :
-    mNetworkAccessManager(NULL)
+UpdatesChecker::UpdatesChecker(QObject *parent) :
+    QThread(parent)
 {
 }
 
 UpdatesChecker::~UpdatesChecker()
 {
-    if (mNetworkAccessManager) delete mNetworkAccessManager;
+    delete mNetworkAccessManager;
 }
 
 void UpdatesChecker::run()

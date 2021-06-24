@@ -1,7 +1,12 @@
 QT += network qml quickwidgets
+CONFIG += c++11
 
 TARGET = dukto
 TEMPLATE = app
+
+DEFINES += UNICODE
+
+CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG_OUTPUT
 
 VERSION = 6.0.0
 
@@ -61,8 +66,9 @@ greaterThan(QT_MAJOR_VERSION, 5) {
     }
 }
 
-#//FIXME
-#UPDATER
+# FIXME: Site is down, no longer works
+#DEFINES += UPDATER
+
 DEFINES += SINGLE_APP
 contains(DEFINES, SINGLE_APP) {
     include(modules/SingleApplication/singleapplication.pri)
@@ -73,8 +79,8 @@ OTHER_FILES += CMakeLists.txt
 
 win32 {
     RC_FILE = dukto.rc
-    msvc:LIBS += ws2_32.lib ole32.lib netapi32.lib user32.lib
-    gcc:LIBS += -lws2_32 -lole32 -lnetapi32 -luser32
+    msvc:LIBS += ws2_32.lib ole32.lib user32.lib
+    gcc:LIBS += -lws2_32 -lole32 -luser32
     HEADERS += ecwin7.h
     SOURCES += ecwin7.cpp
 }

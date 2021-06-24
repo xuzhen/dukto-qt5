@@ -66,37 +66,37 @@ public:
     void close();
 
     QString currentTransferBuddy();
-    void setCurrentTransferBuddy(QString buddy);
+    void setCurrentTransferBuddy(const QString &buddy);
     int currentTransferProgress();
     void setCurrentTransferProgress(int value);
     QString currentTransferStats();
-    void setCurrentTransferStats(QString stats);
+    void setCurrentTransferStats(const QString &stats);
     QString textSnippetBuddy();
-    void setTextSnippetBuddy(QString buddy);
+    void setTextSnippetBuddy(const QString &buddy);
     QString textSnippet();
-    void setTextSnippet(QString txt);
+    void setTextSnippet(const QString &txt);
     bool textSnippetSending();
     void setTextSnippetSending(bool sending);
     QString currentPath();
-    void setCurrentPath(QString path);
+    void setCurrentPath(const QString &path);
     bool currentTransferSending();
     void setCurrentTransferSending(bool sending);
     bool clipboardTextAvailable();
     QString remoteDestinationAddress();
-    void setRemoteDestinationAddress(QString address);
+    void setRemoteDestinationAddress(const QString &address);
     QString overlayState();
-    void setOverlayState(QString state);
+    void setOverlayState(const QString &state);
     QString messagePageText();
-    void setMessagePageText(QString message);
+    void setMessagePageText(const QString &message);
     QString messagePageTitle();
-    void setMessagePageTitle(QString title);
+    void setMessagePageTitle(const QString &title);
     QString messagePageBackState();
-    void setMessagePageBackState(QString state);
+    void setMessagePageBackState(const QString &state);
     bool showTermsOnStart();
     void setShowTermsOnStart(bool show);
     bool showUpdateBanner();
     void setShowUpdateBanner(bool show);
-    void setBuddyName(QString name);
+    void setBuddyName(const QString &name);
     QString buddyName();
 
 protected:
@@ -138,9 +138,9 @@ public slots:
     void sendScreenStage2();
 
     // Called by Dukto protocol
-    void peerListAdded(Peer peer);
-    void peerListRemoved(Peer peer);
-    void receiveFileStart(QString senderIp);
+    void peerListAdded(const Peer &peer);
+    void peerListRemoved(const Peer &peer);
+    void receiveFileStart(const QString &senderIp);
     void transferStatusUpdate(qint64 total, qint64 partial);
     void receiveFileComplete(QStringList *files, qint64 totalSize);
     void receiveTextComplete(QString *text, qint64 totalSize);
@@ -152,25 +152,25 @@ public slots:
     // Called by QML
     void openDestinationFolder();
     void refreshIpList();
-    void showTextSnippet(QString text, QString sender);
-    void openFile(QString path);
+    void showTextSnippet(const QString &text, const QString &sender);
+    void openFile(const QString &path);
     void changeDestinationFolder();
-    void showSendPage(QString ip);
+    void showSendPage(const QString &ip);
     void sendSomeFiles();
     void sendFolder();
     void sendClipboardText();
     void sendText();
     void sendScreen();
-    void changeThemeColor(QString color);
+    void changeThemeColor(const QString &color);
     void resetProgressStatus();
     void abortTransfer();
 
 private:
-    DuktoWindow *mView;
-    QTimer *mShowBackTimer;
-    QTimer *mPeriodicHelloTimer;
+    DuktoWindow *mView = nullptr;
+    QTimer *mShowBackTimer = nullptr;
+    QTimer *mPeriodicHelloTimer = nullptr;
     Settings *mSettings;
-    DestinationBuddy *mDestBuddy;
+    DestinationBuddy *mDestBuddy = nullptr;
     BuddyListItemModel mBuddiesList;
     RecentListItemModel mRecentList;
     IpAddressItemModel mIpAddresses;
@@ -197,8 +197,8 @@ private:
     QString mScreenTempPath;
 
     bool prepareStartTransfer(QString *ip, qint16 *port);
-    void startTransfer(QStringList files);
-    void startTransfer(QString text);
+    void startTransfer(const QStringList &files);
+    void startTransfer(const QString &text);
 };
 
 #endif // GUIBEHIND_H

@@ -49,11 +49,7 @@
 #define NETWORK_PORT 4644 // 6742
 
 GuiBehind::GuiBehind(Settings *settings) :
-    QObject(NULL), mView(NULL), mShowBackTimer(NULL), mPeriodicHelloTimer(NULL),
-    mDestBuddy(NULL), mSettings(settings)
-#ifdef UPDATER
-    ,mUpdatesChecker(NULL)
-#endif
+    QObject(nullptr), mSettings(settings)
 {
     // Status variables
     mCurrentTransferProgress = 0;
@@ -154,12 +150,12 @@ void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
 }
 
 // Add the new buddy to the buddy list
-void GuiBehind::peerListAdded(Peer peer) {
+void GuiBehind::peerListAdded(const Peer &peer) {
     mBuddiesList.addBuddy(peer);
 }
 
 // Remove the buddy from the buddy list
-void GuiBehind::peerListRemoved(Peer peer) {
+void GuiBehind::peerListRemoved(const Peer &peer) {
 
     // Check if currently is shown the "send" page for that buddy
     if (((overlayState() == "send")
@@ -200,7 +196,7 @@ void GuiBehind::clipboardChanged()
     emit clipboardTextAvailableChanged();
 }
 
-void GuiBehind::receiveFileStart(QString senderIp)
+void GuiBehind::receiveFileStart(const QString &senderIp)
 {
     // Look for the sender in the buddy list
     QString sender = mBuddiesList.buddyNameByIp(senderIp);
@@ -266,7 +262,7 @@ void GuiBehind::receiveTextComplete(QString *text, qint64 totalSize)
     emit receiveCompleted();
 }
 
-void GuiBehind::showTextSnippet(QString text, QString sender)
+void GuiBehind::showTextSnippet(const QString &text, const QString &sender)
 {
     setTextSnippet(text);
     setTextSnippetBuddy(sender);
@@ -274,7 +270,7 @@ void GuiBehind::showTextSnippet(QString text, QString sender)
     emit gotoTextSnippet();
 }
 
-void GuiBehind::openFile(QString path)
+void GuiBehind::openFile(const QString &path)
 {
     QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 }
@@ -303,11 +299,11 @@ void GuiBehind::refreshIpList()
     mIpAddresses.refreshIpList();
 }
 
-void GuiBehind::showSendPage(QString ip)
+void GuiBehind::showSendPage(const QString &ip)
 {
     // Check for a buddy with the provided IP address
     QStandardItem *buddy = mBuddiesList.buddyByIp(ip);
-    if (buddy == NULL) return;
+    if (buddy == nullptr) return;
 
     // Update exposed data for the selected user
     mDestBuddy->fillFromItem(buddy);
@@ -421,7 +417,7 @@ void GuiBehind::sendScreenStage2() {
     mDuktoProtocol.sendScreen(ip, port, mScreenTempPath);
 }
 
-void GuiBehind::startTransfer(QStringList files)
+void GuiBehind::startTransfer(const QStringList &files)
 {
     // Prepare file transfer
     QString ip;
@@ -432,7 +428,7 @@ void GuiBehind::startTransfer(QStringList files)
     mDuktoProtocol.sendFile(ip, port, files);
 }
 
-void GuiBehind::startTransfer(QString text)
+void GuiBehind::startTransfer(const QString &text)
 {
     // Prepare file transfer
     QString ip;
@@ -593,7 +589,7 @@ bool GuiBehind::eventFilter(QObject *, QEvent *event)
 }
 
 // Changes the current theme color
-void GuiBehind::changeThemeColor(QString color)
+void GuiBehind::changeThemeColor(const QString &color)
 {
     mTheme.setThemeColor(color);
     mSettings->saveThemeColor(color);
@@ -646,7 +642,7 @@ QString GuiBehind::currentTransferBuddy()
     return mCurrentTransferBuddy;
 }
 
-void GuiBehind::setCurrentTransferBuddy(QString buddy)
+void GuiBehind::setCurrentTransferBuddy(const QString &buddy)
 {
     if (buddy == mCurrentTransferBuddy) return;
     mCurrentTransferBuddy = buddy;
@@ -670,7 +666,7 @@ QString GuiBehind::currentTransferStats()
     return mCurrentTransferStats;
 }
 
-void GuiBehind::setCurrentTransferStats(QString stats)
+void GuiBehind::setCurrentTransferStats(const QString &stats)
 {
     if (stats == mCurrentTransferStats) return;
     mCurrentTransferStats = stats;
@@ -682,7 +678,7 @@ QString GuiBehind::textSnippetBuddy()
     return mTextSnippetBuddy;
 }
 
-void GuiBehind::setTextSnippetBuddy(QString buddy)
+void GuiBehind::setTextSnippetBuddy(const QString &buddy)
 {
     if (buddy == mTextSnippetBuddy) return;
     mTextSnippetBuddy = buddy;
@@ -694,7 +690,7 @@ QString GuiBehind::textSnippet()
     return mTextSnippet;
 }
 
-void GuiBehind::setTextSnippet(QString text)
+void GuiBehind::setTextSnippet(const QString &text)
 {
     if (text == mTextSnippet) return;
     mTextSnippet = text;
@@ -718,7 +714,7 @@ QString GuiBehind::currentPath()
     return mSettings->currentPath();
 }
 
-void GuiBehind::setCurrentPath(QString path)
+void GuiBehind::setCurrentPath(const QString &path)
 {
     if (path == mSettings->currentPath()) return;
     mSettings->savePath(path);
@@ -747,7 +743,7 @@ QString GuiBehind::remoteDestinationAddress()
     return mRemoteDestinationAddress;
 }
 
-void GuiBehind::setRemoteDestinationAddress(QString address)
+void GuiBehind::setRemoteDestinationAddress(const QString &address)
 {
     if (address == mRemoteDestinationAddress) return;
     mRemoteDestinationAddress = address;
@@ -759,7 +755,7 @@ QString GuiBehind::overlayState()
     return mOverlayState;
 }
 
-void GuiBehind::setOverlayState(QString state)
+void GuiBehind::setOverlayState(const QString &state)
 {
     if (state == mOverlayState) return;
     mOverlayState = state;
@@ -771,7 +767,7 @@ QString GuiBehind::messagePageText()
     return mMessagePageText;
 }
 
-void GuiBehind::setMessagePageText(QString message)
+void GuiBehind::setMessagePageText(const QString &message)
 {
     if (message == mMessagePageText) return;
     mMessagePageText = message;
@@ -783,7 +779,7 @@ QString GuiBehind::messagePageTitle()
     return mMessagePageTitle;
 }
 
-void GuiBehind::setMessagePageTitle(QString title)
+void GuiBehind::setMessagePageTitle(const QString &title)
 {
     if (title == mMessagePageTitle) return;
     mMessagePageTitle = title;
@@ -795,7 +791,7 @@ QString GuiBehind::messagePageBackState()
     return mMessagePageBackState;
 }
 
-void GuiBehind::setMessagePageBackState(QString state)
+void GuiBehind::setMessagePageBackState(const QString &state)
 {
     if (state == mMessagePageBackState) return;
     mMessagePageBackState = state;
@@ -824,9 +820,9 @@ void GuiBehind::setShowUpdateBanner(bool show)
     emit showUpdateBannerChanged();
 }
 
-void GuiBehind::setBuddyName(QString name)
+void GuiBehind::setBuddyName(const QString &name)
 {
-    mSettings->saveBuddyName(name.replace(' ', ""));
+    mSettings->saveBuddyName(QString(name).replace(' ', ""));
     mDuktoProtocol.updateBuddyName();
     mBuddiesList.updateMeElement();
     emit buddyNameChanged();

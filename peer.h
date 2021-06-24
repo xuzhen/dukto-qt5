@@ -24,8 +24,8 @@
 class Peer
 {
 public:
-    Peer() { }
-    inline Peer(QHostAddress a, QString n, qint16 p) { address = a; name = n; port = p; }
+    Peer() = default;
+    Peer(const QHostAddress &a, const QString &n, const qint16 &p) : address(a), name(n), port(p) { }
     QHostAddress address;
     QString name;
     qint16 port;

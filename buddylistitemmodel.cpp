@@ -25,7 +25,7 @@
 #include "peer.h"
 
 BuddyListItemModel::BuddyListItemModel() :
-    QStandardItemModel(NULL)
+    QStandardItemModel(nullptr)
 {
     QHash<int, QByteArray> roleNames;
     roleNames[Ip] = "ip";
@@ -61,9 +61,9 @@ void BuddyListItemModel::addIpElement()
              QUrl(""));
 }
 
-void BuddyListItemModel::addBuddy(QString ip, qint16 port, QString username, QString system, QString platform, QUrl avatarPath)
+void BuddyListItemModel::addBuddy(const QString &ip, qint16 port, const QString &username, const QString &system, const QString &platform, const QUrl &avatarPath)
 {
-    QStandardItem* it = NULL;
+    QStandardItem* it = nullptr;
     bool add = true;
 
     // Check if the same IP is alreay in the buddy list
@@ -125,7 +125,7 @@ void BuddyListItemModel::addBuddy(QString ip, qint16 port, QString username, QSt
     }
 }
 
-void BuddyListItemModel::addBuddy(Peer &peer)
+void BuddyListItemModel::addBuddy(const Peer &peer)
 {
     static QRegularExpression rx("^(.*)\\sat\\s(.*)\\s\\((.*)\\)$");
     QRegularExpressionMatch match = rx.match(peer.name);
@@ -143,7 +143,7 @@ void BuddyListItemModel::addBuddy(Peer &peer)
              avatarPath);
 }
 
-void BuddyListItemModel::removeBuddy(QString ip)
+void BuddyListItemModel::removeBuddy(const QString &ip)
 {
     // Check for element
     if (!mItemsMap.contains(ip)) return;
@@ -163,15 +163,15 @@ void BuddyListItemModel::showSingleBack(int idx)
     itemFromIndex(index(idx, 0))->setData(true, BuddyListItemModel::ShowBack);
 }
 
-QString BuddyListItemModel::buddyNameByIp(QString ip)
+QString BuddyListItemModel::buddyNameByIp(const QString &ip)
 {
     if (!mItemsMap.contains(ip)) return "";
     return mItemsMap.value(ip)->data(BuddyListItemModel::Username).toString();
 }
 
-QStandardItem* BuddyListItemModel::buddyByIp(QString ip)
+QStandardItem* BuddyListItemModel::buddyByIp(const QString &ip)
 {
-    if (!mItemsMap.contains(ip)) return NULL;
+    if (!mItemsMap.contains(ip)) return nullptr;
     return mItemsMap.value(ip);
 }
 

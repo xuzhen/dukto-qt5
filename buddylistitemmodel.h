@@ -30,13 +30,13 @@ public:
     BuddyListItemModel();
     void addMeElement();
     void addIpElement();
-    void addBuddy(QString ip, qint16 port, QString username, QString system, QString platform, QUrl avatarPath);
-    void addBuddy(Peer& peer);
-    void removeBuddy(QString ip);
+    void addBuddy(const QString &ip, qint16 port, const QString &username, const QString &system, const QString &platform, const QUrl &avatarPath);
+    void addBuddy(const Peer &peer);
+    void removeBuddy(const QString &ip);
     void showSingleBack(int idx);
     void updateMeElement();
-    QString buddyNameByIp(QString ip);
-    QStandardItem* buddyByIp(QString ip);
+    QString buddyNameByIp(const QString &ip);
+    QStandardItem* buddyByIp(const QString &ip);
     QString fistBuddyIp();
 
     enum BuddyRoles {
@@ -53,7 +53,7 @@ public:
 
 private:
     QHash<QString, QStandardItem*> mItemsMap;
-    QStandardItem* mMeItem;
+    QStandardItem* mMeItem = nullptr;
 };
 
 #endif // BUDDYLISTITEMMODEL_H

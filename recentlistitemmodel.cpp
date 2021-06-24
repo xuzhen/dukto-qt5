@@ -22,7 +22,7 @@
 #include <QLocale>
 
 RecentListItemModel::RecentListItemModel() :
-    QStandardItemModel(NULL)
+    QStandardItemModel(nullptr)
 {
     QHash<int, QByteArray> roleNames;
     roleNames[Name] = "name";
@@ -38,7 +38,7 @@ RecentListItemModel::RecentListItemModel() :
 const double BYTES_TO_KB = 1.0 / 1024;
 const double BYTES_TO_MB = 1.0 / 1048576;
 
-void RecentListItemModel::addRecent(QString name, QString value, QString type, QString sender, qint64 size)
+void RecentListItemModel::addRecent(const QString &name, const QString &value, const QString &type, const QString &sender, qint64 size)
 {
     QStandardItem* it = new QStandardItem();
 

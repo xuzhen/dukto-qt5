@@ -31,7 +31,7 @@ class DuktoWindow : public QQuickWidget
 {
     Q_OBJECT
 public:
-    explicit DuktoWindow(GuiBehind* gb, Settings *settings, QWidget *parent = 0);
+    explicit DuktoWindow(GuiBehind* gb, Settings *settings, QWidget *parent = nullptr);
     virtual ~DuktoWindow();
     void showTaskbarProgress(uint percent);
     void hideTaskbarProgress();

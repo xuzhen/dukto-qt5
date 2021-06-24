@@ -37,7 +37,7 @@ class DestinationBuddy : public QObject
     Q_PROPERTY(QString showBack READ showBack NOTIFY showBackChanged)
 
 public:
-    explicit DestinationBuddy(QObject *parent = 0);
+    explicit DestinationBuddy(QObject *parent = nullptr);
     inline QString ip() { return mIp; }
     inline qint16 port() { return mPort; }
     inline QString username() { return mUsername; }
@@ -65,7 +65,7 @@ public slots:
 
 private:
     QString mIp;
-    qint16 mPort;
+    qint16 mPort = 0;
     QString mUsername;
     QString mSystem;
     QString mPlatform;
