@@ -145,6 +145,15 @@ if(WIN32)
     endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif(WIN32)
 
+If (APPLE)
+    SET( MACOSX_BUNDLE_ICON_FILE dukto.icns )
+    SET_SOURCE_FILES_PROPERTIES( "dukto.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
+    target_sources(${PROJECT_NAME} PRIVATE ${MACOSX_BUNDLE_ICON_FILE})
+    set_property(TARGET ${PROJECT_NAME} PROPERTY MACOSX_BUNDLE 1)
+    find_library(CORE_SERVICES CoreServices REQUIRED)
+    target_link_options(${PROJECT_NAME} PRIVATE "${CORE_SERVICES}/CoreServices.tbd")
+endif()
+
 if(UNIX AND NOT APPLE)
     install(TARGETS ${PROJECT_NAME}
             DESTINATION bin)
