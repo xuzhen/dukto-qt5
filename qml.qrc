@@ -1,57 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>qml/dukto/Klill-Light.ttf</file>
-        <file>qml/dukto/LiberationSans-Regular.ttf</file>
-        <file>qml/dukto/KGLikeASkyscraper.ttf</file>
-        <file>qml/dukto/UpdatesBox.qml</file>
-        <file>qml/dukto/ColorBox.qml</file>
-        <file>qml/dukto/SText.qml</file>
-        <file>qml/dukto/SmoothText.qml</file>
-        <file>qml/dukto/AboutPage.qml</file>
-        <file>qml/dukto/AppleLogo.png</file>
-        <file>qml/dukto/BackIcon.png</file>
-        <file>qml/dukto/BackIconDark.png</file>
-        <file>qml/dukto/TileGradient.png</file>
-        <file>qml/dukto/PanelGradient.png</file>
-        <file>qml/dukto/BottomShadow.png</file>
-        <file>qml/dukto/TopShadow.png</file>
-        <file>qml/dukto/BuddiesPage.qml</file>
-        <file>qml/dukto/BuddyListElement.qml</file>
-        <file>qml/dukto/Button.qml</file>
-        <file>qml/dukto/ButtonDark.qml</file>
-        <file>qml/dukto/ConfigIcon.png</file>
-        <file>qml/dukto/Dukto.qml</file>
-        <file>qml/dukto/DuktoInner.qml</file>
-        <file>qml/dukto/DuktoMetroIcon.png</file>
-        <file>qml/dukto/DuktoOverlay.qml</file>
-        <file>qml/dukto/IpLogo.png</file>
-        <file>qml/dukto/IpPage.qml</file>
-        <file>qml/dukto/LinuxLogo.png</file>
-        <file>qml/dukto/MoreIcon.png</file>
-        <file>qml/dukto/MessagePage.qml</file>
-        <file>qml/dukto/OpenFolderIcon.png</file>
-        <file>qml/dukto/PcLogo.png</file>
-        <file>qml/dukto/ProgressPage.qml</file>
-        <file>qml/dukto/RecentFile.png</file>
-        <file>qml/dukto/RecentFiles.png</file>
-        <file>qml/dukto/RecentPage.qml</file>
-        <file>qml/dukto/RecentText.png</file>
-        <file>qml/dukto/SendPage.qml</file>
-        <file>qml/dukto/SettingsPage.qml</file>
-        <file>qml/dukto/ShowIpIcon.png</file>
-        <file>qml/dukto/ShowTextPage.qml</file>
-        <file>qml/dukto/TermsPage.qml</file>
-        <file>qml/dukto/SmartphoneLogo.png</file>
-        <file>qml/dukto/SymbianLogo.png</file>
-        <file>qml/dukto/TabBar.qml</file>
-        <file>qml/dukto/ToolBar.qml</file>
-        <file>qml/dukto/UnknownLogo.png</file>
-        <file>qml/dukto/WindowsLogo.png</file>
-        <file>qml/dukto/IosLogo.png</file>
-        <file>qml/dukto/SBPicker.qml</file>
-        <file>qml/dukto/ColorPicker.qml</file>
-        <file>qml/dukto/ColorSlider.qml</file>
-        <file>qml/dukto/ColorUtils.js</file>
         <file>dukto.png</file>
     </qresource>
 </RCC>

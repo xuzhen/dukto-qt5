@@ -26,16 +26,15 @@
 #include <QNetworkAccessManager>
 #include <QSysInfo>
 #include <QLocale>
-#include <QDebug>
 
-UpdatesChecker::UpdatesChecker() :
-    mNetworkAccessManager(NULL)
+UpdatesChecker::UpdatesChecker(QObject *parent) :
+    QThread(parent)
 {
 }
 
 UpdatesChecker::~UpdatesChecker()
 {
-    if (mNetworkAccessManager) delete mNetworkAccessManager;
+    delete mNetworkAccessManager;
 }
 
 void UpdatesChecker::run()
@@ -43,12 +42,14 @@ void UpdatesChecker::run()
     // Get platform data
     QString osver;
     QString os = Platform::getPlatformName().toLower();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    osver = QSysInfo::kernelVersion();
+#else
 #if defined(Q_OS_WIN)
     osver = QString::number(QSysInfo::WindowsVersion);
 #elif defined(Q_OS_MAC)
     osver = QString::number(QSysInfo::MacintoshVersion);
-#elif defined(Q_WS_S60)
-    osver = QString::number(QSysInfo::symbianVersion());
+#endif
 #endif
     QString ver = "6.0";
     QString locale = QLocale::system().name();
@@ -56,7 +57,7 @@ void UpdatesChecker::run()
     // Send check request
     QNetworkRequest request(QUrl("http://www.msec.it/dukto/r5check.php?ver=" + ver + "&locale=" + locale + "&os=" + os + "&osver=" + osver));
     mNetworkAccessManager = new QNetworkAccessManager();
-    connect(mNetworkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(updatedDataReady(QNetworkReply*)));
+    connect(mNetworkAccessManager, &QNetworkAccessManager::finished, this, &UpdatesChecker::updatedDataReady);
     mNetworkAccessManager->get(request);
 
     exec();

@@ -19,37 +19,38 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
-#include "qmlapplicationviewer.h"
 #include "systemtray.h"
 
+#include "settings.h"
 #include "guibehind.h"
 #include "duktowindow.h"
 
-#if defined(Q_WS_S60)
-#define SYMBIAN
+#ifdef SINGLE_APP
+#include <singleapplication.h>
+#ifdef Q_OS_WIN
+#include <windows.h>
 #endif
-
-#if defined(Q_WS_SIMULATOR)
-#define SYMBIAN
-#endif
-
-#if !defined(SYMBIAN) && defined(SINGLE_APP)
-#include "qtsingleapplication.h"
 #endif
 
 int main(int argc, char *argv[])
 {
-#if defined (Q_OS_WIN)
+#ifdef Q_OS_WIN
     qputenv("QML_ENABLE_TEXT_IMAGE_CACHE", "true");
 #endif
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    qputenv("QSG_RHI_BACKEND", "gl");
+#endif
 
-#if defined(SYMBIAN) || !defined(SINGLE_APP)
+#ifndef SINGLE_APP
     QApplication app(argc, argv);
 #else
-    // Check for single running instance    
-    QtSingleApplication app(argc, argv);
-    if (app.isRunning()) {
-        app.sendMessage("FOREGROUND");
+    // Check for single running instance
+    SingleApplication app(argc, argv, true);
+    if (app.isSecondary()) {
+#ifdef Q_OS_WIN
+        AllowSetForegroundWindow(static_cast<DWORD>(app.primaryPid()));
+#endif
+        app.sendMessage(QByteArray("A"));
         return 0;
     }
 #endif
@@ -59,26 +60,28 @@ int main(int argc, char *argv[])
     parser.addHelpOption();
     QCommandLineOption hideOption(QStringList() << "H" << "hide", "Hide when launched");
     parser.addOption(hideOption);
+    parser.process(app);
+
+    Settings settings;
+
+    GuiBehind gb(&settings);
+    app.installEventFilter(&gb);
     
-    DuktoWindow viewer;
-#if !defined(SYMBIAN) && defined(SINGLE_APP)
-    app.setActivationWindow(&viewer, true);
+    DuktoWindow viewer(&gb, &settings);
+#ifdef SINGLE_APP
+    QObject::connect(&app, &SingleApplication::receivedMessage, [&viewer]()->void {
+        if (viewer.isMinimized()) {
+            viewer.showNormal();
+        }
+        viewer.activateWindow();
+    });
 #endif
+
     SystemTray tray(viewer);
     tray.show();
-    GuiBehind gb(&viewer);
 
-#ifndef Q_WS_S60
-    viewer.showExpanded();
-    app.installEventFilter(&gb);
-#else
-    viewer.showFullScreen();
-    gb.initConnection();
-#endif
-    
-    parser.process(app);
-    if (parser.isSet(hideOption))
-        viewer.setVisible(false);
+    gb.setViewer(&viewer, &tray);
+    viewer.setVisible(!parser.isSet(hideOption));
     
     return app.exec();
 }

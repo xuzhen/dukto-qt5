@@ -1,16 +1,12 @@
-# Add more folders to ship with the application, here
-#qml_folder.source = qml/dukto
-#qml_folder.target = qml
-#DEPLOYMENTFOLDERS = qml_folder
-
-# Additional import path used to resolve QML modules in Creator's code model
-QML_IMPORT_PATH =
-
-QT += network
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += network qml quickwidgets
+CONFIG += c++11
 
 TARGET = dukto
 TEMPLATE = app
+
+DEFINES += UNICODE
+
+CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG_OUTPUT
 
 VERSION = 6.0.0
 
@@ -26,11 +22,6 @@ unix {
     INSTALLS += desktop
 }
 
-# If your application uses the Qt Mobility libraries, uncomment the following
-# lines and add the respective components to the MOBILITY variable.
-# CONFIG += mobility
-# MOBILITY +=
-
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
     guibehind.cpp \
@@ -45,10 +36,6 @@ SOURCES += main.cpp \
     theme.cpp \
     updateschecker.cpp \
     systemtray.cpp
-
-# Please do not modify the following two lines. Required for deployment.
-include(qmlapplicationviewer/qmlapplicationviewer.pri)
-qtcAddDeployment()
 
 HEADERS += \
     guibehind.h \
@@ -66,33 +53,48 @@ HEADERS += \
     systemtray.h
 
 RESOURCES += \
-    qml.qrc
+    qml.qrc \
+    qml/common/common.qrc
 
-DEFINES += UPDATER SINGLE_APP
-include(qtsingleapplication/qtsingleapplication.pri)
+greaterThan(QT_MAJOR_VERSION, 5) {
+    RESOURCES += qml/new/main.qrc
+} else {
+    lessThan(QT_MINOR_VERSION, 15) {
+        RESOURCES += qml/old/main.qrc
+    } else {
+        RESOURCES += qml/new/main.qrc
+    }
+}
+
+# FIXME: Site is down, no longer works
+#DEFINES += UPDATER
+
+DEFINES += SINGLE_APP
+contains(DEFINES, SINGLE_APP) {
+    include(modules/SingleApplication/singleapplication.pri)
+    DEFINES += QAPPLICATION_CLASS=QApplication
+}
+
+# Get notifications from system tray
+#DEFINES += NOTIFY_NATIVE_TRAY
 
 OTHER_FILES += CMakeLists.txt
 
 win32 {
     RC_FILE = dukto.rc
-    LIBS += libWs2_32 libole32 libNetapi32
+    msvc:LIBS += ws2_32.lib ole32.lib user32.lib
+    gcc:LIBS += -lws2_32 -lole32 -luser32
     HEADERS += ecwin7.h
     SOURCES += ecwin7.cpp
 }
 
 mac:ICON = dukto.icns
 
-# Smart Installer package's UID
-# This UID is from the protected range and therefore the package will
-# fail to install if self-signed. By default qmake uses the unprotected
-# range value if unprotected UID is defined for the application and
-# 0x2002CCCF value if protected UID is given to the application
-#symbian:DEPLOYMENT.installer_header = 0x2002CCCF
-
-# Allow network access on Symbian
-symbian:TARGET.CAPABILITY += NetworkServices
-
-### libnotify
-CONFIG+=link_pkgconfig
-PKGCONFIG+=libnotify
-DEFINES+=NOTIFY_LIBNOTIFY
+linux {
+    !contains(DEFINES, NOTIFY_NATIVE_TRAY) {
+        ### libnotify
+        CONFIG+=link_pkgconfig
+        PKGCONFIG+=libnotify
+        DEFINES+=NOTIFY_LIBNOTIFY
+    }
+}

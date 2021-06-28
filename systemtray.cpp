@@ -28,8 +28,6 @@
 #include <QAction>
 #include <QApplication>
 
-SystemTray* SystemTray::tray = NULL;
-
 SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
     QSystemTrayIcon(QIcon(":/dukto.png"), parent),
     window(window)
@@ -37,15 +35,14 @@ SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
 #if defined(NOTIFY_LIBNOTIFY)
     notify_init ("Dukto");
 #endif
-    connect(this, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(on_activated(QSystemTrayIcon::ActivationReason)));
-    SystemTray::tray = this;
+    connect(this, &SystemTray::activated, this, &SystemTray::on_activated);
     
     QMenu *trayMenu = new QMenu(&window);
     QAction *ShowHide = new QAction(QString("Show/Hide"), trayMenu);
     connect(ShowHide, &QAction::triggered, [=]() { on_activated(QSystemTrayIcon::Trigger); });
     trayMenu->addAction(ShowHide);
     QAction *Exit = new QAction(QString("Exit"), trayMenu);
-    connect(Exit, &QAction::triggered, [=]() { QApplication::quit(); });
+    connect(Exit, &QAction::triggered, [=]() { on_activated(QSystemTrayIcon::MiddleClick); });
     trayMenu->addAction(Exit);
     this->setContextMenu(trayMenu);
     
@@ -90,13 +87,13 @@ void SystemTray::received_text(QString* text, qint64)
     notify("Recieved Text Snippet", *text);
 }
 
-void SystemTray::notify(QString title, QString body)
+void SystemTray::notify(const QString &title, const QString &body)
 {
 #if defined(NOTIFY_NATIVE_TRAY)
     this->showMessage(title, body);
 #elif defined(NOTIFY_LIBNOTIFY)
-    NotifyNotification* msg = notify_notification_new(title.toUtf8().constData(), body.toUtf8().constData(), NULL);
-    notify_notification_show (msg, NULL);
+    NotifyNotification* msg = notify_notification_new(title.toUtf8().constData(), body.toUtf8().constData(), nullptr);
+    notify_notification_show (msg, nullptr);
     g_object_unref(G_OBJECT(msg));
 #else
     Q_UNUSED(title);

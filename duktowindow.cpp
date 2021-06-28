@@ -21,42 +21,73 @@
 #include "platform.h"
 #include "settings.h"
 
+#ifdef Q_OS_WIN
+#include "ecwin7.h"
+#endif
+
+#include <QQmlEngine>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QMimeData>
 
-DuktoWindow::DuktoWindow(QWidget *parent) :
-    QmlApplicationViewer(parent), mGuiBehind(NULL)
+DuktoWindow::DuktoWindow(GuiBehind *gb, Settings *settings, QWidget *parent) :
+    QQuickWidget(parent), mGuiBehind(gb), mSettings(settings)
 {
     // Configure window
     setAcceptDrops(true);
     setWindowTitle("Dukto");
-#ifndef Q_WS_S60
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
     setMaximumSize(350, 5000);
     setMinimumSize(350, 500);
+    setResizeMode(QQuickWidget::SizeRootObjectToView);
+    connect(engine(), &QQmlEngine::quit, this, &DuktoWindow::close);
+}
+
+DuktoWindow::~DuktoWindow() {
+#ifdef Q_OS_WIN
+    delete mWin7;
 #endif
-    setOrientation(QmlApplicationViewer::ScreenOrientationLockPortrait);
+}
+
+void DuktoWindow::showTaskbarProgress(uint percent) {
+#ifdef Q_OS_WIN
+    if (mWin7 != nullptr) {
+        mWin7->setProgressState(EcWin7::Normal);
+        mWin7->setProgressValue(percent, 100);
+    }
+#else
+    Q_UNUSED(percent)
+#endif
+}
+
+void DuktoWindow::hideTaskbarProgress() {
+#ifdef Q_OS_WIN
+    if (mWin7 != nullptr) {
+        mWin7->setProgressState(EcWin7::NoProgress);
+    }
+#endif
+}
+
+void DuktoWindow::stopTaskbarProgress() {
+#ifdef Q_OS_WIN
+    if (mWin7 != nullptr) {
+        mWin7->setProgressState(EcWin7::Error);
+    }
+#endif
+}
 
 #ifdef Q_OS_WIN
-    // Taskbar integration with Win7
-    mWin7.init(this->winId());
-#endif
-}
-
-#ifdef Q_OS_WIN
-bool DuktoWindow::winEvent(MSG* message, long* result)
-{
-    return mWin7.winEvent(message, result);
+bool DuktoWindow::nativeEvent(const QByteArray &eventType, void *message, long *result) {
+    Q_UNUSED(eventType)
+    if (mWin7 != nullptr) {
+        return mWin7->winEvent(reinterpret_cast<MSG*>(message), result);
+    } else {
+        return false;
+    }
 }
 #endif
-
-void DuktoWindow::setGuiBehindReference(GuiBehind* ref)
-{
-    mGuiBehind = ref;
-}
 
 void DuktoWindow::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -88,8 +119,17 @@ void DuktoWindow::dropEvent(QDropEvent *event)
     mGuiBehind->sendDroppedFiles(&files);
 }
 
-void DuktoWindow::closeEvent(QCloseEvent*)
+void DuktoWindow::closeEvent(QCloseEvent *)
 {
-    mGuiBehind->settings()->saveWindowGeometry(saveGeometry());
-    mGuiBehind->close();
+    mSettings->saveWindowGeometry(saveGeometry());
+}
+
+void DuktoWindow::showEvent(QShowEvent *event) {
+    Q_UNUSED(event)
+#ifdef Q_OS_WIN
+    // Taskbar integration with Win7+
+    if (mWin7 == nullptr) {
+        mWin7 = new EcWin7(this->windowHandle());
+    }
+#endif
 }

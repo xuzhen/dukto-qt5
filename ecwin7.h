@@ -21,7 +21,6 @@
 #define ECWIN7_H
 
 #include <QtGlobal>
-#include <QWidget>
 
 // Windows only data definitions
 #ifdef Q_OS_WIN
@@ -107,6 +106,8 @@ typedef ITaskbarList3 *LPITaskbarList3;
 // ********************************************************************
 // EcWin7 class - Windows 7 taskbar handling for Qt and MinGW
 
+#include <QWindow>
+
 class EcWin7
 {
 public:
@@ -120,19 +121,18 @@ public:
     };
 
     // Initialization methods
-    EcWin7();
-    void init(WId wid);
+    explicit EcWin7(QWindow *window);
     bool winEvent(MSG * message, long * result);
     // Overlay icon handling
-    void setOverlayIcon(QString iconName, QString description);
+    void setOverlayIcon(const QString &iconName, const QString &description);
     void setProgressValue(int value, int max);
     void setProgressState(ToolBarProgressState state);
 
 private:
-    WId mWindowId;
+    HWND mWindowId;
     UINT mTaskbarMessageId;
-    ITaskbarList3 *mTaskbar;
-    HICON mOverlayIcon;
+    ITaskbarList3 *mTaskbar = nullptr;
+    HICON mOverlayIcon = nullptr;
 };
 #endif
 

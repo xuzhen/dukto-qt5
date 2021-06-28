@@ -29,10 +29,10 @@ class Theme : public QObject
     Q_PROPERTY(QString color3 READ color3 NOTIFY color3Changed)
 
 public:
-    explicit Theme(QObject *parent = 0);
+    explicit Theme(QObject *parent = nullptr);
     inline QString color2() { return mColor2; }
     inline QString color3() { return mColor3; }
-    void setThemeColor(QString color);
+    void setThemeColor(const QString &color);
 
     static const QString DEFAULT_THEME_COLOR;
 
@@ -41,9 +41,9 @@ signals:
     void color3Changed();
 
 public slots:
-    float getHue(QString color);
-    float getSaturation(QString color);
-    float getLightness(QString color);
+    float getHue(const QString &color);
+    float getSaturation(const QString &color);
+    float getLightness(const QString &color);
 
 private:
     QString mColor2;

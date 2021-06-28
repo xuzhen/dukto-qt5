@@ -28,7 +28,7 @@ class UpdatesChecker : public QThread
 {
     Q_OBJECT
 public:
-    explicit UpdatesChecker();
+    explicit UpdatesChecker(QObject *parent = nullptr);
     virtual ~UpdatesChecker();
     void run();
 
@@ -39,7 +39,7 @@ public slots:
     void updatedDataReady(QNetworkReply *reply);
 
 private:
-    QNetworkAccessManager *mNetworkAccessManager;
+    QNetworkAccessManager *mNetworkAccessManager = nullptr;
 };
 
 #endif

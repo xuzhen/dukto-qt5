@@ -25,17 +25,17 @@
 class Settings : public QObject
 {
 public:
-    explicit Settings(QObject *parent = 0);
+    explicit Settings(QObject *parent = nullptr);
     QString currentPath();
-    void savePath(QString path);
-    void saveWindowGeometry(QByteArray geo);
+    void savePath(const QString &path);
+    void saveWindowGeometry(const QByteArray &geo);
     QByteArray windowGeometry();
-    void saveThemeColor(QString color);
+    void saveThemeColor(const QString &color);
     QString themeColor();
     void saveShowTermsOnStart(bool show);
     bool showTermsOnStart();
     QString buddyName();
-    void saveBuddyName(QString name);
+    void saveBuddyName(const QString &name);
 
 private:
     QSettings mSettings;

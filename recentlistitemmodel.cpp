@@ -19,9 +19,10 @@
 #include "recentlistitemmodel.h"
 
 #include <QDateTime>
+#include <QLocale>
 
 RecentListItemModel::RecentListItemModel() :
-    QStandardItemModel(NULL)
+    QStandardItemModel(nullptr)
 {
     QHash<int, QByteArray> roleNames;
     roleNames[Name] = "name";
@@ -31,23 +32,23 @@ RecentListItemModel::RecentListItemModel() :
     roleNames[DateTime] = "dateTime";
     roleNames[Sender] = "sender";
     roleNames[Size] = "size";
-#if QT_VERSION >= QT_VERSION_CHECK(5,0,0)
     setItemRoleNames(roleNames);
-#else
-    setRoleNames(roleNames);
-#endif
 }
 
 const double BYTES_TO_KB = 1.0 / 1024;
 const double BYTES_TO_MB = 1.0 / 1048576;
 
-void RecentListItemModel::addRecent(QString name, QString value, QString type, QString sender, qint64 size)
+void RecentListItemModel::addRecent(const QString &name, const QString &value, const QString &type, const QString &sender, qint64 size)
 {
     QStandardItem* it = new QStandardItem();
 
     // Format timestamp
     QDateTime now = QDateTime::currentDateTime();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    QString datetime = QLocale::system().toString(now, QLocale::ShortFormat);
+#else
     QString datetime = now.toString(Qt::SystemLocaleShortDate);
+#endif
 
     // Convert size data
     QString sizeFormatted;

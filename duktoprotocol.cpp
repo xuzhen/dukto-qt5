@@ -41,35 +41,28 @@ enum MSG_TYPE {
     MSG_HELLO_PORT_UNICAST = 0x05
 };
 
-DuktoProtocol::DuktoProtocol()
-    : mSocket(NULL), mTcpServer(NULL), mCurrentSocket(NULL),
-        mCurrentFile(NULL), mFilesToSend(NULL)
+DuktoProtocol::DuktoProtocol(QObject *parent)
+    : QObject(parent), mLocalUdpPort(DEFAULT_UDP_PORT), mLocalTcpPort(DEFAULT_TCP_PORT)
 {
-    mLocalUdpPort = DEFAULT_UDP_PORT;
-    mLocalTcpPort = DEFAULT_TCP_PORT;
-
-    mIsSending = false;
-    mIsReceiving = false;
-    mSendingScreen = false;
 }
 
 DuktoProtocol::~DuktoProtocol()
 {
-    if (mCurrentSocket) delete mCurrentSocket;
-    if (mSocket) delete mSocket;
-    if (mTcpServer) delete mTcpServer;
-    if (mCurrentFile) delete mCurrentFile;
+    delete mCurrentSocket;
+    delete mSocket;
+    delete mTcpServer;
+    delete mCurrentFile;
 }
 
 void DuktoProtocol::initialize()
 {
     mSocket = new QUdpSocket(this);
     mSocket->bind(QHostAddress::Any, mLocalUdpPort);
-    connect(mSocket, SIGNAL(readyRead()), this, SLOT(newUdpData()));
+    connect(mSocket, &QUdpSocket::readyRead, this, &DuktoProtocol::newUdpData);
 
     mTcpServer = new QTcpServer(this);
     mTcpServer->listen(QHostAddress::Any, mLocalTcpPort);
-    connect(mTcpServer, SIGNAL(newConnection()), this, SLOT(newIncomingConnection()));
+    connect(mTcpServer, &QTcpServer::newConnection, this, &DuktoProtocol::newIncomingConnection);
 }
 
 void DuktoProtocol::setPorts(qint16 udp, qint16 tcp)
@@ -78,23 +71,23 @@ void DuktoProtocol::setPorts(qint16 udp, qint16 tcp)
     mLocalTcpPort = tcp;
 }
 
-QString DuktoProtocol::getSystemSignature()
+QByteArray DuktoProtocol::getSystemSignature()
 {
-    static QString signature;
+    static QByteArray signature;
     if (!signature.isEmpty()) return signature;
 
-    signature = Platform::getSystemUsername()
+    signature = (Platform::getSystemUsername()
               + " at " + Platform::getHostname()
-              + " (" + Platform::getPlatformName() + ")";
+              + " (" + Platform::getPlatformName() + ")").toUtf8();
     return signature;
 }
 
-void DuktoProtocol::sayHello(QHostAddress dest)
+void DuktoProtocol::sayHello(const QHostAddress &dest)
 {
     sayHello(dest, mLocalUdpPort);
 }
 
-void DuktoProtocol::sayHello(QHostAddress dest, qint16 port)
+void DuktoProtocol::sayHello(const QHostAddress &dest, qint16 port)
 {
     // Preparazione pacchetto
     QByteArray packet;
@@ -159,38 +152,38 @@ void DuktoProtocol::newUdpData()
      }
 }
 
-void DuktoProtocol::handleMessage(QByteArray &data, QHostAddress &sender)
+void DuktoProtocol::handleMessage(const QByteArray &data, const QHostAddress &sender)
 {
     char msgtype = data.at(0);
 
     switch(msgtype)
     {
         case MSG_HELLO_BROADCAST:
-        case MSG_HELLO_UNICAST:
-            data.remove(0, 1);
-            if (data != getSystemSignature()) {
-                mPeers[sender.toString()] = Peer(sender, QString::fromUtf8(data), DEFAULT_UDP_PORT);
+        case MSG_HELLO_UNICAST: {
+            QByteArray signature = data.mid(1);
+            if (signature != getSystemSignature()) {
+                mPeers[sender.toString()] = Peer(sender, QString::fromUtf8(signature), DEFAULT_UDP_PORT);
                 if (msgtype == MSG_HELLO_BROADCAST) sayHello(sender, DEFAULT_UDP_PORT);
                 emit peerListAdded(mPeers[sender.toString()]);
             }
             break;
-
+        }
         case MSG_GOODBYE:
             emit peerListRemoved(mPeers[sender.toString()]);
             mPeers.remove(sender.toString());
             break;
 
         case MSG_HELLO_PORT_BROADCAST:
-        case MSG_HELLO_PORT_UNICAST:
-            data.remove(0, 1);
-            qint16 port = *((qint16*) data.constData());
-            data.remove(0, 2);
-            if (data != getSystemSignature()) {
-                mPeers[sender.toString()] = Peer(sender, QString::fromUtf8(data), port);
+        case MSG_HELLO_PORT_UNICAST: {
+            qint16 port = *(reinterpret_cast<const qint16*>(data.constData() + 1));
+            QByteArray signature = data.mid(3);
+            if (signature != getSystemSignature()) {
+                mPeers[sender.toString()] = Peer(sender, QString::fromUtf8(signature), port);
                 if (msgtype == MSG_HELLO_PORT_BROADCAST) sayHello(sender, port);
                 emit peerListAdded(mPeers[sender.toString()]);
             }
             break;
+        }
     }
 
 }
@@ -200,7 +193,7 @@ void DuktoProtocol::newIncomingConnection()
 {
     // Recieve connection
     QTcpSocket* s = mTcpServer->nextPendingConnection();
-    if(s == NULL) return;
+    if(s == nullptr) return;
 
     // If we are already recieving or sending
     // Pending header connection (timeout 10 sec)
@@ -212,14 +205,14 @@ void DuktoProtocol::newIncomingConnection()
     }
 
     // Update GUI
-    receiveFileStart(s->peerAddress().toString());
+    emit receiveFileStart(s->peerAddress().toString());
 
     // set current TCP socket
     mCurrentSocket = s;
 
     // Register socket's event handlers
-    connect(mCurrentSocket, SIGNAL(readyRead()), this, SLOT(readNewData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(disconnected()), this, SLOT(closedConnectionTmp()), Qt::QueuedConnection);
+    connect(mCurrentSocket, &QTcpSocket::readyRead, this, &DuktoProtocol::readNewData, Qt::DirectConnection);
+    connect(mCurrentSocket, &QTcpSocket::disconnected, this, &DuktoProtocol::closedConnectionTmp, Qt::QueuedConnection);
 
     // Initialize variables
     mIsReceiving = true;
@@ -306,12 +299,12 @@ void DuktoProtocol::readNewData()
                             mCurrentSocket->disconnectFromHost();
                             mCurrentSocket->close();
                             mCurrentSocket->deleteLater();
-                            mCurrentSocket = NULL;
+                            mCurrentSocket = nullptr;
                         }
 
                         // Rilascio memoria
                         delete mReceivedFiles;
-                        mReceivedFiles = NULL;
+                        mReceivedFiles = nullptr;
 
                         // Impostazione stato
                         mIsReceiving = false;
@@ -327,7 +320,7 @@ void DuktoProtocol::readNewData()
                     mReceivedFiles->append(name);
                     mReceivingText = true;
                     mTextToReceive.clear();
-                    mCurrentFile = NULL;
+                    mCurrentFile = nullptr;
                 }
 
                 // Altrimenti creo il nuovo file
@@ -358,12 +351,12 @@ void DuktoProtocol::readNewData()
                             mCurrentSocket->disconnectFromHost();
                             mCurrentSocket->close();
                             mCurrentSocket->deleteLater();
-                            mCurrentSocket = NULL;
+                            mCurrentSocket = nullptr;
                         }
 
                         // Rilascio memoria
                         delete mReceivedFiles;
-                        mReceivedFiles = NULL;
+                        mReceivedFiles = nullptr;
 
                         // Impostazione stato
                         mIsReceiving = false;
@@ -400,7 +393,7 @@ void DuktoProtocol::readNewData()
                     if (!mReceivingText)
                     {
                         mCurrentFile->deleteLater();
-                        mCurrentFile = NULL;
+                        mCurrentFile = nullptr;
                     }
                     mRecvStatus = FILENAME;
                 }
@@ -413,7 +406,7 @@ void DuktoProtocol::readNewData()
 
 void DuktoProtocol::closedConnectionTmp()
 {
-    QTimer::singleShot(500, this, SLOT(closedConnection()));
+    QTimer::singleShot(500, this, &DuktoProtocol::closedConnection);
 }
 
 // Chiusura della connessione TCP in ricezione
@@ -429,19 +422,19 @@ void DuktoProtocol::closedConnection()
         name = mCurrentFile->fileName();
         mCurrentFile->close();
         delete mCurrentFile;
-        mCurrentFile = NULL;
+        mCurrentFile = nullptr;
         QFile::remove(name);
-        receiveFileCancelled();
+        emit receiveFileCancelled();
     }
     else if (!mReceivingText) // Receiving file ended
     {
-        receiveFileComplete(mReceivedFiles, mTotalSize);
+        emit receiveFileComplete(mReceivedFiles, mTotalSize);
         // TODO: notify for recieving file
     }
     else // Receiving text ended
     {
         QString rec = QString::fromUtf8(mTextToReceive);
-        receiveTextComplete(&rec, mTotalSize);
+        emit receiveTextComplete(&rec, mTotalSize);
         // TODO: notify for recieving text
     }
 
@@ -452,18 +445,18 @@ void DuktoProtocol::closedConnection()
         mCurrentSocket->disconnectFromHost();
         mCurrentSocket->close();
         mCurrentSocket->deleteLater();
-        mCurrentSocket = NULL;
+        mCurrentSocket = nullptr;
     }
 
     // release memory
     delete mReceivedFiles;
-    mReceivedFiles = NULL;
+    mReceivedFiles = nullptr;
 
     // reset status
     mIsReceiving = false;
 }
 
-void DuktoProtocol::sendFile(QString ipDest, qint16 port, QStringList files)
+void DuktoProtocol::sendFile(const QString &ipDest, qint16 port, const QStringList &files)
 {
     // Check for default port
     if (port == 0) port = DEFAULT_TCP_PORT;
@@ -480,15 +473,19 @@ void DuktoProtocol::sendFile(QString ipDest, qint16 port, QStringList files)
     mCurrentSocket = new QTcpSocket(this);
 
     // Gestione segnali
-    connect(mCurrentSocket, SIGNAL(connected()), this, SLOT(sendMetaData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(sendConnectError(QAbstractSocket::SocketError)), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(sendData(qint64)), Qt::DirectConnection);
+    connect(mCurrentSocket, &QTcpSocket::connected, this, &DuktoProtocol::sendMetaData, Qt::DirectConnection);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(mCurrentSocket, &QTcpSocket::errorOccurred, this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#else
+    connect(mCurrentSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#endif
+    connect(mCurrentSocket, &QTcpSocket::bytesWritten, this, &DuktoProtocol::sendData, Qt::DirectConnection);
 
     // Connessione
     mCurrentSocket->connectToHost(ipDest, port);
 }
 
-void DuktoProtocol::sendText(QString ipDest, qint16 port, QString text)
+void DuktoProtocol::sendText(const QString &ipDest, qint16 port, const QString &text)
 {
     // Check for default port
     if (port == 0) port = DEFAULT_TCP_PORT;
@@ -505,13 +502,17 @@ void DuktoProtocol::sendText(QString ipDest, qint16 port, QString text)
 
     // Connessione al destinatario
     mCurrentSocket = new QTcpSocket(this);
-    connect(mCurrentSocket, SIGNAL(connected()), this, SLOT(sendMetaData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(sendConnectError(QAbstractSocket::SocketError)), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(sendData(qint64)), Qt::DirectConnection);
+    connect(mCurrentSocket, &QTcpSocket::connected, this, &DuktoProtocol::sendMetaData, Qt::DirectConnection);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(mCurrentSocket, &QTcpSocket::errorOccurred, this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#else
+    connect(mCurrentSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#endif
+    connect(mCurrentSocket, &QTcpSocket::bytesWritten, this, &DuktoProtocol::sendData, Qt::DirectConnection);
     mCurrentSocket->connectToHost(ipDest, port);
 }
 
-void DuktoProtocol::sendScreen(QString ipDest, qint16 port, QString path)
+void DuktoProtocol::sendScreen(const QString &ipDest, qint16 port, const QString &path)
 {
     // Check for default port
     if (port == 0) port = DEFAULT_TCP_PORT;
@@ -531,9 +532,13 @@ void DuktoProtocol::sendScreen(QString ipDest, qint16 port, QString path)
     mCurrentSocket = new QTcpSocket(this);
 
     // Gestione segnali
-    connect(mCurrentSocket, SIGNAL(connected()), this, SLOT(sendMetaData()), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(sendConnectError(QAbstractSocket::SocketError)), Qt::DirectConnection);
-    connect(mCurrentSocket, SIGNAL(bytesWritten(qint64)), this, SLOT(sendData(qint64)), Qt::DirectConnection);
+    connect(mCurrentSocket, &QTcpSocket::connected, this, &DuktoProtocol::sendMetaData, Qt::DirectConnection);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    connect(mCurrentSocket, &QTcpSocket::errorOccurred, this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#else
+    connect(mCurrentSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &DuktoProtocol::sendConnectError, Qt::DirectConnection);
+#endif
+    connect(mCurrentSocket, &QTcpSocket::bytesWritten, this, &DuktoProtocol::sendData, Qt::DirectConnection);
 
     // Connessione
     mCurrentSocket->connectToHost(ipDest, port);
@@ -645,12 +650,12 @@ void DuktoProtocol::closeCurrentTransfer(bool aborted)
         mCurrentSocket->waitForDisconnected(1000);
     mCurrentSocket->close();
     mCurrentSocket->deleteLater();
-    mCurrentSocket = NULL;
+    mCurrentSocket = nullptr;
     if (mCurrentFile)
     {
         mCurrentFile->close();
         delete mCurrentFile;
-        mCurrentFile = NULL;
+        mCurrentFile = nullptr;
     }
     mIsSending = false;
     if (!aborted)
@@ -674,16 +679,16 @@ void DuktoProtocol::sendConnectError(QAbstractSocket::SocketError e)
     {
         mCurrentSocket->close();
         mCurrentSocket->deleteLater();
-        mCurrentSocket = NULL;
+        mCurrentSocket = nullptr;
     }
     if (mCurrentFile)
     {
         mCurrentFile->close();
         delete mCurrentFile;
-        mCurrentFile = NULL;
+        mCurrentFile = nullptr;
     }
     mIsSending = false;
-    sendFileError(e);
+    emit sendFileError(e);
 }
 
 // Dato un elenco di file e cartelle, viene espanso in modo da
@@ -698,18 +703,18 @@ QStringList DuktoProtocol::expandTree(const QStringList& files)
 
     // Iterazione sugli elementi
     QStringList expanded;
-    for(QStringList::const_iterator iter = files.constBegin(); iter != files.constEnd(); ++iter)
-        addRecursive(expanded, *iter);
+    for(QStringList::const_iterator iter = files.constBegin(); iter != files.constEnd(); ++iter) {
+        QString path = QDir::cleanPath(*iter);
+        if (path.right(1) == "/") path.chop(1);
+        addRecursive(expanded, path);
+    }
 
     return expanded;
 }
 
 // Aggiunge ricorsivamente tutte le cartelle e file contenuti in una cartella
-void DuktoProtocol::addRecursive(QStringList& e, QString path)
+void DuktoProtocol::addRecursive(QStringList& e, const QString &path)
 {
-    path.replace("//", "/");
-    path.replace("\\", "/");
-    if (path.right(1) == "/") path.chop(1);
     e.append(path);
 
     QString tempPath = path + "/";
@@ -735,7 +740,7 @@ QByteArray DuktoProtocol::nextElementHeader()
     if (mCurrentFile) {
         mCurrentFile->close();
         delete mCurrentFile;
-        mCurrentFile = NULL;
+        mCurrentFile = nullptr;
     }
 
     // Verifico se si tratta di un invio testo

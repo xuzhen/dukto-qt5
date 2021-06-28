@@ -19,37 +19,40 @@
 #ifndef DUKTOWINDOW_H
 #define DUKTOWINDOW_H
 
-#include "qmlapplicationviewer/qmlapplicationviewer.h"
-#ifdef Q_OS_WIN
-#include "ecwin7.h"
-#endif
+#include <QQuickWidget>
 
+#ifdef Q_OS_WIN
+class EcWin7;
+#endif
 class GuiBehind;
+class Settings;
 
-class DuktoWindow : public QmlApplicationViewer
+class DuktoWindow : public QQuickWidget
 {
+    Q_OBJECT
 public:
-    explicit DuktoWindow(QWidget *parent = 0);
-    void setGuiBehindReference(GuiBehind* ref);
-#ifdef Q_OS_WIN
-    inline EcWin7* win7() { return &mWin7; }
-#endif
+    explicit DuktoWindow(GuiBehind* gb, Settings *settings, QWidget *parent = nullptr);
+    virtual ~DuktoWindow();
+    void showTaskbarProgress(uint percent);
+    void hideTaskbarProgress();
+    void stopTaskbarProgress();
 
 protected:
 #ifdef Q_OS_WIN
-    bool winEvent(MSG * message, long * result);
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
 #endif
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
     void dragLeaveEvent(QDragLeaveEvent *event);
     void dropEvent(QDropEvent *event);
     void closeEvent(QCloseEvent *);
+    void showEvent(QShowEvent *event);
 
 private:
     GuiBehind *mGuiBehind;
-
+    Settings *mSettings;
 #ifdef Q_OS_WIN
-    EcWin7 mWin7;
+    EcWin7 *mWin7 = nullptr;
 #endif
 };
 

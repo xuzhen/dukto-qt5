@@ -24,7 +24,6 @@
 #include <QtNetwork/QUdpSocket>
 #include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QTcpServer>
-#include <QtNetwork/QHostInfo>
 #include <QHash>
 #include <QFile>
 #include <QStringList>
@@ -36,17 +35,17 @@ class DuktoProtocol : public QObject
     Q_OBJECT
 
 public:
-    DuktoProtocol();
+    DuktoProtocol(QObject *parent = nullptr);
     virtual ~DuktoProtocol();
     void initialize();
     void setPorts(qint16 udp, qint16 tcp);
-    void sayHello(QHostAddress dest);
-    void sayHello(QHostAddress dest, qint16 port);
+    void sayHello(const QHostAddress &dest);
+    void sayHello(const QHostAddress &dest, qint16 port);
     void sayGoodbye();
     inline QHash<QString, Peer>& getPeers() { return mPeers; }
-    void sendFile(QString ipDest, qint16 port, QStringList files);
-    void sendText(QString ipDest, qint16 port, QString text);
-    void sendScreen(QString ipDest, qint16 port, QString path);
+    void sendFile(const QString &ipDest, qint16 port, const QStringList &files);
+    void sendText(const QString &ipDest, qint16 port, const QString &text);
+    void sendScreen(const QString &ipDest, qint16 port, const QString &path);
     inline bool isBusy() { return mIsSending || mIsReceiving; }
     void abortCurrentTransfer();
     void updateBuddyName();
@@ -74,56 +73,56 @@ signals:
      void transferStatusUpdate(qint64 total, qint64 partial);
 
 private:
-    QString getSystemSignature();
+    QByteArray getSystemSignature();
     QStringList expandTree(const QStringList& files);
-    void addRecursive(QStringList& e, QString path);
+    void addRecursive(QStringList& e, const QString &path);
     qint64 computeTotalSize(const QStringList& e);
     QByteArray nextElementHeader();
     void sendToAllBroadcast(const QByteArray& packet, const QList<qint16>& ports);
     void closeCurrentTransfer(bool aborted = false);
 
-    void handleMessage(QByteArray &data, QHostAddress &sender);
+    void handleMessage(const QByteArray &data, const QHostAddress &sender);
     void updateStatus();
 
-    QUdpSocket *mSocket;            // Socket UDP segnalazione
-    QTcpServer *mTcpServer;         // Socket TCP attesa dati
-    QTcpSocket *mCurrentSocket;     // Socket TCP dell'attuale trasferimento file
+    QUdpSocket *mSocket = nullptr;              // Socket UDP segnalazione
+    QTcpServer *mTcpServer = nullptr;           // Socket TCP attesa dati
+    QTcpSocket *mCurrentSocket = nullptr;       // Socket TCP dell'attuale trasferimento file
 
-    QHash<QString, Peer> mPeers;    // Elenco peer individuati
+    QHash<QString, Peer> mPeers;                // Elenco peer individuati
 
     // Send and receive members
     qint16 mLocalUdpPort;
     qint16 mLocalTcpPort;
-    bool mIsSending;
-    bool mIsReceiving;
-    QFile *mCurrentFile;            // Puntatore al file aperto corrente
-    qint64 mTotalSize;              // Quantità totale di dati da inviare o ricevere
-    int mFileCounter;               // Puntatore all'elemento correntemente da trasmettere o ricevere
+    bool mIsSending = false;
+    bool mIsReceiving = false;
+    QFile *mCurrentFile = nullptr;              // Puntatore al file aperto corrente
+    qint64 mTotalSize = 0;                      // Quantità totale di dati da inviare o ricevere
+    int mFileCounter = 0;                       // Puntatore all'elemento correntemente da trasmettere o ricevere
 
     // Sending members
-    QStringList mFilesToSend;       // Elenco degli elementi da trasmettere
-    qint64 mSentData;               // Quantità di dati totale trasmessi
-    qint64 mSentBuffer;             // Quantità di dati rimanenti nel buffer di trasmissione
-    QString mBasePath;              // Percorso base per l'invio di file e cartelle
-    QString mTextToSend;            // Testo da inviare (in caso di invio testuale)
-    bool mSendingScreen;            // Flag che indica se si sta inviando uno screenshot
+    QStringList mFilesToSend;                   // Elenco degli elementi da trasmettere
+    qint64 mSentData = 0;                       // Quantità di dati totale trasmessi
+    qint64 mSentBuffer = 0;                    // Quantità di dati rimanenti nel buffer di trasmissione
+    QString mBasePath;                          // Percorso base per l'invio di file e cartelle
+    QString mTextToSend;                        // Testo da inviare (in caso di invio testuale)
+    bool mSendingScreen = false;                // Flag che indica se si sta inviando uno screenshot
 
     // Receive members
-    qint64 mElementsToReceiveCount;    // Numero di elementi da ricevere
-    qint64 mTotalReceivedData;         // Quantità di dati ricevuti totale
-    qint64 mElementReceivedData;       // Quantità di dati ricevuti per l'elemento corrente
-    qint64 mElementSize;               // Dimensione dell'elemento corrente
-    QString mRootFolderName;           // Nome della cartella principale ricevuta
-    QString mRootFolderRenamed;        // Nome della cartella principale da utilizzare
-    QStringList *mReceivedFiles;        // Elenco degli elementi da trasmettere
-    QByteArray mTextToReceive;             // Testo ricevuto in caso di invio testo
-    bool mReceivingText;               // Ricezione di testo in corso
-    QByteArray mPartialName;              // Nome prossimo file letto solo in parte
+    qint64 mElementsToReceiveCount = 0;         // Numero di elementi da ricevere
+    qint64 mTotalReceivedData = 0;              // Quantità di dati ricevuti totale
+    qint64 mElementReceivedData = 0;            // Quantità di dati ricevuti per l'elemento corrente
+    qint64 mElementSize = 0;                    // Dimensione dell'elemento corrente
+    QString mRootFolderName;                    // Nome della cartella principale ricevuta
+    QString mRootFolderRenamed;                 // Nome della cartella principale da utilizzare
+    QStringList *mReceivedFiles = nullptr;      // Elenco degli elementi da trasmettere
+    QByteArray mTextToReceive;                  // Testo ricevuto in caso di invio testo
+    bool mReceivingText = false;                // Ricezione di testo in corso
+    QByteArray mPartialName;                    // Nome prossimo file letto solo in parte
     enum RecvStatus {
         FILENAME,
         FILESIZE,
         DATA
-    } mRecvStatus;
+    } mRecvStatus = FILENAME;
 
 };
 

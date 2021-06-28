@@ -22,8 +22,7 @@
 #include <QHostInfo>
 #include <QFile>
 #include <QDir>
-#include <QMessageBox>
-#include <QtGlobal>
+#include <QRegularExpression>
 
 #if defined(Q_OS_MAC)
 #include <QTemporaryFile>
@@ -33,37 +32,11 @@
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #include <lmaccess.h>
-
-typedef struct _USER_INFO_24 {
-  BOOL   usri24_internet_identity;
-  DWORD  usri24_flags;
-  LPWSTR usri24_internet_provider_name;
-  LPWSTR usri24_internet_principal_name;
-  PSID   usri24_user_sid;
-} USER_INFO_24, *PUSER_INFO_24, *LPUSER_INFO_24;
-
-
-#endif
-
-#if defined(Q_WS_S60)
-#define SYMBIAN
-#include <QSystemDeviceInfo>
-QTM_USE_NAMESPACE
-#endif
-
-#if defined(Q_WS_SIMULATOR)
-#define SYMBIAN
 #endif
 
 // Returns the system username
 QString Platform::getSystemUsername()
 {
-#if defined(SYMBIAN)
-    // Get username from settings
-    Settings s;
-    return s.buddyName();
-#else
-
     // Save in a static variable so that It's always ready
     static QString username;
     if (!username.isEmpty()) return username;
@@ -79,7 +52,6 @@ QString Platform::getSystemUsername()
     username = uname.left(1).toUpper() + uname.mid(1);
 
     return username;
-#endif
 }
 
 // Returns the hostname
@@ -89,18 +61,9 @@ QString Platform::getHostname()
     static QString hostname;
     if (!hostname.isEmpty()) return hostname;
 
-#if defined(Q_WS_S60)
-
-    QSystemDeviceInfo info;
-    hostname = info.model();
-
-#else
-
     // Get the hostname
     // (replace ".local" for MacOSX)
     hostname = QHostInfo::localHostName().replace(".local", "");
-
-#endif
 
     return hostname;
 }
@@ -114,8 +77,6 @@ QString Platform::getPlatformName()
     return "Macintosh";
 #elif defined(Q_OS_LINUX)
     return "Linux";
-#elif defined(Q_WS_S60)
-    return "Symbian";
 #else
     return "Unknown";
 #endif
@@ -140,8 +101,6 @@ QString Platform::getAvatarPath()
     return getMacTempAvatarPath();
 #elif defined(Q_OS_LINUX)
     return getLinuxAvatarPath();
-#elif defined(Q_WS_S60)
-    return "";
 #else
     return "";
 #endif
@@ -157,10 +116,6 @@ QString Platform::getDefaultPath()
     return QString(getenv("HOME")) + "/Desktop";
 #elif defined(Q_OS_UNIX)
     return QString(getenv("HOME"));
-#elif defined(Q_WS_S60)
-    return "E:\\Dukto";
-#elif defined(Q_WS_SIMULATOR)
-    return "D:\\";
 #else
     #error "Unknown default path for this platform"
 #endif
@@ -187,10 +142,10 @@ QString Platform::getLinuxAvatarPath()
         line = ts.readLine();
         if (line.isNull()) break;
         if (line.startsWith("Icon=")) {
-            QRegExp re("^Icon=(.*)$");
-            if (re.indexIn(line) == -1) continue;
-            QStringList pathlist = re.capturedTexts();
-            path = pathlist[1];
+            static const QRegularExpression re("^Icon=(.*)$");
+            QRegularExpressionMatch match = re.match(line);
+            if (match.hasMatch() == false) continue;
+            path = match.captured(1);
             found = true;
             break;
         }
@@ -237,9 +192,11 @@ QString Platform::getMacTempAvatarPath()
 
 #include <objbase.h>
 
+#ifndef ARRAYSIZE
 #define ARRAYSIZE(a) \
   ((sizeof(a) / sizeof(*(a))) / \
   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+#endif
 
 typedef HRESULT (WINAPI*pfnSHGetUserPicturePathEx)(
     LPCWSTR pwszUserOrPicName,
@@ -255,14 +212,15 @@ typedef HRESULT (WINAPI*pfnSHGetUserPicturePathEx)(
 QString Platform::getWinTempAvatarPath()
 {
     // Get file path
-    CoInitialize(NULL);
+    CoInitialize(nullptr);
     HMODULE hMod = LoadLibrary(L"shell32.dll");
     pfnSHGetUserPicturePathEx picPathFn = (pfnSHGetUserPicturePathEx)GetProcAddress(hMod, (LPCSTR)810);
     WCHAR picPath[500] = {0}, srcPath[500] = {0};
-    HRESULT ret = picPathFn(NULL, 0, NULL, picPath, ARRAYSIZE(picPath), srcPath, ARRAYSIZE(srcPath));
+    HRESULT ret = picPathFn(nullptr, 0, nullptr, picPath, ARRAYSIZE(picPath), srcPath, ARRAYSIZE(srcPath));
+    FreeLibrary(hMod);
+    CoUninitialize();
     if (ret != S_OK) return "C:\\missing.bmp";
     QString result = QString::fromWCharArray(picPath, -1);
-    CoUninitialize();
     return result;
 }
 

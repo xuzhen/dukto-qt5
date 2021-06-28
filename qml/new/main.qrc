@@ -1,0 +1,29 @@
+<RCC>
+    <qresource prefix="/qml/dukto">
+        <file>AboutPage.qml</file>
+        <file>BuddiesPage.qml</file>
+        <file>BuddyListElement.qml</file>
+        <file>Button.qml</file>
+        <file>ButtonDark.qml</file>
+        <file>ColorBox.qml</file>
+        <file>ColorPicker.qml</file>
+        <file>ColorSlider.qml</file>
+        <file>Dukto.qml</file>
+        <file>DuktoInner.qml</file>
+        <file>DuktoOverlay.qml</file>
+        <file>IpPage.qml</file>
+        <file>MessagePage.qml</file>
+        <file>ProgressPage.qml</file>
+        <file>RecentPage.qml</file>
+        <file>SBPicker.qml</file>
+        <file>SendPage.qml</file>
+        <file>SettingsPage.qml</file>
+        <file>ShowTextPage.qml</file>
+        <file>SmoothText.qml</file>
+        <file>SText.qml</file>
+        <file>TabBar.qml</file>
+        <file>TermsPage.qml</file>
+        <file>ToolBar.qml</file>
+        <file>UpdatesBox.qml</file>
+    </qresource>
+</RCC>
