@@ -59,8 +59,13 @@ RESOURCES += \
 greaterThan(QT_MAJOR_VERSION, 5) {
     RESOURCES += qml/new/main.qrc
 } else {
-    lessThan(QT_MINOR_VERSION, 15) {
+    lessThan(QT_MINOR_VERSION, 14) {
         RESOURCES += qml/old/main.qrc
+        lessThan(QT_MINOR_VERSION, 7) {
+            RESOURCES += qml/old/v1/controls.qrc
+        } else {
+            RESOURCES += qml/old/v2/controls.qrc
+        }
     } else {
         RESOURCES += qml/new/main.qrc
     }
@@ -75,9 +80,6 @@ contains(DEFINES, SINGLE_APP) {
     DEFINES += QAPPLICATION_CLASS=QApplication
 }
 
-# Get notifications from system tray
-#DEFINES += NOTIFY_NATIVE_TRAY
-
 OTHER_FILES += CMakeLists.txt
 
 win32 {
@@ -91,10 +93,8 @@ win32 {
 mac:ICON = dukto.icns
 
 linux {
-    !contains(DEFINES, NOTIFY_NATIVE_TRAY) {
-        ### libnotify
-        CONFIG+=link_pkgconfig
-        PKGCONFIG+=libnotify
-        DEFINES+=NOTIFY_LIBNOTIFY
-    }
+    ### libnotify
+    CONFIG+=link_pkgconfig
+    PKGCONFIG+=libnotify
+    DEFINES+=NOTIFY_LIBNOTIFY
 }

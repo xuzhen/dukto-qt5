@@ -22,15 +22,16 @@
 #endif
 
 #include "systemtray.h"
+#include "settings.h"
 
 #include <QWidget>
 #include <QMenu>
 #include <QAction>
 #include <QApplication>
 
-SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
+SystemTray::SystemTray(DuktoWindow& window, Settings *settings, QObject* parent) :
     QSystemTrayIcon(QIcon(":/dukto.png"), parent),
-    window(window)
+    window(window), settings(settings)
 {
 #if defined(NOTIFY_LIBNOTIFY)
     notify_init ("Dukto");
@@ -89,14 +90,14 @@ void SystemTray::received_text(QString* text, qint64)
 
 void SystemTray::notify(const QString &title, const QString &body)
 {
-#if defined(NOTIFY_NATIVE_TRAY)
-    this->showMessage(title, body);
-#elif defined(NOTIFY_LIBNOTIFY)
+    if (!settings->notificationEnabled()) {
+        return;
+    }
+#if defined(NOTIFY_LIBNOTIFY)
     NotifyNotification* msg = notify_notification_new(title.toUtf8().constData(), body.toUtf8().constData(), nullptr);
     notify_notification_show (msg, nullptr);
     g_object_unref(G_OBJECT(msg));
 #else
-    Q_UNUSED(title);
-    Q_UNUSED(body);
+    this->showMessage(title, body);
 #endif
 }

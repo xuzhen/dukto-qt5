@@ -98,3 +98,12 @@ void Settings::saveBuddyName(const QString &name)
     mSettings.setValue("BuddyName", name);
     mSettings.sync();
 }
+
+bool Settings::notificationEnabled() {
+    return mSettings.value("Notification", false).toBool();
+}
+
+void Settings::saveNotificationEnabled(bool enabled) {
+    mSettings.setValue("Notification", enabled);
+    mSettings.sync();
+}

@@ -27,7 +27,7 @@ class SystemTray : public QSystemTrayIcon
 {
         Q_OBJECT
     public:
-        explicit SystemTray(DuktoWindow& window, QObject *parent = nullptr);
+        explicit SystemTray(DuktoWindow& window, Settings *settings, QObject *parent = nullptr);
         ~SystemTray();
 
     public slots:
@@ -39,6 +39,7 @@ class SystemTray : public QSystemTrayIcon
 
     private:
         DuktoWindow& window;
+        Settings *settings;
 
         void notify(const QString &title, const QString &body);
 };

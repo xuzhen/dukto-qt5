@@ -55,6 +55,7 @@ class GuiBehind : public QObject
     Q_PROPERTY(bool showTermsOnStart READ showTermsOnStart WRITE setShowTermsOnStart NOTIFY showTermsOnStartChanged)
     Q_PROPERTY(bool showUpdateBanner READ showUpdateBanner WRITE setShowUpdateBanner NOTIFY showUpdateBannerChanged)
     Q_PROPERTY(QString buddyName READ buddyName WRITE setBuddyName NOTIFY buddyNameChanged)
+    Q_PROPERTY(bool showNotification READ showNotification WRITE setShowNotification NOTIFY showNotificationChanged)
 
 public:
     explicit GuiBehind(Settings* settings);
@@ -98,6 +99,8 @@ public:
     void setShowUpdateBanner(bool show);
     void setBuddyName(const QString &name);
     QString buddyName();
+    void setShowNotification(bool show);
+    bool showNotification();
 
 protected:
     bool eventFilter(QObject *, QEvent *event);
@@ -120,6 +123,7 @@ signals:
     void showTermsOnStartChanged();
     void showUpdateBannerChanged();
     void buddyNameChanged();
+    void showNotificationChanged();
 
     // Received by QML
     void transferStart();

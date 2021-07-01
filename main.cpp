@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     });
 #endif
 
-    SystemTray tray(viewer);
+    SystemTray tray(viewer, &settings);
     tray.show();
 
     gb.setViewer(&viewer, &tray);

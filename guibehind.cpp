@@ -833,3 +833,11 @@ QString GuiBehind::buddyName()
     return mSettings->buddyName();
 }
 
+void GuiBehind::setShowNotification(bool show) {
+    mSettings->saveNotificationEnabled(show);
+    emit showNotificationChanged();
+}
+
+bool GuiBehind::showNotification() {
+    return mSettings->notificationEnabled();
+}

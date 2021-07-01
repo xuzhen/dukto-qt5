@@ -44,11 +44,7 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
-            Connections {
-                function onClicked() {
-                    settingsPage.back();
-                }
-            }
+            onClicked: settingsPage.back();
         }
     }
 
@@ -111,11 +107,7 @@ Rectangle {
         anchors.top: textPath.bottom
         anchors.topMargin: 10
         label: "Change folder"
-        Connections {
-            function onClicked() {
-                guiBehind.changeDestinationFolder()
-            }
-        }
+        onClicked: guiBehind.changeDestinationFolder()
     }
 
     SText {
@@ -133,10 +125,8 @@ Rectangle {
         anchors.top: labelColor.bottom
         anchors.topMargin: 8
         anchors.left: labelColor.left
-        Connections {
-            function onChanged() {
-                guiBehind.changeThemeColor(picker.colorValue);
-            }
+        onChanged: {
+            guiBehind.changeThemeColor(colorValue);
         }
     }
 
@@ -147,11 +137,7 @@ Rectangle {
         anchors.left: picker.right
         anchors.leftMargin: 20
         color: "#248B00"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
 
     ColorBox {
@@ -160,11 +146,7 @@ Rectangle {
         anchors.left: cbox1.right
         anchors.leftMargin: 15
         color: "#A80000"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
 
     ColorBox {
@@ -173,11 +155,7 @@ Rectangle {
         anchors.left: cbox2.right
         anchors.leftMargin: 15
         color: "#3A6CBC"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
 
     ColorBox {
@@ -186,11 +164,7 @@ Rectangle {
         anchors.topMargin: 15
         anchors.left: cbox1.left
         color: "#2e3436" // "#704214"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
 
     ColorBox {
@@ -199,11 +173,7 @@ Rectangle {
         anchors.top: cbox4.top
         anchors.leftMargin: 15
         color: "#B77994"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
 
     ColorBox {
@@ -212,11 +182,7 @@ Rectangle {
         anchors.left: cbox5.right
         anchors.leftMargin: 15
         color: "#5B2F42"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
 
     ColorBox {
@@ -225,11 +191,7 @@ Rectangle {
         anchors.topMargin: 15
         anchors.left: cbox4.left
         color: "#353B56"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
 
     ColorBox {
@@ -238,11 +200,7 @@ Rectangle {
         anchors.left: cbox7.right
         anchors.leftMargin: 15
         color: "#FB8504"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
 
     ColorBox {
@@ -251,12 +209,9 @@ Rectangle {
         anchors.left: cbox8.right
         anchors.leftMargin: 15
         color: "#6D0D71"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
-            }
-        }
+        onClicked: picker.setColor(color)
     }
+
 
     CheckBox {
         id: nswitch
@@ -286,10 +241,6 @@ Rectangle {
             anchors.leftMargin: 4
             anchors.topMargin: -1
         }
-        Connections {
-            function onClicked() {
-                guiBehind.showNotification = nswitch.checked
-            }
-        }
+        onClicked: guiBehind.showNotification = nswitch.checked
     }
 }

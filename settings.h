@@ -36,6 +36,8 @@ public:
     bool showTermsOnStart();
     QString buddyName();
     void saveBuddyName(const QString &name);
+    bool notificationEnabled();
+    void saveNotificationEnabled(bool enabled);
 
 private:
     QSettings mSettings;
