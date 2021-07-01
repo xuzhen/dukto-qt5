@@ -34,7 +34,6 @@ SOURCES += main.cpp \
     destinationbuddy.cpp \
     duktowindow.cpp \
     theme.cpp \
-    updateschecker.cpp \
     systemtray.cpp
 
 HEADERS += \
@@ -49,7 +48,6 @@ HEADERS += \
     destinationbuddy.h \
     duktowindow.h \
     theme.h \
-    updateschecker.h \
     systemtray.h
 
 RESOURCES += \
@@ -73,6 +71,10 @@ greaterThan(QT_MAJOR_VERSION, 5) {
 
 # FIXME: Site is down, no longer works
 #DEFINES += UPDATER
+contains(DEFINES, UPDATER) {
+    SOURCES += updateschecker.cpp
+    HEADERS += updateschecker.h
+}
 
 DEFINES += SINGLE_APP
 contains(DEFINES, SINGLE_APP) {
