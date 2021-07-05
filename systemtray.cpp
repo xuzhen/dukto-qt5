@@ -30,12 +30,19 @@
 #include <QApplication>
 
 SystemTray::SystemTray(DuktoWindow& window, Settings *settings, QObject* parent) :
-    QSystemTrayIcon(QIcon(":/dukto.png"), parent),
+    QSystemTrayIcon(parent),
     window(window), settings(settings)
 {
 #if defined(NOTIFY_LIBNOTIFY)
     notify_init ("Dukto");
 #endif
+
+    QIcon icon(":/dukto.png");
+#if defined(Q_OS_MAC) && QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+    icon.setIsMask(true);
+#endif
+    setIcon(icon);
+
     connect(this, &SystemTray::activated, this, &SystemTray::on_activated);
     
     QMenu *trayMenu = new QMenu(&window);
