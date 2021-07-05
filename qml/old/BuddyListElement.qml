@@ -41,7 +41,7 @@ Flipable {
    Rectangle {
        anchors.fill: parent
        color: "#00000000"
-       visible: buddyMouseArea.containsMouse;
+       visible: buddyIp && buddyIp != "-" && buddyMouseArea.containsMouse;
        Rectangle {
            anchors.right: parent.right
            anchors.top: parent.top
