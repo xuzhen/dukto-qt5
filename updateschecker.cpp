@@ -55,7 +55,7 @@ void UpdatesChecker::run()
     QString locale = QLocale::system().name();
 
     // Send check request
-    QNetworkRequest request(QUrl("http://www.msec.it/dukto/r5check.php?ver=" + ver + "&locale=" + locale + "&os=" + os + "&osver=" + osver));
+    QNetworkRequest request(QUrl("https://www.msec.it/blog/dukto/r5check.php?ver=" + ver + "&locale=" + locale + "&os=" + os + "&osver=" + osver));
     mNetworkAccessManager = new QNetworkAccessManager();
     connect(mNetworkAccessManager, &QNetworkAccessManager::finished, this, &UpdatesChecker::updatedDataReady);
     mNetworkAccessManager->get(request);

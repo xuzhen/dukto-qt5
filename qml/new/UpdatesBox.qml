@@ -49,7 +49,7 @@ Item {
             anchors.fill: parent
             Connections {
                 function onClicked() {
-                    Qt.openUrlExternally("http://www.msec.it/dukto/r5update.php")
+                    Qt.openUrlExternally("https://www.msec.it/blog/dukto/")
                 }
             }
         }
