@@ -125,7 +125,7 @@ void DuktoWindow::closeEvent(QCloseEvent *)
 }
 
 void DuktoWindow::showEvent(QShowEvent *event) {
-    Q_UNUSED(event)
+    QQuickWidget::showEvent(event);
 #ifdef Q_OS_WIN
     // Taskbar integration with Win7+
     if (mWin7 == nullptr) {
