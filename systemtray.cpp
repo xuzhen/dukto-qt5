@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if defined(NOTIFY_LIBNOTIFY)
+#if defined(Q_OS_LINUX) && defined(NOTIFY_LIBNOTIFY)
 #include <libnotify/notify.h>
 #endif
 
@@ -33,7 +33,7 @@ SystemTray::SystemTray(DuktoWindow& window, Settings *settings, QObject* parent)
     QSystemTrayIcon(parent),
     window(window), settings(settings)
 {
-#if defined(NOTIFY_LIBNOTIFY)
+#if defined(Q_OS_LINUX) && defined(NOTIFY_LIBNOTIFY)
     notify_init ("Dukto");
 #endif
 
@@ -58,7 +58,7 @@ SystemTray::SystemTray(DuktoWindow& window, Settings *settings, QObject* parent)
 
 SystemTray::~SystemTray()
 {
-#if defined(NOTIFY_LIBNOTIFY)
+#if defined(Q_OS_LINUX) && defined(NOTIFY_LIBNOTIFY)
     notify_uninit();
 #endif
 }
@@ -100,7 +100,7 @@ void SystemTray::notify(const QString &title, const QString &body)
     if (!settings->notificationEnabled()) {
         return;
     }
-#if defined(NOTIFY_LIBNOTIFY)
+#if defined(Q_OS_LINUX) && defined(NOTIFY_LIBNOTIFY)
     NotifyNotification* msg = notify_notification_new(title.toUtf8().constData(), body.toUtf8().constData(), nullptr);
     notify_notification_show (msg, nullptr);
     g_object_unref(G_OBJECT(msg));
