@@ -841,3 +841,12 @@ void GuiBehind::setShowNotification(bool show) {
 bool GuiBehind::showNotification() {
     return mSettings->notificationEnabled();
 }
+
+void GuiBehind::setCloseToTray(bool enabled) {
+    mSettings->saveCloseToTrayEnabled(enabled);
+    emit closeToTrayChanged();
+}
+
+bool GuiBehind::closeToTray() {
+    return mSettings->closeToTrayEnabled();
+}

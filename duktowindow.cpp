@@ -119,9 +119,15 @@ void DuktoWindow::dropEvent(QDropEvent *event)
     mGuiBehind->sendDroppedFiles(&files);
 }
 
-void DuktoWindow::closeEvent(QCloseEvent *)
+void DuktoWindow::closeEvent(QCloseEvent *event)
 {
-    mSettings->saveWindowGeometry(saveGeometry());
+    if (isVisible() && mSettings->closeToTrayEnabled()) {
+        event->ignore();
+        hide();
+    } else {
+        mSettings->saveWindowGeometry(saveGeometry());
+        event->accept();
+    }
 }
 
 void DuktoWindow::showEvent(QShowEvent *event) {

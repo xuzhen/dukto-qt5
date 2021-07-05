@@ -38,6 +38,8 @@ public:
     void saveBuddyName(const QString &name);
     bool notificationEnabled();
     void saveNotificationEnabled(bool enabled);
+    bool closeToTrayEnabled();
+    void saveCloseToTrayEnabled(bool enabled);
 
 private:
     QSettings mSettings;

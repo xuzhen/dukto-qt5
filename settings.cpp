@@ -107,3 +107,12 @@ void Settings::saveNotificationEnabled(bool enabled) {
     mSettings.setValue("Notification", enabled);
     mSettings.sync();
 }
+
+bool Settings::closeToTrayEnabled() {
+    return mSettings.value("CloseToTray", false).toBool();
+}
+
+void Settings::saveCloseToTrayEnabled(bool enabled) {
+    mSettings.setValue("CloseToTray", enabled);
+    mSettings.sync();
+}

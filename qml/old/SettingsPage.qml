@@ -223,4 +223,14 @@ Rectangle {
         checked: guiBehind.showNotification
         onClicked: guiBehind.showNotification = checked
     }
+
+    CheckBox {
+        id: cswitch
+        anchors.top: nswitch.bottom
+        anchors.left: labelPath.left
+        anchors.topMargin: 25
+        text: "Minimize to system tray on close"
+        checked: guiBehind.closeToTray
+        onClicked: guiBehind.closeToTray = checked
+    }
 }

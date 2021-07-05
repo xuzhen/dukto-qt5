@@ -273,4 +273,19 @@ Rectangle {
             }
         }
     }
+
+    CheckBox {
+        id: cswitch
+        anchors.top: nswitch.bottom
+        anchors.left: labelPath.left
+        anchors.topMargin: 25
+        text: "Minimize to system tray on close"
+        checked: guiBehind.closeToTray
+
+        Connections {
+            function onClicked(checked) {
+                guiBehind.closeToTray = checked
+            }
+        }
+    }
 }

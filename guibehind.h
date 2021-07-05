@@ -56,6 +56,7 @@ class GuiBehind : public QObject
     Q_PROPERTY(bool showUpdateBanner READ showUpdateBanner WRITE setShowUpdateBanner NOTIFY showUpdateBannerChanged)
     Q_PROPERTY(QString buddyName READ buddyName WRITE setBuddyName NOTIFY buddyNameChanged)
     Q_PROPERTY(bool showNotification READ showNotification WRITE setShowNotification NOTIFY showNotificationChanged)
+    Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
 
 public:
     explicit GuiBehind(Settings* settings);
@@ -101,6 +102,8 @@ public:
     QString buddyName();
     void setShowNotification(bool show);
     bool showNotification();
+    void setCloseToTray(bool enabled);
+    bool closeToTray();
 
 protected:
     bool eventFilter(QObject *, QEvent *event);
@@ -124,6 +127,7 @@ signals:
     void showUpdateBannerChanged();
     void buddyNameChanged();
     void showNotificationChanged();
+    void closeToTrayChanged();
 
     // Received by QML
     void transferStart();
