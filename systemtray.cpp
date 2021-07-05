@@ -68,7 +68,12 @@ void SystemTray::on_activated(QSystemTrayIcon::ActivationReason reason)
     switch(reason)
     {
         case QSystemTrayIcon::Trigger:
-            window.setVisible(!window.isVisible());
+            if (window.isHidden() || window.isMinimized()) {
+                window.showNormal();
+                window.activateWindow();
+            } else {
+                window.hide();
+            }
             break;
         case QSystemTrayIcon::MiddleClick:
             window.close();
