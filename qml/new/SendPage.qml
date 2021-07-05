@@ -43,6 +43,8 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
             Connections {
                 function onClicked() {
                     sendPage.back();
@@ -116,6 +118,13 @@ Rectangle {
             color: "#888888"
             selectByMouse: true
             focus: true
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: containsMouse ? Qt.IBeamCursor : Qt.ArrowCursor
+                acceptedButtons: Qt.NoButton
+            }
         }
 
         Binding {

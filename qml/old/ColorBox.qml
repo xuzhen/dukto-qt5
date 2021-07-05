@@ -36,6 +36,7 @@ Rectangle {
     MouseArea {
         id: boxArea
         hoverEnabled: true
+        cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
         anchors.fill: parent
         onClicked: root.clicked(parent.color)
     }

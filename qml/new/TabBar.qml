@@ -43,6 +43,7 @@ Item {
                 id: buddyTextMouseArea
                 anchors.fill: parent
                 hoverEnabled: true
+                cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
                 Connections {
                     function onClicked() {
                         tabBar.state = "buddies";
@@ -65,6 +66,7 @@ Item {
                 id: recentTextMouseArea
                 anchors.fill: parent;
                 hoverEnabled: true;
+                cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
                 Connections {
                     function onClicked() {
                         tabBar.state = "recent";
@@ -84,6 +86,7 @@ Item {
                 id: aboutTextMouseArea
                 anchors.fill: parent
                 hoverEnabled: true
+                cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
                 Connections {
                     function onClicked() {
                         tabBar.state = "about";

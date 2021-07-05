@@ -35,6 +35,7 @@ Flipable {
        id: buddyMouseArea
        anchors.fill: parent
        hoverEnabled: true
+       cursorShape: (buddyIp && buddyIp != "-" && containsMouse) ? Qt.PointingHandCursor : Qt.ArrowCursor
        onClicked: guiBehind.showSendPage(buddyIp)
    }
 

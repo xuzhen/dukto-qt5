@@ -59,6 +59,8 @@ Item {
     }
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: containsMouse ? (pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor) : Qt.ArrowCursor
         Connections {
             function onPositionChanged(mouse) {
                 handleMouse(mouse)

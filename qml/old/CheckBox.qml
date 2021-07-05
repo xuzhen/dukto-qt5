@@ -41,6 +41,8 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
             onClicked: {
                 checkbox.checked = !checkbox.checked;
                 checkbox.clicked(checkbox.checked)
@@ -59,6 +61,8 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
             onClicked: {
                 checkbox.checked = !checkbox.checked;
                 checkbox.clicked(checkbox.checked)

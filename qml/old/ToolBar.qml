@@ -59,6 +59,8 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onClicked: guiBehind.openDestinationFolder();
             }
         }
@@ -81,6 +83,8 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onClicked: {
                     guiBehind.refreshIpList();
                     toolBar.clicked("ip");
@@ -107,6 +111,8 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
                 onClicked: toolBar.clicked("settings")
             }
         }
@@ -133,6 +139,8 @@ Item {
             anchors.bottom: parent.bottom
             anchors.left: moreIcon.left
             anchors.right: parent.right
+            hoverEnabled: true
+            cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
 
             onClicked: {
                if (toolBar.state == "WithoutLabels")
