@@ -1,6 +1,19 @@
 QT += network qml quickwidgets
 CONFIG += c++11
 
+#============Compiling Options=============
+
+# Allow only one instance
+DEFINES += SINGLE_APP
+
+# FIXME: Updater no longer works
+#DEFINES += UPDATER
+
+# Use libnotify for notifications (Linux only)
+DEFINES += NOTIFY_LIBNOTIFY
+
+#==========================================
+
 TARGET = dukto
 TEMPLATE = app
 
@@ -62,14 +75,11 @@ greaterThan(QT_MAJOR_VERSION, 5) {
     RESOURCES += qml/new/main.qrc
 }
 
-# FIXME: Site is down, no longer works
-#DEFINES += UPDATER
 contains(DEFINES, UPDATER) {
     SOURCES += updateschecker.cpp
     HEADERS += updateschecker.h
 }
 
-DEFINES += SINGLE_APP
 contains(DEFINES, SINGLE_APP) {
     include(modules/SingleApplication/singleapplication.pri)
     DEFINES += QAPPLICATION_CLASS=QApplication
@@ -87,9 +97,7 @@ win32 {
 
 mac:ICON = dukto.icns
 
-linux {
-    ### libnotify
+linux: contains(DEFINES, NOTIFY_LIBNOTIFY) {
     CONFIG+=link_pkgconfig
     PKGCONFIG+=libnotify
-    DEFINES+=NOTIFY_LIBNOTIFY
 }

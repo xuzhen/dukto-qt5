@@ -1,8 +1,9 @@
 project(dukto)
 cmake_minimum_required(VERSION 3.1.0)
 
-OPTION(USE_UPDATER "Add updater for application" OFF)
-OPTION(USE_SINGLE_APP "Enable only single instance" OFF)
+#FIXME: updater no longer works
+#OPTION(USE_UPDATER "Add updater for application" OFF)
+OPTION(USE_SINGLE_APP "Allow only one instance" OFF)
 OPTION(USE_NOTIFY_LIBNOTIFY "Use libnotify for notifications (Linux only)" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
