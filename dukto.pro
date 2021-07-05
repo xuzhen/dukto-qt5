@@ -56,17 +56,10 @@ RESOURCES += \
 
 greaterThan(QT_MAJOR_VERSION, 5) {
     RESOURCES += qml/new/main.qrc
+} else:lessThan(QT_MINOR_VERSION, 14) {
+    RESOURCES += qml/old/main.qrc
 } else {
-    lessThan(QT_MINOR_VERSION, 14) {
-        RESOURCES += qml/old/main.qrc
-        lessThan(QT_MINOR_VERSION, 7) {
-            RESOURCES += qml/old/v1/controls.qrc
-        } else {
-            RESOURCES += qml/old/v2/controls.qrc
-        }
-    } else {
-        RESOURCES += qml/new/main.qrc
-    }
+    RESOURCES += qml/new/main.qrc
 }
 
 # FIXME: Site is down, no longer works

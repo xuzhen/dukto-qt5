@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/qml/dukto">
-        <file>SettingsPage.qml</file>
-    </qresource>
-</RCC>

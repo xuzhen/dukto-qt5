@@ -5,6 +5,7 @@
         <file>BuddyListElement.qml</file>
         <file>Button.qml</file>
         <file>ButtonDark.qml</file>
+        <file>CheckBox.qml</file>
         <file>ColorBox.qml</file>
         <file>ColorPicker.qml</file>
         <file>ColorSlider.qml</file>

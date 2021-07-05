@@ -17,7 +17,6 @@
  */
 
 import QtQuick 2.3
-import QtQuick.Controls 2.0
 
 Rectangle {
     id: settingsPage
@@ -263,32 +262,12 @@ Rectangle {
         anchors.top: cbox7.bottom
         anchors.left: labelPath.left
         anchors.topMargin: 30
+        text: "Enable Notification"
         checked: guiBehind.showNotification
-        hoverEnabled: false
-        indicator: Rectangle {
-            implicitWidth: 16
-            implicitHeight: 16
-            border.color: "#888888"
-            border.width: 1
-            Rectangle {
-                visible: nswitch.checked
-                color: theme.color2
-                anchors.margins: 3
-                anchors.fill: parent
-            }
-        }
-        contentItem: SText {
-            font.pixelSize: 16
-            text: "Enable Notification"
-            color: "#888888"
-            anchors.top: nswitch.top
-            anchors.left: nswitch.indicator.right
-            anchors.leftMargin: 4
-            anchors.topMargin: -1
-        }
+
         Connections {
-            function onClicked() {
-                guiBehind.showNotification = nswitch.checked
+            function onClicked(checked) {
+                guiBehind.showNotification = checked
             }
         }
     }

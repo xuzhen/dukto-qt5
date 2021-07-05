@@ -93,12 +93,8 @@ set(DUKTO_RESOURCES
 )
 if(Qt6_FOUND OR Qt5Core_VERSION VERSION_GREATER "5.14.0" OR Qt5Core_VERSION VERSION_EQUAL "5.14.0")
     list(APPEND DUKTO_RESOURCES "qml/new/main.qrc")
-elseif(Qt5Core_VERSION VERSION_GREATER "5.7.0" OR Qt5Core_VERSION VERSION_EQUAL "5.7.0")
-    list(APPEND DUKTO_RESOURCES "qml/old/main.qrc")
-    list(APPEND DUKTO_RESOURCES "qml/old/v2/controls.qrc")
 else()
     list(APPEND DUKTO_RESOURCES "qml/old/main.qrc")
-    list(APPEND DUKTO_RESOURCES "qml/old/v1/controls.qrc")
 endif()
 
 if(USE_UPDATER)

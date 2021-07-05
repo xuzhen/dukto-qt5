@@ -17,8 +17,6 @@
  */
 
 import QtQuick 2.3
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
 
 Rectangle {
     id: settingsPage
@@ -213,31 +211,14 @@ Rectangle {
         onClicked: picker.setColor(color)
     }
 
+
     CheckBox {
         id: nswitch
         anchors.top: cbox7.bottom
         anchors.left: labelPath.left
         anchors.topMargin: 30
+        text: "Enable Notification"
         checked: guiBehind.showNotification
-        style: CheckBoxStyle {
-            label: SText {
-                font.pixelSize: 16
-                text: "Enable Notification"
-                color: "#888888"
-            }
-            indicator: Rectangle {
-                implicitWidth: 16
-                implicitHeight: 16
-                border.color: "#888888"
-                border.width: 1
-                Rectangle {
-                    visible: control.checked
-                    color: theme.color2
-                    anchors.margins: 3
-                    anchors.fill: parent
-                }
-            }
-        }
-        onClicked: guiBehind.showNotification = nswitch.checked
+        onClicked: guiBehind.showNotification = checked
     }
 }
