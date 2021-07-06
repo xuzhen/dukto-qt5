@@ -48,13 +48,13 @@ SystemTray::SystemTray(DuktoWindow& window, Settings *settings, QObject* parent)
     
     QMenu *trayMenu = new QMenu(&window);
     QAction *ShowHide = new QAction(QString("Show/Hide"), trayMenu);
-    connect(ShowHide, &QAction::triggered, [=]() { on_activated(QSystemTrayIcon::Trigger); });
+    connect(ShowHide, &QAction::triggered, this, [=]() { on_activated(QSystemTrayIcon::Trigger); });
     trayMenu->addAction(ShowHide);
     QAction *Exit = new QAction(QString("Exit"), trayMenu);
-    connect(Exit, &QAction::triggered, [=]() { on_activated(QSystemTrayIcon::MiddleClick); });
+    connect(Exit, &QAction::triggered, this, [=]() { on_activated(QSystemTrayIcon::MiddleClick); });
     trayMenu->addAction(Exit);
     this->setContextMenu(trayMenu);
-    connect(trayMenu, &QMenu::aboutToShow, [&window, ShowHide]() { ShowHide->setText((window.isHidden() || window.isMinimized()) ? "Show" : "Hide"); });
+    connect(trayMenu, &QMenu::aboutToShow, this, [&window, ShowHide]() { ShowHide->setText((window.isHidden() || window.isMinimized()) ? "Show" : "Hide"); });
 }
 
 SystemTray::~SystemTray()

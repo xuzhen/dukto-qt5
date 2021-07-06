@@ -49,7 +49,7 @@ QString Platform::getSystemUsername()
         if (uname.isEmpty())
             uname = "Unknown";
     }
-    username = uname.left(1).toUpper() + uname.mid(1);
+    username = uname.replace(0, 1, uname.at(0).toUpper());
 
     return username;
 }

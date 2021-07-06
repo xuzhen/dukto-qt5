@@ -104,7 +104,7 @@ GuiBehind::GuiBehind(Settings *settings) :
     mShowBackTimer = new QTimer(this);
     connect(mShowBackTimer, &QTimer::timeout, this, &GuiBehind::showRandomBack);
 #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
-    qsrand(QDateTime::currentDateTime().toTime_t());
+    qsrand(QDateTime::currentDateTimeUtc().toTime_t());
 #endif
     mShowBackTimer->start(10000);
 
