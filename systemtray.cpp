@@ -17,6 +17,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <QtGlobal>
+#if defined(Q_OS_LINUX) && defined(NOTIFY_LIBNOTIFY)
+#include <libnotify/notify.h>
+#endif
+
 #include "systemtray.h"
 #include "settings.h"
 
@@ -24,10 +29,6 @@
 #include <QMenu>
 #include <QAction>
 #include <QApplication>
-
-#if defined(Q_OS_LINUX) && defined(NOTIFY_LIBNOTIFY)
-#include <libnotify/notify.h>
-#endif
 
 SystemTray::SystemTray(DuktoWindow& window, Settings *settings, QObject* parent) :
     QSystemTrayIcon(parent),
