@@ -42,8 +42,9 @@ SystemTray::SystemTray(DuktoWindow& window, Settings *settings, QObject* parent)
     icon.setIsMask(true);
 #endif
     setIcon(icon);
-
+#ifndef Q_OS_MAC
     connect(this, &SystemTray::activated, this, &SystemTray::on_activated);
+#endif
     
     QMenu *trayMenu = new QMenu(&window);
     QAction *ShowHide = new QAction(QString("Show/Hide"), trayMenu);
@@ -69,13 +70,13 @@ void SystemTray::on_activated(QSystemTrayIcon::ActivationReason reason)
     {
         case QSystemTrayIcon::Trigger:
             if (window.isHidden() || window.isMinimized()) {
-                window.showNormal();
                 window.activateWindow();
             } else {
                 window.hide();
             }
             break;
         case QSystemTrayIcon::MiddleClick:
+            window.hide();
             window.close();
             QApplication::quit();
             break;

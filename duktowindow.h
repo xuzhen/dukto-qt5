@@ -37,6 +37,9 @@ public:
     void hideTaskbarProgress();
     void stopTaskbarProgress();
 
+public slots:
+    void activateWindow();
+
 protected:
 #ifdef Q_OS_WIN
     bool nativeEvent(const QByteArray &eventType, void *message, long *result);

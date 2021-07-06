@@ -69,19 +69,14 @@ int main(int argc, char *argv[])
     
     DuktoWindow viewer(&gb, &settings);
 #ifdef SINGLE_APP
-    QObject::connect(&app, &SingleApplication::receivedMessage, [&viewer]()->void {
-        if (viewer.isMinimized()) {
-            viewer.showNormal();
-        }
-        viewer.activateWindow();
-    });
+    QObject::connect(&app, &SingleApplication::receivedMessage, &viewer, &DuktoWindow::activateWindow);
 #endif
 
     SystemTray tray(viewer, &settings);
-    tray.show();
 
     gb.setViewer(&viewer, &tray);
     viewer.setVisible(!parser.isSet(hideOption));
-    
+    tray.show();
+
     return app.exec();
 }

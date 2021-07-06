@@ -78,6 +78,12 @@ void DuktoWindow::stopTaskbarProgress() {
 #endif
 }
 
+void DuktoWindow::activateWindow() {
+    showNormal();
+    raise();
+    QQuickWidget::activateWindow();
+}
+
 #ifdef Q_OS_WIN
 bool DuktoWindow::nativeEvent(const QByteArray &eventType, void *message, long *result) {
     Q_UNUSED(eventType)
