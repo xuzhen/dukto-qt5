@@ -57,6 +57,9 @@ private:
 #ifdef Q_OS_WIN
     EcWin7 *mWin7 = nullptr;
 #endif
+#ifdef Q_OS_MAC
+    void setupDockHandler();
+#endif
 };
 
 #endif // DUKTOWINDOW_H

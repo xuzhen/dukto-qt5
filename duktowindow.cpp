@@ -32,6 +32,12 @@
 #include <QDropEvent>
 #include <QMimeData>
 
+#ifdef Q_OS_MAC
+#include <objc/objc.h>
+#include <objc/message.h>
+static DuktoWindow *instance = nullptr;
+#endif
+
 DuktoWindow::DuktoWindow(GuiBehind *gb, Settings *settings, QWidget *parent) :
     QQuickWidget(parent), mGuiBehind(gb), mSettings(settings)
 {
@@ -44,6 +50,10 @@ DuktoWindow::DuktoWindow(GuiBehind *gb, Settings *settings, QWidget *parent) :
     setWindowIcon(QIcon(":/dukto.png"));
     setResizeMode(QQuickWidget::SizeRootObjectToView);
     connect(engine(), &QQmlEngine::quit, this, &DuktoWindow::close);
+#ifdef Q_OS_MAC
+    instance = this;
+    setupDockHandler();
+#endif
 }
 
 DuktoWindow::~DuktoWindow() {
@@ -146,3 +156,32 @@ void DuktoWindow::showEvent(QShowEvent *event) {
     }
 #endif
 }
+
+#ifdef Q_OS_MAC
+bool dockHasVisibleWindows(id self, SEL _cmd, id sender, bool flag) {
+    Q_UNUSED(self)
+    Q_UNUSED(_cmd)
+    Q_UNUSED(sender)
+    if (!flag) {
+        // window is minimized to tray (hidden)
+        instance->activateWindow();
+        return false;
+    }
+    return true;
+}
+
+void DuktoWindow::setupDockHandler() {
+    Class appClass = objc_getClass("NSApplication");
+    id appInst = reinterpret_cast<id(*)(Class, SEL)>(objc_msgSend)(appClass, sel_registerName("sharedApplication"));
+    if (appInst != nullptr) {
+        id delegate = reinterpret_cast<id(*)(id, SEL)>(objc_msgSend)(appInst, sel_registerName("delegate"));
+        if (delegate != nullptr) {
+            Class delClass = reinterpret_cast<Class(*)(id, SEL)>(objc_msgSend)(delegate, sel_registerName("class"));
+            if (delClass != nullptr) {
+                SEL methodSelector = sel_registerName("applicationShouldHandleReopen:hasVisibleWindows:");
+                class_replaceMethod(delClass, methodSelector, reinterpret_cast<IMP>(dockHasVisibleWindows), "B@:@B");
+            }
+        }
+    }
+}
+#endif
