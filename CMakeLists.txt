@@ -125,14 +125,8 @@ endif()
 target_link_libraries(${PROJECT_NAME} ${DUKTO_LIBS} ${QT_LIBRARIES})
 
 if(WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE True)
     target_link_libraries(${PROJECT_NAME} Ws2_32 ole32 user32)
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        # Visual Studio C++
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        # gcc
-        target_link_options(${PROJECT_NAME} PRIVATE -mwindows)
-    endif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif(WIN32)
 
 If (APPLE)
