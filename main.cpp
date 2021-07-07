@@ -41,6 +41,14 @@ int main(int argc, char *argv[])
     qputenv("QSG_RHI_BACKEND", "gl");
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#elif QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    if (qEnvironmentVariableIsEmpty("QT_DEVICE_PIXEL_RATIO")) {
+        qputenv("QT_DEVICE_PIXEL_RATIO", "auto");
+    }
+#endif
+
 #ifndef SINGLE_APP
     QApplication app(argc, argv);
 #else
@@ -54,7 +62,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 #endif
-    
+
     QCommandLineParser parser;
     parser.setApplicationDescription("Dukto is a simple, fast and multi-platform file transfer tool for LAN users.");
     parser.addHelpOption();
