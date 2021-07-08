@@ -41,9 +41,9 @@ int main(int argc, char *argv[])
     qputenv("QSG_RHI_BACKEND", "gl");
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-#elif QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+#elif QT_VERSION >= QT_VERSION_CHECK(5, 4, 0) && QT_VERSION < QT_VERSION_CHECK(5, 6, 0)
     if (qEnvironmentVariableIsEmpty("QT_DEVICE_PIXEL_RATIO")) {
         qputenv("QT_DEVICE_PIXEL_RATIO", "auto");
     }
