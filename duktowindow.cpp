@@ -109,7 +109,14 @@ bool DuktoWindow::nativeEvent(const QByteArray &eventType, void *message, long *
 void DuktoWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Back) {
         QString state = mGuiBehind->overlayState();
-        if (!state.isEmpty() && state != QStringLiteral("termspage")) {
+        if (state == QStringLiteral("progress")) {
+            event->accept();
+            return;
+        } else if (state == QStringLiteral("message") && mGuiBehind->messagePageBackState() == QStringLiteral("send")) {
+            emit mGuiBehind->gotoSendPage();
+            event->accept();
+            return;
+        } else if (!state.isEmpty() && state != QStringLiteral("termspage")) {
             emit mGuiBehind->hideAllOverlays();
             event->accept();
             return;
