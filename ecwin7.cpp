@@ -27,12 +27,8 @@ DEFINE_GUID(IID_ITaskbarList3,0xea1afb91,0x9e28,0x4b86,0x90,0xE9,0x9e,0x9f,0x8a,
 // Constructor: variabiles initialization
 EcWin7::EcWin7(QWindow *window)
 {
-#ifdef Q_OS_WIN
     mWindowId = reinterpret_cast<HWND>(window->winId());
     mTaskbarMessageId = RegisterWindowMessage(L"TaskbarButtonCreated");
-#else
-    Q_UNUSED(window)
-#endif
 }
 
 // Windows event handler callback function
