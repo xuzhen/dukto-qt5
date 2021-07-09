@@ -34,6 +34,13 @@
 #include <lmaccess.h>
 #endif
 
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
+#include <QtDBus/QDBusInterface>
+#include <QUrl>
+#include <unistd.h>
+#include <sys/types.h>
+#endif
+
 #if defined(Q_OS_ANDROID)
 #include <QProcess>
 #endif
@@ -164,36 +171,49 @@ QString Platform::getAndroidModel() {
 }
 #endif
 
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
 // Special function for Linux
 QString Platform::getLinuxAvatarPath()
 {
     QString path;
 
-    // Gnome2 check
-    path = QString(getenv("HOME")) + "/.face";
+    // Gnome2 / Xfce / KDE5 check
+    path = QString::fromUtf8(getenv("HOME")) + "/.face";
     if (QFile::exists(path)) return path;
 
-    // Gnome3 check
-    QFile f("/var/lib/AccountsService/users/" + QString(getenv("USER")));
-    if (!f.open(QFile::ReadOnly)) return "";
-    QTextStream ts(&f);
-    QString line;
-    bool found = false;
-    while (true) {
-        line = ts.readLine();
-        if (line.isNull()) break;
-        if (line.startsWith("Icon=")) {
-            static const QRegularExpression re("^Icon=(.*)$");
-            QRegularExpressionMatch match = re.match(line);
-            if (match.hasMatch() == false) continue;
-            path = match.captured(1);
-            found = true;
-            break;
+    // KDE5 check
+    path.append(".icon");
+    if (QFile::exists(path)) return path;
+
+    QString uid = QString::number(getuid());
+    auto getIconFromDbus = [&uid](const QString &service)->QString {
+        QDBusInterface iface(service, "/" + QString(service).replace(QChar('.'), QChar('/')) + "/User" + uid, service + ".User", QDBusConnection::systemBus());
+        if (iface.isValid()) {
+            QVariant iconFile = iface.property("IconFile");
+            if (iconFile.isValid()) {
+                QString path = iconFile.toString();
+                if (path.startsWith("file://")) {
+                    path = QUrl(path).toLocalFile();
+                }
+                if (QFile::exists(path)) {
+                    return path;
+                }
+            }
         }
+        return QString();
+    };
+
+    // Deepin check
+    path = getIconFromDbus("com.deepin.daemon.Accounts");
+    if (!path.isEmpty()) {
+        return path;
     }
-    f.close();
-    if (found && QFile::exists(path)) return path;
+
+    // Gnome3 check
+    path = getIconFromDbus("org.freedesktop.Accounts");
+    if (!path.isEmpty()) {
+        return path;
+    }
 
     // Not found
     return "";

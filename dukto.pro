@@ -1,4 +1,5 @@
 QT += network qml quickwidgets
+linux:!android:QT += dbus
 CONFIG += c++11
 
 #============Compiling Options=============

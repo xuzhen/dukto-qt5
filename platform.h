@@ -38,7 +38,7 @@ public:
     static QString getAndroidProperty(const QString &name);
     static QString getAndroidModel();
 #endif
-#if defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
     static QString getLinuxAvatarPath();
 #elif defined(Q_OS_MAC)
     static QString getMacTempAvatarPath();
