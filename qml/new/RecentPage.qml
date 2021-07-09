@@ -67,9 +67,9 @@ Item {
                      hoverEnabled: true
                      Connections {
                          function onClicked() {
-                             if (type == "text")
+                             if (type === "text")
                                 guiBehind.showTextSnippet(value, sender);
-                             else if (type == "file")
+                             else if (type === "file")
                                 guiBehind.openFile(value);
                          }
                      }

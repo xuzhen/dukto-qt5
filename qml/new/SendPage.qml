@@ -66,7 +66,7 @@ Rectangle {
 
     BuddyListElement {
         id: localBuddy
-        visible: destinationBuddy.ip != "IP"
+        visible: destinationBuddy.ip !== "IP"
         anchors.top: backIcon.bottom
         anchors.topMargin: 25
         anchors.left: parent.left
@@ -82,7 +82,7 @@ Rectangle {
 
     BuddyListElement {
         id: remoteBuddy
-        visible: destinationBuddy.ip == "IP"
+        visible: destinationBuddy.ip === "IP"
         anchors.top: backIcon.bottom
         anchors.topMargin: 25
         anchors.left: parent.left
@@ -98,7 +98,7 @@ Rectangle {
 
     Rectangle {
         id: destRect
-        visible: destinationBuddy.ip == "IP"
+        visible: destinationBuddy.ip === "IP"
         anchors.right: localBuddy.right
         anchors.bottom: localBuddy.bottom
         anchors.bottomMargin: 5

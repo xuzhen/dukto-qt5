@@ -49,8 +49,8 @@ Rectangle {
         anchors.right: parent.right
         Connections {
             function onClicked(command) {
-                if (command == "ip") showIpList();
-                if (command == "settings") showSettings();
+                if (command === "ip") showIpList();
+                if (command === "settings") showSettings();
             }
         }
     }

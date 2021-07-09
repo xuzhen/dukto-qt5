@@ -44,8 +44,8 @@ Rectangle {
         anchors.left: parent.left
         anchors.right: parent.right
         onClicked: {
-            if (command == "ip") showIpList();
-            if (command == "settings") showSettings();
+            if (command === "ip") showIpList();
+            if (command === "settings") showSettings();
         }
     }
 
