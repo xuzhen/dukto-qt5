@@ -106,6 +106,18 @@ bool DuktoWindow::nativeEvent(const QByteArray &eventType, void *message, long *
 }
 #endif
 
+void DuktoWindow::keyPressEvent(QKeyEvent *event) {
+    if (event->key() == Qt::Key_Back) {
+        QString state = mGuiBehind->overlayState();
+        if (!state.isEmpty() && state != QStringLiteral("termspage")) {
+            emit mGuiBehind->hideAllOverlays();
+            event->accept();
+            return;
+        }
+    }
+    QQuickWidget::keyPressEvent(event);
+}
+
 void DuktoWindow::dragEnterEvent(QDragEnterEvent *event)
 {
     if (event->mimeData()->hasUrls() && mGuiBehind->canAcceptDrop())

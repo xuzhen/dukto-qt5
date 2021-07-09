@@ -34,6 +34,10 @@
 #include <lmaccess.h>
 #endif
 
+#if defined(Q_OS_ANDROID)
+#include <QProcess>
+#endif
+
 // Returns the system username
 QString Platform::getSystemUsername()
 {
@@ -41,6 +45,9 @@ QString Platform::getSystemUsername()
     static QString username;
     if (!username.isEmpty()) return username;
 
+#ifdef Q_OS_ANDROID
+    username = "User";
+#else
     // Looking for the username
     QString uname(getenv("USERNAME"));
     if (uname.isEmpty())
@@ -50,7 +57,7 @@ QString Platform::getSystemUsername()
             uname = "Unknown";
     }
     username = uname.replace(0, 1, uname.at(0).toUpper());
-
+#endif
     return username;
 }
 
@@ -61,10 +68,13 @@ QString Platform::getHostname()
     static QString hostname;
     if (!hostname.isEmpty()) return hostname;
 
+#ifdef Q_OS_ANDROID
+    hostname = getAndroidModel().replace(QChar(' '), QChar('-'));
+#else
     // Get the hostname
     // (replace ".local" for MacOSX)
     hostname = QHostInfo::localHostName().replace(".local", "");
-
+#endif
     return hostname;
 }
 
@@ -75,6 +85,8 @@ QString Platform::getPlatformName()
     return "Windows";
 #elif defined(Q_OS_MAC)
     return "Macintosh";
+#elif defined(Q_OS_ANDROID)
+    return "Android";
 #elif defined(Q_OS_LINUX)
     return "Linux";
 #else
@@ -99,6 +111,8 @@ QString Platform::getAvatarPath()
     return path;
 #elif defined(Q_OS_MAC)
     return getMacTempAvatarPath();
+#elif defined(Q_OS_ANDROID)
+    return "";
 #elif defined(Q_OS_LINUX)
     return getLinuxAvatarPath();
 #else
@@ -114,6 +128,8 @@ QString Platform::getDefaultPath()
     return QString(getenv("USERPROFILE")) + "\\Desktop";
 #elif defined(Q_OS_MAC)
     return QString(getenv("HOME")) + "/Desktop";
+#elif defined(Q_OS_ANDROID)
+    return "/sdcard/Download";
 #elif defined(Q_OS_UNIX)
     return QString(getenv("HOME"));
 #else
@@ -121,6 +137,32 @@ QString Platform::getDefaultPath()
 #endif
 
 }
+
+#ifdef Q_OS_ANDROID
+QString Platform::getAndroidProperty(const QString &name) {
+    // Start the process
+    QProcess process;
+    process.start("getprop", QStringList() << name, QIODevice::ReadOnly);
+    if (!process.waitForFinished()) {
+        return QString();
+    }
+    return QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+}
+
+QString Platform::getAndroidModel() {
+    QString model = getAndroidProperty("ro.product.vender.model");
+    if (model.isEmpty()) {
+        model = getAndroidProperty("ro.product.product.model");
+        if (model.isEmpty()) {
+            model = getAndroidProperty("ro.product.model");
+            if (model.isEmpty()) {
+                model = "Android";
+            }
+        }
+    }
+    return model;
+}
+#endif
 
 #if defined(Q_OS_LINUX)
 // Special function for Linux

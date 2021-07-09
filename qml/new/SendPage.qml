@@ -72,6 +72,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: 30
         anchors.right: parent.right
+        anchors.rightMargin: 30
         buddyGeneric: destinationBuddy.genericAvatar
         buddyAvatar: destinationBuddy.avatar
         buddyOsLogo:destinationBuddy.osLogo
@@ -88,6 +89,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: 30
         anchors.right: parent.right
+        anchors.rightMargin: 30
         buddyGeneric: "UnknownLogo.png"
         buddyAvatar: ""
         buddyOsLogo: ""
@@ -99,13 +101,14 @@ Rectangle {
     Rectangle {
         id: destRect
         visible: destinationBuddy.ip === "IP"
+        anchors.left: localBuddy.left
         anchors.right: localBuddy.right
         anchors.bottom: localBuddy.bottom
         anchors.bottomMargin: 5
+        anchors.leftMargin: 74
         anchors.rightMargin: 20
         border.color: "#888888"
         border.width: 2
-        width: 225
         height: 25
 
         TextInput {
@@ -149,7 +152,7 @@ Rectangle {
         anchors.top: labelAction.bottom
         anchors.topMargin: 15
         anchors.left: localBuddy.left
-        width: 300
+        anchors.right: localBuddy.right
         buttonEnabled: guiBehind.currentTransferBuddy !== ""
         label: "Send some text"
         Connections {
@@ -164,7 +167,7 @@ Rectangle {
         anchors.top: buttonSendText.bottom
         anchors.topMargin: 15
         anchors.left: localBuddy.left
-        width: 300
+        anchors.right: localBuddy.right
         label: "Send text from clipboard"
         buttonEnabled: guiBehind.clipboardTextAvailable && (guiBehind.currentTransferBuddy !== "")
         Connections {
@@ -179,7 +182,7 @@ Rectangle {
         anchors.top: buttonSendClipboardText.bottom
         anchors.topMargin: 15
         anchors.left: localBuddy.left
-        width: 300
+        anchors.right: localBuddy.right
         buttonEnabled: guiBehind.currentTransferBuddy !== ""
         label: "Send some files"
         Connections {
@@ -194,7 +197,7 @@ Rectangle {
         anchors.top: buttonSendFiles.bottom
         anchors.topMargin: 15
         anchors.left: localBuddy.left
-        width: 300
+        anchors.right: localBuddy.right
         buttonEnabled: guiBehind.currentTransferBuddy !== ""
         label: "Send a folder"
         Connections {
@@ -209,7 +212,7 @@ Rectangle {
         anchors.top: buttonSendFolder.bottom
         anchors.topMargin: 15
         anchors.left: localBuddy.left
-        width: 300
+        anchors.right: localBuddy.right
         buttonEnabled: guiBehind.currentTransferBuddy !== ""
         label: "Send a screenshot"
         Connections {
@@ -221,11 +224,14 @@ Rectangle {
 */
     SText {
         id: labelDrop
+        visible: guiBehind.isDesktopApp()
         anchors.left: localBuddy.left
+        anchors.right: localBuddy.right
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 20
+        wrapMode: Text.Wrap
         font.pixelSize: 14
         color: "#888888"
-        text: "Or simply drag & drop some files and folders\nover this window to send them to your buddy."
+        text: "Or simply drag & drop some files and folders over this window to send them to your buddy."
     }
 }

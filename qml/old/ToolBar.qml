@@ -51,6 +51,7 @@ Item {
 
         Image {
             id: openFolderIcon
+            visible: guiBehind.isDesktopApp()
             anchors.top: parent.top
             anchors.topMargin: 5
             anchors.right: showIpIcon.left
@@ -65,6 +66,7 @@ Item {
             }
         }
         SText {
+            visible: guiBehind.isDesktopApp()
             anchors.top: openFolderIcon.bottom
             anchors.topMargin: 3
             anchors.horizontalCenter: openFolderIcon.horizontalCenter
@@ -79,6 +81,7 @@ Item {
             anchors.top: parent.top
             anchors.topMargin: 5
             anchors.horizontalCenter: parent.horizontalCenter
+            anchors.horizontalCenterOffset: guiBehind.isDesktopApp() ? 0 : -40
             source: "ShowIpIcon.png"
 
             MouseArea {

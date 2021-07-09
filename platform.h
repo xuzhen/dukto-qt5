@@ -34,6 +34,10 @@ public:
 
 // private:
     Platform() {}
+#if defined(Q_OS_ANDROID)
+    static QString getAndroidProperty(const QString &name);
+    static QString getAndroidModel();
+#endif
 #if defined(Q_OS_LINUX)
     static QString getLinuxAvatarPath();
 #elif defined(Q_OS_MAC)

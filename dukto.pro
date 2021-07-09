@@ -14,6 +14,15 @@ DEFINES += NOTIFY_LIBNOTIFY
 
 #==========================================
 
+android: {
+    DEFINES -= NOTIFY_LIBNOTIFY
+    DEFINES -= SINGLE_APP
+    DEFINES += MOBILE_APP
+}
+!linux: {
+    DEFINES -= NOTIFY_LIBNOTIFY
+}
+
 TARGET = dukto
 TEMPLATE = app
 
@@ -97,7 +106,7 @@ win32 {
 
 mac:ICON = dukto.icns
 
-linux: contains(DEFINES, NOTIFY_LIBNOTIFY) {
+contains(DEFINES, NOTIFY_LIBNOTIFY) {
     CONFIG+=link_pkgconfig
     PKGCONFIG+=libnotify
 }

@@ -38,7 +38,7 @@ Rectangle {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: 600
+            width: parent.width
         }
 
         Image {

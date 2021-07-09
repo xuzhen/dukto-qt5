@@ -261,6 +261,7 @@ Rectangle {
 
     CheckBox {
         id: nswitch
+        visible: guiBehind.isDesktopApp()
         anchors.top: cbox7.bottom
         anchors.left: labelPath.left
         anchors.topMargin: 30
@@ -276,6 +277,7 @@ Rectangle {
 
     CheckBox {
         id: cswitch
+        visible: guiBehind.isDesktopApp()
         anchors.top: nswitch.bottom
         anchors.left: labelPath.left
         anchors.topMargin: 25

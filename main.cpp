@@ -63,12 +63,14 @@ int main(int argc, char *argv[])
     }
 #endif
 
+#ifndef MOBILE_APP
     QCommandLineParser parser;
     parser.setApplicationDescription("Dukto is a simple, fast and multi-platform file transfer tool for LAN users.");
     parser.addHelpOption();
     QCommandLineOption hideOption(QStringList() << "H" << "hide", "Hide when launched");
     parser.addOption(hideOption);
     parser.process(app);
+#endif
 
     Settings settings;
 
@@ -83,7 +85,11 @@ int main(int argc, char *argv[])
     SystemTray tray(viewer, &settings);
 
     gb.setViewer(&viewer, &tray);
+#ifndef MOBILE_APP
     viewer.setVisible(!parser.isSet(hideOption));
+#else
+    viewer.showMaximized();
+#endif
     tray.show();
 
     return app.exec();

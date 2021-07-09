@@ -172,6 +172,7 @@ public slots:
     void changeThemeColor(const QString &color);
     void resetProgressStatus();
     void abortTransfer();
+    bool isDesktopApp();
 
 private:
     DuktoWindow *mView = nullptr;

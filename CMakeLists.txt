@@ -12,13 +12,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+if(CMAKE_VERSION VERSION_LESS "3.7.0" AND CMAKE_SYSTEM_NAME STREQUAL "Android")
+    set(ANDROID 1)
+endif()
+
 if(USE_UPDATER)
     add_definitions("-DUPDATER")
 endif()
-if(USE_SINGLE_APP)
+if(USE_SINGLE_APP AND NOT ANDROID)
     add_definitions("-DSINGLE_APP")
 endif()
-if(USE_NOTIFY_LIBNOTIFY AND UNIX AND NOT APPLE)
+if(USE_NOTIFY_LIBNOTIFY AND UNIX AND NOT APPLE AND NOT ANDROID)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBNOTIFY REQUIRED libnotify)
     add_definitions("-DNOTIFY_LIBNOTIFY")
@@ -105,7 +109,7 @@ if(WIN32)
     list(APPEND DUKTO_RESOURCES dukto.rc)
 endif()
 
-if(USE_SINGLE_APP)
+if(USE_SINGLE_APP AND NOT ANDROID)
     set(QAPPLICATION_CLASS "QApplication")
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules/SingleApplication)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/modules/SingleApplication)
@@ -116,7 +120,7 @@ add_executable(${PROJECT_NAME}
                 ${DUKTO_SRC}
                 ${DUKTO_RESOURCES})
 
-if(USE_SINGLE_APP)
+if(USE_SINGLE_APP AND NOT ANDROID)
     add_dependencies(${PROJECT_NAME} SingleApplication)
     link_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/SingleApplication)
     target_link_libraries(${PROJECT_NAME} SingleApplication)
@@ -138,7 +142,7 @@ If (APPLE)
     target_link_options(${PROJECT_NAME} PRIVATE "${CORE_SERVICES}/CoreServices.tbd")
 endif()
 
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT ANDROID)
     install(TARGETS ${PROJECT_NAME}
             DESTINATION bin)
     install(FILES dukto.png

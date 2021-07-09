@@ -20,8 +20,6 @@ import QtQuick 2.3
 
 Rectangle {
     id: mainElement
-    width: 360
-    height: 500
 
     FontLoader {
         id: duktofont

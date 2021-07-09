@@ -850,3 +850,11 @@ void GuiBehind::setCloseToTray(bool enabled) {
 bool GuiBehind::closeToTray() {
     return mSettings->closeToTrayEnabled();
 }
+
+bool GuiBehind::isDesktopApp() {
+#ifdef MOBILE_APP
+    return false;
+#else
+    return true;
+#endif
+}
