@@ -40,7 +40,7 @@ Rectangle {
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: parent.width
+            width: parent.width * 2
         }
 
         Image {
