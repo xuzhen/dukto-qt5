@@ -24,8 +24,6 @@
 #include "updateschecker.h"
 #include "systemtray.h"
 
-#include <QHash>
-#include <QQuickWidget>
 #include <QQmlContext>
 #include <QTimer>
 #include <QDesktopServices>
@@ -33,10 +31,7 @@
 #include <QFileDialog>
 #include <QClipboard>
 #include <QApplication>
-#include <QQmlProperty>
-#include <QGraphicsObject>
 #include <QRegularExpression>
-#include <QThread>
 #include <QTemporaryFile>
 #include <QScreen>
 
