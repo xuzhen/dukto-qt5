@@ -34,8 +34,8 @@ Rectangle {
         id: textLabel
         anchors.fill: parent
         color: buttonEnabled ? theme.color2 : "#cccccc"
-        horizontalAlignment: "AlignHCenter"
-        verticalAlignment: "AlignVCenter"
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
         font.pixelSize: 12
     }
 

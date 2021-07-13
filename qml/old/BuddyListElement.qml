@@ -127,7 +127,7 @@ Flipable {
            anchors.right: parent.right
            anchors.rightMargin: 20
            font.pixelSize: 16
-           elide: "ElideRight"
+           elide: Text.ElideRight
            color: "#555555"
        }
        SText {
@@ -139,7 +139,7 @@ Flipable {
            anchors.right: parent.right
            anchors.rightMargin: 20
            font.pixelSize: 14
-           elide: "ElideRight"
+           elide: Text.ElideRight
            color: "#555555"
        }
    }

@@ -41,7 +41,7 @@ Item {
             anchors.fill: parent
             anchors.margins: 10
             font.pixelSize: 14
-            wrapMode: "WordWrap"
+            wrapMode: Text.WordWrap
             text: "A new release is available, click here to download it!"
         }
 

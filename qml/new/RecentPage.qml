@@ -110,7 +110,7 @@ Item {
                      anchors.rightMargin: 20
                      font.pixelSize: 14
                      color: "#555555"
-                     elide: "ElideRight"
+                     elide: Text.ElideRight
                      text: name
                  }
                  SText {
@@ -121,7 +121,7 @@ Item {
                      anchors.bottom: fileImage.bottom
                      anchors.bottomMargin: -1
                      font.pixelSize: 12
-                     elide: "ElideRight"
+                     elide: Text.ElideRight
                      color: "#888888"
                      text: "from " + sender + ", " + dateTime
                  }

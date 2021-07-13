@@ -93,9 +93,9 @@ Rectangle {
             anchors.leftMargin: 5
             anchors.rightMargin: 5
             anchors.fill: parent
-            horizontalAlignment: "AlignLeft"
-            verticalAlignment: "AlignVCenter"
-            elide: "ElideMiddle"
+            horizontalAlignment: Text.AlignLeft
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideMiddle
             font.pixelSize: 12
             text: guiBehind.currentPath
         }

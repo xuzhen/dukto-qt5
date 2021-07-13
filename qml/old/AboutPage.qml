@@ -76,7 +76,7 @@ Flickable {
             y: 240
             font.pixelSize: 12
             color: "#888888"
-            wrapMode: "WordWrap"
+            wrapMode: Text.WordWrap
             text: "This application and it's source code are released freely as open source project.<br>If you like this application please consider <a href=\"https://www.msec.it/\">making a donation</a>."
             onLinkActivated: Qt.openUrlExternally(link)
         }

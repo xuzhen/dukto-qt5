@@ -75,7 +75,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: 20
         anchors.topMargin: 45
-        elide: "ElideRight"
+        elide: Text.ElideRight
         font.pixelSize: 16
         text: (guiBehind.textSnippetSending ? "to " : "from ") + guiBehind.textSnippetBuddy
         color: "#888888"

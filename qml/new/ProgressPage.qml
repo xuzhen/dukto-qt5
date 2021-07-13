@@ -80,7 +80,7 @@ Rectangle {
             anchors.leftMargin: 17
             anchors.right: progressBar.right
             anchors.topMargin: 45
-            elide: "ElideRight"
+            elide: Text.ElideRight
             font.pixelSize: 16
             text: (guiBehind.currentTransferSending ? "to " : "from ") + guiBehind.currentTransferBuddy
         }
@@ -130,7 +130,7 @@ Rectangle {
             anchors.leftMargin: 17
             anchors.rightMargin: 17            
             font.pixelSize: 17
-            elide: "ElideRight"
+            elide: Text.ElideRight
             text: guiBehind.currentTransferStats
         }
     }

@@ -34,8 +34,8 @@ Rectangle {
         id: textLabel
         anchors.fill: parent
         color: buttonEnabled ? (buttonArea.containsMouse ? theme.color2 : "#ffffff") : "#cccccc"
-        horizontalAlignment: "AlignHCenter"
-        verticalAlignment: "AlignVCenter"
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
         font.pixelSize: 12
     }
 
