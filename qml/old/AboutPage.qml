@@ -18,57 +18,67 @@
 
 import QtQuick 2.3
 
-Item {
+Flickable {
+    clip: true
+    interactive: !guiBehind.isDesktopApp()
+    flickableDirection: Flickable.VerticalFlick
+    contentHeight: container.height
 
-    Rectangle {
-        x: 27
-        y: 15
-        width: 64
-        height: 64
-        color: theme.color2
-        Image {
-            source: "TileGradient.png"
-            anchors.fill: parent
-        }
-        Image {
-            source: "DuktoMetroIcon.png"
-            anchors.fill: parent
-        }
-    }
-
-    SmoothText {
-        y: 80
-        x: 22
-        font.pixelSize: 100
-        text: "Dukto R6"
-        color: "#555555"
-    }
-    SmoothText {
-        x: 25
-        y: 70 + 75
-        font.pixelSize: 38
-        text: "Created by Emanuele Colombo"
-        color: "#888888"
-    }
-    SmoothText {
-        x: 25
-        y: 100 + 75
-        font.pixelSize: 32
-        text: "Website: <a href=\"https://www.msec.it/blog/dukto/\">https://www.msec.it/blog/dukto/</a>"
-        onLinkActivated: Qt.openUrlExternally(link)
-        color: "#888888"
-    }
-
-    SText {
-        anchors.right: parent.right
-        anchors.rightMargin: 40
+    Item {
+        id: container
         anchors.left: parent.left
-        anchors.leftMargin: 25
-        y: 240
-        font.pixelSize: 12
-        color: "#888888"
-        wrapMode: "WordWrap"
-        text: "This application and it's source code are released freely as open source project.<br>If you like this application please consider <a href=\"https://www.msec.it/\">making a donation</a>."
-        onLinkActivated: Qt.openUrlExternally(link)
+        anchors.right: parent.right
+
+        Rectangle {
+            x: 27
+            y: 15
+            width: 64
+            height: 64
+            color: theme.color2
+            Image {
+                source: "TileGradient.png"
+                anchors.fill: parent
+            }
+            Image {
+                source: "DuktoMetroIcon.png"
+                anchors.fill: parent
+            }
+        }
+
+        SmoothText {
+            y: 80
+            x: 22
+            font.pixelSize: 100
+            text: "Dukto R6"
+            color: "#555555"
+        }
+        SmoothText {
+            x: 25
+            y: 70 + 75
+            font.pixelSize: 38
+            text: "Created by Emanuele Colombo"
+            color: "#888888"
+        }
+        SmoothText {
+            x: 25
+            y: 100 + 75
+            font.pixelSize: 32
+            text: "Website: <a href=\"https://www.msec.it/blog/dukto/\">https://www.msec.it/blog/dukto/</a>"
+            onLinkActivated: Qt.openUrlExternally(link)
+            color: "#888888"
+        }
+
+        SText {
+            anchors.right: parent.right
+            anchors.rightMargin: 40
+            anchors.left: parent.left
+            anchors.leftMargin: 25
+            y: 240
+            font.pixelSize: 12
+            color: "#888888"
+            wrapMode: "WordWrap"
+            text: "This application and it's source code are released freely as open source project.<br>If you like this application please consider <a href=\"https://www.msec.it/\">making a donation</a>."
+            onLinkActivated: Qt.openUrlExternally(link)
+        }
     }
 }
