@@ -94,7 +94,7 @@ Rectangle {
             PropertyChanges {
                 target: buddiesPage
                 opacity: 0
-                x: -360
+                x: -buddiesPage.width
             }
             PropertyChanges {
                 target: recentPage
@@ -108,12 +108,12 @@ Rectangle {
             PropertyChanges {
                 target: buddiesPage
                 opacity: 0
-                x: -360
+                x: -buddiesPage.width
             }
             PropertyChanges {
                 target: recentPage
                 opacity: 0
-                x: -360
+                x: -recentPage.width
             }
             PropertyChanges {
                 target: aboutPage
