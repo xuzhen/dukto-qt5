@@ -45,7 +45,7 @@ DuktoWindow::DuktoWindow(GuiBehind *gb, Settings *settings, QWidget *parent) :
     setAcceptDrops(true);
     setWindowTitle("Dukto");
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
-    setMaximumSize(350, 5000);
+    setMaximumWidth(350);
     setMinimumSize(350, 500);
     setWindowIcon(QIcon(":/dukto.png"));
     setResizeMode(QQuickWidget::SizeRootObjectToView);
