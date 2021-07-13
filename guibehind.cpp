@@ -85,15 +85,12 @@ GuiBehind::GuiBehind(Settings *settings) :
     // Register other signals
     connect(this, &GuiBehind::remoteDestinationAddressChanged, this, &GuiBehind::remoteDestinationAddressHandler);
 
-    // Say "hello"
-    mDuktoProtocol.setPorts(NETWORK_PORT, NETWORK_PORT);
-    mDuktoProtocol.initialize();
-    mDuktoProtocol.sayHello(QHostAddress::Broadcast);
-
     // Periodic "hello" timer
     mPeriodicHelloTimer = new QTimer(this);
     connect(mPeriodicHelloTimer, &QTimer::timeout, this, &GuiBehind::periodicHello);
-    mPeriodicHelloTimer->start(60000);
+
+    // Setup protocol
+    initialize();
 
     // Start random rotate
     mShowBackTimer = new QTimer(this);
@@ -523,6 +520,9 @@ void GuiBehind::remoteDestinationAddressHandler()
 bool GuiBehind::canAcceptDrop()
 {
     QString state = overlayState();
+    if (state == "termspage" || state == "initerr") {
+        return false;
+    }
     // There must be the send page shown and,
     // if it's a remote destination, it must have an IP
     if (state == "send")
@@ -846,10 +846,38 @@ bool GuiBehind::closeToTray() {
     return mSettings->closeToTrayEnabled();
 }
 
+void GuiBehind::setInitError(const QString &error) {
+    if (error != mInitError) {
+        mInitError = error;
+        emit initErrorChanged();
+    }
+}
+
+QString GuiBehind::initError() {
+    return mInitError;
+}
+
 bool GuiBehind::isDesktopApp() {
 #ifdef MOBILE_APP
     return false;
 #else
     return true;
 #endif
+}
+
+void GuiBehind::initialize() {
+    if (mDuktoProtocol.setupUdpServer(NETWORK_PORT) == false) {
+        mDuktoProtocol.closeServers();
+        setInitError(QStringLiteral("The UDP port %1 has been used by another application. Please quit that application and try again.").arg(QString::number(NETWORK_PORT)));
+        return;
+    }
+    if (mDuktoProtocol.setupTcpServer(NETWORK_PORT) == false) {
+        mDuktoProtocol.closeServers();
+        setInitError(QStringLiteral("The TCP port %1 has been used by another application. Please quit that application and try again.").arg(QString::number(NETWORK_PORT)));
+        return;
+    }
+    setInitError(QString(""));
+    // Say "hello"
+    mDuktoProtocol.sayHello(QHostAddress::Broadcast);
+    mPeriodicHelloTimer->start(60000);
 }

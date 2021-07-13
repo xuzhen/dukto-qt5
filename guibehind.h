@@ -57,6 +57,7 @@ class GuiBehind : public QObject
     Q_PROPERTY(QString buddyName READ buddyName WRITE setBuddyName NOTIFY buddyNameChanged)
     Q_PROPERTY(bool showNotification READ showNotification WRITE setShowNotification NOTIFY showNotificationChanged)
     Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
+    Q_PROPERTY(QString initError READ initError WRITE setInitError NOTIFY initErrorChanged)
 
 public:
     explicit GuiBehind(Settings* settings);
@@ -104,6 +105,8 @@ public:
     bool showNotification();
     void setCloseToTray(bool enabled);
     bool closeToTray();
+    void setInitError(const QString &error);
+    QString initError();
 
 protected:
     bool eventFilter(QObject *, QEvent *event);
@@ -128,6 +131,7 @@ signals:
     void buddyNameChanged();
     void showNotificationChanged();
     void closeToTrayChanged();
+    void initErrorChanged();
 
     // Received by QML
     void transferStart();
@@ -173,6 +177,7 @@ public slots:
     void resetProgressStatus();
     void abortTransfer();
     bool isDesktopApp();
+    void initialize();
 
 private:
     DuktoWindow *mView = nullptr;
@@ -204,6 +209,7 @@ private:
     QString mMessagePageBackState;
     bool mShowUpdateBanner;
     QString mScreenTempPath;
+    QString mInitError;
 
     bool prepareStartTransfer(QString *ip, qint16 *port);
     void startTransfer(const QStringList &files);

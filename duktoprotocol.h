@@ -37,8 +37,9 @@ class DuktoProtocol : public QObject
 public:
     DuktoProtocol(QObject *parent = nullptr);
     virtual ~DuktoProtocol();
-    void initialize();
-    void setPorts(qint16 udp, qint16 tcp);
+    bool setupUdpServer(quint16 port);
+    bool setupTcpServer(quint16 port);
+    void closeServers();
     void sayHello(const QHostAddress &dest);
     void sayHello(const QHostAddress &dest, qint16 port);
     void sayGoodbye();

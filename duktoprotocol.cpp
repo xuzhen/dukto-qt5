@@ -54,21 +54,45 @@ DuktoProtocol::~DuktoProtocol()
     delete mCurrentFile;
 }
 
-void DuktoProtocol::initialize()
+bool DuktoProtocol::setupUdpServer(quint16 port)
 {
-    mSocket = new QUdpSocket(this);
-    mSocket->bind(QHostAddress::Any, mLocalUdpPort);
-    connect(mSocket, &QUdpSocket::readyRead, this, &DuktoProtocol::newUdpData);
-
-    mTcpServer = new QTcpServer(this);
-    mTcpServer->listen(QHostAddress::Any, mLocalTcpPort);
-    connect(mTcpServer, &QTcpServer::newConnection, this, &DuktoProtocol::newIncomingConnection);
+    if (mSocket == nullptr) {
+        mSocket = new QUdpSocket(this);
+    }
+    if (mLocalUdpPort != port && mSocket->state() == QUdpSocket::BoundState) {
+        mLocalUdpPort = port;
+        mSocket->close();
+    }
+    if (mSocket->state() != QUdpSocket::BoundState && mSocket->bind(QHostAddress::Any, mLocalUdpPort) == false) {
+        return false;
+    }
+    connect(mSocket, &QUdpSocket::readyRead, this, &DuktoProtocol::newUdpData, Qt::UniqueConnection);
+    return true;
 }
 
-void DuktoProtocol::setPorts(qint16 udp, qint16 tcp)
+bool DuktoProtocol::setupTcpServer(quint16 port)
 {
-    mLocalUdpPort = udp;
-    mLocalTcpPort = tcp;
+    if (mTcpServer == nullptr) {
+        mTcpServer = new QTcpServer(this);
+    }
+    if (mLocalTcpPort != port && mTcpServer->isListening()) {
+        mLocalTcpPort = port;
+        mTcpServer->close();
+    }
+    if (mTcpServer->isListening() == false && mTcpServer->listen(QHostAddress::Any, mLocalTcpPort) == false) {
+        return false;
+    }
+    connect(mTcpServer, &QTcpServer::newConnection, this, &DuktoProtocol::newIncomingConnection, Qt::UniqueConnection);
+    return true;
+}
+
+void DuktoProtocol::closeServers() {
+    if (mSocket != nullptr) {
+        mSocket->close();
+    }
+    if (mTcpServer != nullptr) {
+        mTcpServer->close();
+    }
 }
 
 QByteArray DuktoProtocol::getSystemSignature()
@@ -89,6 +113,9 @@ void DuktoProtocol::sayHello(const QHostAddress &dest)
 
 void DuktoProtocol::sayHello(const QHostAddress &dest, qint16 port)
 {
+    if (mSocket->state() != mSocket->BoundState) {
+        return;
+    }
     // Preparazione pacchetto
     QByteArray packet;
     if ((port == DEFAULT_UDP_PORT) && (mLocalUdpPort == DEFAULT_UDP_PORT))
@@ -122,6 +149,9 @@ void DuktoProtocol::sayHello(const QHostAddress &dest, qint16 port)
 
 void DuktoProtocol::sayGoodbye()
 {
+    if (mSocket->state() != mSocket->BoundState) {
+        return;
+    }
     // Create packet
     QByteArray packet;
     packet.append(MSG_GOODBYE);
@@ -803,6 +833,9 @@ qint64 DuktoProtocol::computeTotalSize(const QStringList& e)
 // Invia un pacchetto a tutti gli indirizzi broadcast del PC
 void DuktoProtocol::sendToAllBroadcast(const QByteArray& packet, const QList<qint16>& ports)
 {
+    if (mSocket->state() != mSocket->BoundState) {
+        return;
+    }
     // Elenco interfacce disponibili
     QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
 

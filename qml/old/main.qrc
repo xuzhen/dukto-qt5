@@ -12,6 +12,7 @@
         <file>Dukto.qml</file>
         <file>DuktoInner.qml</file>
         <file>DuktoOverlay.qml</file>
+        <file>InitErrPage.qml</file>
         <file>IpPage.qml</file>
         <file>MessagePage.qml</file>
         <file>ProgressPage.qml</file>

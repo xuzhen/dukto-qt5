@@ -20,7 +20,7 @@ import QtQuick 2.3
 
 Rectangle {
     color: "#00000000"
-    state: guiBehind.showTermsOnStart ? "termspage" : ""
+    state: guiBehind.showTermsOnStart ? "termspage" : (guiBehind.initError !== "" ? "initerr" : "")
 
     function refreshSettingsColor() {
 
@@ -139,7 +139,20 @@ Rectangle {
         Connections {
             function onOk() {
                 guiBehind.showTermsOnStart = false;
-                state = ""
+            }
+        }
+    }
+
+    InitErrPage {
+        id: initErrPage
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: parent.width
+        x: -parent.width
+        opacity: 0
+        Connections {
+            function onRetry() {
+                guiBehind.initialize();
             }
         }
     }
@@ -214,6 +227,19 @@ Rectangle {
                 target: termsPage
                 opacity: 1
                 x: 0
+            }
+        },
+        State {
+            name: "initerr"
+            PropertyChanges {
+                target: initErrPage
+                opacity: 1
+                x: 0
+            }
+            PropertyChanges {
+                target: disabler
+                opacity: 1
+                visible: true
             }
         }
     ]

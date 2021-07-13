@@ -116,7 +116,7 @@ void DuktoWindow::keyPressEvent(QKeyEvent *event) {
             emit mGuiBehind->gotoSendPage();
             event->accept();
             return;
-        } else if (!state.isEmpty() && state != QStringLiteral("termspage")) {
+        } else if (!state.isEmpty() && state != QStringLiteral("termspage") && state != QStringLiteral("initerr")) {
             emit mGuiBehind->hideAllOverlays();
             event->accept();
             return;
