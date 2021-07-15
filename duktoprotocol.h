@@ -65,7 +65,7 @@ signals:
      void peerListAdded(Peer peer);
      void peerListRemoved(Peer peer);
      void sendFileComplete();
-     void sendFileError(int code);
+     void sendFileError(int code, QString error);
      void sendFileAborted();
      void receiveFileStart(QString senderIp);
      void receiveFileComplete(QStringList *files, qint64 totalSize);

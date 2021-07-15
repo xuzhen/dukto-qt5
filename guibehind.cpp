@@ -541,10 +541,14 @@ bool GuiBehind::canAcceptDrop()
 }
 
 // Handles send error
-void GuiBehind::sendFileError(int code)
+void GuiBehind::sendFileError(int code, const QString &error)
 {
     setMessagePageTitle("Error");
-    setMessagePageText("Sorry, an error has occurred while sending your data...\n\nError code: " + QString::number(code));
+    if (error.isEmpty()) {
+        setMessagePageText("Sorry, an error has occurred while sending your data...\n\nError code: " + QString::number(code));
+    } else {
+        setMessagePageText("Sorry, an error has occurred while sending your data...\n\n" + error);
+    }
     setMessagePageBackState("send");
 #ifdef Q_OS_WIN
     mView->stopTaskbarProgress();

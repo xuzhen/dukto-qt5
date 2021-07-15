@@ -157,7 +157,7 @@ public slots:
     void receiveFileComplete(QStringList *files, qint64 totalSize);
     void receiveTextComplete(QString *text, qint64 totalSize);
     void sendFileComplete();
-    void sendFileError(int code);
+    void sendFileError(int code, const QString &error);
     void receiveFileCancelled();
     void sendFileAborted();
 

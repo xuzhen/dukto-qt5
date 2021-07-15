@@ -493,11 +493,20 @@ void DuktoProtocol::sendFile(const QString &ipDest, qint16 port, const QStringLi
 
     // Verifica altre attività in corso
     if (mIsReceiving || mIsSending) return;
-    mIsSending = true;
 
     // File da inviare
     mFilesToSend = expandTree(files);
     mFileCounter = 0;
+
+    // All files should be readable
+    for (QStringList::const_iterator iter = mFilesToSend.constBegin(); iter != mFilesToSend.constEnd(); ++iter) {
+        if (!QFileInfo(*iter).isReadable()) {
+            emit sendFileError(0, "Can not read file " + *iter);
+            return;
+        }
+    }
+
+    mIsSending = true;
 
     // Connessione al destinatario
     mCurrentSocket = new QTcpSocket(this);
@@ -705,8 +714,10 @@ void DuktoProtocol::updateStatus()
 // In caso di errore di connessione
 void DuktoProtocol::sendConnectError(QAbstractSocket::SocketError e)
 {
+    QString error;
     if (mCurrentSocket)
     {
+        error = mCurrentSocket->errorString();
         mCurrentSocket->close();
         mCurrentSocket->deleteLater();
         mCurrentSocket = nullptr;
@@ -718,7 +729,7 @@ void DuktoProtocol::sendConnectError(QAbstractSocket::SocketError e)
         mCurrentFile = nullptr;
     }
     mIsSending = false;
-    emit sendFileError(e);
+    emit sendFileError(e, error);
 }
 
 // Dato un elenco di file e cartelle, viene espanso in modo da
