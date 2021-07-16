@@ -96,7 +96,11 @@ void DuktoWindow::activateWindow() {
 }
 
 #ifdef Q_OS_WIN
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool DuktoWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result) {
+#else
 bool DuktoWindow::nativeEvent(const QByteArray &eventType, void *message, long *result) {
+#endif
     Q_UNUSED(eventType)
     if (mWin7 != nullptr) {
         return mWin7->winEvent(reinterpret_cast<MSG*>(message), result);

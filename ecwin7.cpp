@@ -33,7 +33,7 @@ EcWin7::EcWin7(QWindow *window)
 
 // Windows event handler callback function
 // (handles taskbar communication initial message)
-bool EcWin7::winEvent(MSG * message, long * result)
+bool EcWin7::winEvent(MSG * message, void * result)
 {
     if (message->message == mTaskbarMessageId)
     {
@@ -42,7 +42,7 @@ bool EcWin7::winEvent(MSG * message, long * result)
                                       CLSCTX_INPROC_SERVER,
                                       IID_ITaskbarList3,
                                       reinterpret_cast<void**> (&(mTaskbar)));
-        *result = hr;
+        *static_cast<HRESULT *>(result) = hr;
         return true;
     }
     return false;

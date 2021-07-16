@@ -122,7 +122,7 @@ public:
 
     // Initialization methods
     explicit EcWin7(QWindow *window);
-    bool winEvent(MSG * message, long * result);
+    bool winEvent(MSG * message, void * result);
     // Overlay icon handling
     void setOverlayIcon(const QString &iconName, const QString &description);
     void setProgressValue(int value, int max);
