@@ -156,6 +156,19 @@ void BuddyListItemModel::removeBuddy(const QString &ip)
     this->removeRow(this->indexFromItem(it).row());
 }
 
+void BuddyListItemModel::clearBuddies() {
+    // Keep first two rows: Me and Ip
+    removeRows(2, rowCount() - 2);
+
+    QMutableHashIterator<QString, QStandardItem*> iter(mItemsMap);
+    while (iter.hasNext()) {
+        iter.next();
+        if (iter.key() != "IP") {
+            iter.remove();
+        }
+    }
+}
+
 void BuddyListItemModel::showSingleBack(int idx)
 {
     for (int i = 0; i < rowCount(); i++)

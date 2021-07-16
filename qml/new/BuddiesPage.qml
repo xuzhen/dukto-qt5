@@ -21,6 +21,27 @@ import QtQuick 2.3
 Item {
     clip: true
 
+    SText {
+        id: refreshLabel
+        anchors.right: parent.right
+        anchors.left: parent.left
+        anchors.top: parent.top
+        color: "#888888"
+        wrapMode: Text.WordWrap
+        text: "Refresh Buddies"
+        horizontalAlignment: Text.AlignHCenter
+        visible: buddiesList.draggingVertically && buddiesList.contentY < -(height + 20)
+
+        Connections {
+            function onVisibleChanged() {
+                // ListView's onFlickStarted event is not reliable
+                if (!buddiesList.draggingVertically && buddiesList.contentY < -(refreshLabel.height + 20)) {
+                    guiBehind.refreshNeighbors();
+                }
+            }
+        }
+    }
+
     ListView {
         id: buddiesList
         anchors.fill: parent

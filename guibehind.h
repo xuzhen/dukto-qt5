@@ -145,7 +145,6 @@ public slots:
     void showRandomBack();
     void clipboardChanged();
     void remoteDestinationAddressHandler();
-    void periodicHello();
     void showUpdatesMessage();
     void sendScreenStage2();
 
@@ -178,6 +177,10 @@ public slots:
     void abortTransfer();
     bool isDesktopApp();
     void initialize();
+    void refreshNeighbors();
+
+private slots:
+    void discoveryNeighbors();
 
 private:
     DuktoWindow *mView = nullptr;

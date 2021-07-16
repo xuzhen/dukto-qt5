@@ -87,7 +87,7 @@ GuiBehind::GuiBehind(Settings *settings) :
 
     // Periodic "hello" timer
     mPeriodicHelloTimer = new QTimer(this);
-    connect(mPeriodicHelloTimer, &QTimer::timeout, this, &GuiBehind::periodicHello);
+    connect(mPeriodicHelloTimer, &QTimer::timeout, this, &GuiBehind::discoveryNeighbors);
 
     // Setup protocol
     initialize();
@@ -582,7 +582,7 @@ bool GuiBehind::eventFilter(QObject *, QEvent *event)
 {
     // On application activatio, I send a broadcast hello
     if (event->type() == QEvent::ApplicationActivate)
-        mDuktoProtocol.sayHello(QHostAddress::Broadcast);
+        discoveryNeighbors();
 
     return false;
 }
@@ -608,8 +608,8 @@ void GuiBehind::resetProgressStatus()
 #endif
 }
 
-// Periodic hello sending
-void GuiBehind::periodicHello()
+// Broadcast hello
+void GuiBehind::discoveryNeighbors()
 {
     mDuktoProtocol.sayHello(QHostAddress::Broadcast);
 }
@@ -882,6 +882,11 @@ void GuiBehind::initialize() {
     }
     setInitError(QString(""));
     // Say "hello"
-    mDuktoProtocol.sayHello(QHostAddress::Broadcast);
+    discoveryNeighbors();
     mPeriodicHelloTimer->start(60000);
+}
+
+void GuiBehind::refreshNeighbors() {
+    mBuddiesList.clearBuddies();
+    discoveryNeighbors();
 }

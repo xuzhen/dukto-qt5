@@ -33,6 +33,7 @@ public:
     void addBuddy(const QString &ip, qint16 port, const QString &username, const QString &system, const QString &platform, const QUrl &avatarPath);
     void addBuddy(const Peer &peer);
     void removeBuddy(const QString &ip);
+    void clearBuddies();
     void showSingleBack(int idx);
     void updateMeElement();
     QString buddyNameByIp(const QString &ip);
