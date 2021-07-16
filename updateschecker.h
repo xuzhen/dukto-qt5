@@ -35,7 +35,7 @@ public:
 signals:
     void updatesAvailable();
 
-public slots:
+private slots:
     void updatedDataReady(QNetworkReply *reply);
 
 private:

@@ -51,7 +51,7 @@ public:
     void abortCurrentTransfer();
     void updateBuddyName();
     
-public slots:
+private slots:
     void newUdpData();
     void newIncomingConnection();
     void readNewData();

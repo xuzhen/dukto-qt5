@@ -142,12 +142,6 @@ signals:
     void hideAllOverlays();
 
 public slots:
-    void showRandomBack();
-    void clipboardChanged();
-    void remoteDestinationAddressHandler();
-    void showUpdatesMessage();
-    void sendScreenStage2();
-
     // Called by Dukto protocol
     void peerListAdded(const Peer &peer);
     void peerListRemoved(const Peer &peer);
@@ -180,6 +174,11 @@ public slots:
     void refreshNeighbors();
 
 private slots:
+    void showRandomBack();
+    void clipboardChanged();
+    void remoteDestinationAddressHandler();
+    void showUpdatesMessage();
+    void sendScreenStage2();
     void discoveryNeighbors();
 
 private:
