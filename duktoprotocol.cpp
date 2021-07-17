@@ -853,6 +853,9 @@ void DuktoProtocol::sendToAllBroadcast(const QByteArray& packet, const QList<qin
     // Iterazione sulle interfacce
     for(QList<QNetworkInterface>::const_iterator iface = ifaces.constBegin(); iface != ifaces.constEnd(); ++iface)
     {
+        if (iface->flags().testFlag(QNetworkInterface::IsUp) == false) {
+            continue;
+        }
         // Iterazione per tutti gli IP dell'interfaccia
         QList<QNetworkAddressEntry> addrs = iface->addressEntries();
 
