@@ -151,7 +151,7 @@ public slots:
     void receiveTextComplete(QString *text, qint64 totalSize);
     void sendFileComplete();
     void sendFileError(int code, const QString &error);
-    void receiveFileCancelled();
+    void receiveFileCancelled(const QString &error);
     void sendFileAborted();
 
     // Called by QML

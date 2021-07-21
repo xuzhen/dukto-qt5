@@ -566,10 +566,10 @@ void GuiBehind::sendFileError(int code, const QString &error)
 }
 
 // Handles receive error
-void GuiBehind::receiveFileCancelled()
+void GuiBehind::receiveFileCancelled(const QString &error)
 {
     setMessagePageTitle("Error");
-    setMessagePageText("An error has occurred during the transfer... The data you received could be incomplete or broken.");
+    setMessagePageText("An error has occurred during the transfer... The data you received could be incomplete or broken.\n\n" + error);
     setMessagePageBackState("");
 #ifdef Q_OS_WIN
     mView->stopTaskbarProgress();

@@ -70,7 +70,7 @@ signals:
      void receiveFileStart(QString senderIp);
      void receiveFileComplete(QStringList *files, qint64 totalSize);
      void receiveTextComplete(QString *text, qint64 totalSize);
-     void receiveFileCancelled();
+     void receiveFileCancelled(QString error);
      void transferStatusUpdate(qint64 total, qint64 partial);
 
 private:

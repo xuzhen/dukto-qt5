@@ -321,7 +321,7 @@ void DuktoProtocol::readNewData()
                     // Creo la cartella
                     if (!QDir(".").mkpath(name))
                     {
-                        emit receiveFileCancelled();
+                        emit receiveFileCancelled(QStringLiteral("Failed to create directory %1").arg(QDir(destDir).filePath(name)));
                         // Chiusura socket
                         if (mCurrentSocket)
                         {
@@ -373,7 +373,7 @@ void DuktoProtocol::readNewData()
                     bool ret = mCurrentFile->open(QIODevice::WriteOnly);
                     if (!ret)
                     {
-                        emit receiveFileCancelled();
+                        emit receiveFileCancelled(QStringLiteral("Can not write to %1").arg(name));
                         // Chiusura socket
                         if (mCurrentSocket)
                         {
@@ -454,7 +454,11 @@ void DuktoProtocol::closedConnection()
         delete mCurrentFile;
         mCurrentFile = nullptr;
         QFile::remove(name);
-        emit receiveFileCancelled();
+        if (mCurrentSocket) {
+            emit receiveFileCancelled(mCurrentSocket->errorString());
+        } else {
+            emit receiveFileCancelled(QStringLiteral("Connection closed"));
+        }
     }
     else if (!mReceivingText) // Receiving file ended
     {
