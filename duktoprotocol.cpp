@@ -48,6 +48,7 @@ DuktoProtocol::DuktoProtocol(QObject *parent)
 
 DuktoProtocol::~DuktoProtocol()
 {
+    closeServers();
     delete mCurrentSocket;
     delete mSocket;
     delete mTcpServer;
@@ -63,10 +64,16 @@ bool DuktoProtocol::setupUdpServer(quint16 port)
         mLocalUdpPort = port;
         mSocket->close();
     }
-    if (mSocket->state() != QUdpSocket::BoundState && mSocket->bind(QHostAddress::Any, mLocalUdpPort) == false) {
+    if (mSocket->state() != QUdpSocket::BoundState && mSocket->bind(QHostAddress::AnyIPv4, mLocalUdpPort) == false) {
         return false;
     }
     connect(mSocket, &QUdpSocket::readyRead, this, &DuktoProtocol::newUdpData, Qt::UniqueConnection);
+
+#ifdef Q_OS_ANDROID
+    // acquire MulticastLock for receiving multicast messages
+    // https://developer.android.com/reference/android/net/wifi/WifiManager.MulticastLock
+    mLock.acquire();
+#endif
     return true;
 }
 
@@ -79,7 +86,7 @@ bool DuktoProtocol::setupTcpServer(quint16 port)
         mLocalTcpPort = port;
         mTcpServer->close();
     }
-    if (mTcpServer->isListening() == false && mTcpServer->listen(QHostAddress::Any, mLocalTcpPort) == false) {
+    if (mTcpServer->isListening() == false && mTcpServer->listen(QHostAddress::AnyIPv4, mLocalTcpPort) == false) {
         return false;
     }
     connect(mTcpServer, &QTcpServer::newConnection, this, &DuktoProtocol::newIncomingConnection, Qt::UniqueConnection);
@@ -89,6 +96,9 @@ bool DuktoProtocol::setupTcpServer(quint16 port)
 void DuktoProtocol::closeServers() {
     if (mSocket != nullptr) {
         mSocket->close();
+#ifdef Q_OS_ANDROID
+        mLock.release();
+#endif
     }
     if (mTcpServer != nullptr) {
         mTcpServer->close();
@@ -179,7 +189,7 @@ void DuktoProtocol::newUdpData()
         int size = mSocket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
         datagram.resize(size);
         handleMessage(datagram, sender);
-     }
+    }
 }
 
 void DuktoProtocol::handleMessage(const QByteArray &data, const QHostAddress &sender)
@@ -306,7 +316,7 @@ void DuktoProtocol::readNewData()
                         // nel caso trovo un nome alternativo
                         int i = 2;
                         QString originalName = name;
-                        while (QFile::exists(name))
+                        while (QFile::exists(QDir(mDestDir).filePath(name)))
                             name = originalName + " (" + QString::number(i++) + ")";
                         mRootFolderName = originalName;
                         mRootFolderRenamed = name;
@@ -319,9 +329,9 @@ void DuktoProtocol::readNewData()
                         name = name.replace(0, name.indexOf('/'), mRootFolderRenamed);
 
                     // Creo la cartella
-                    if (!QDir(".").mkpath(name))
+                    if (!QDir(mDestDir).mkpath(name))
                     {
-                        emit receiveFileCancelled(QStringLiteral("Failed to create directory %1").arg(QDir(destDir).filePath(name)));
+                        emit receiveFileCancelled(QStringLiteral("Failed to create directory %1").arg(QDir(mDestDir).filePath(name)));
                         // Chiusura socket
                         if (mCurrentSocket)
                         {
@@ -362,10 +372,10 @@ void DuktoProtocol::readNewData()
 
                     // Se il file esiste già cambio il nome di quello nuovo
                     int i = 2;
-                    QString originalName = name;
+                    QFileInfo fi(name);
+                    name = QDir(mDestDir).filePath(name);
                     while (QFile::exists(name)) {
-                        QFileInfo fi(originalName);
-                        name = fi.baseName() + " (" + QString::number(i) + ")." + fi.completeSuffix();
+                        name = QDir(mDestDir).filePath(fi.baseName() + " (" + QString::number(i) + ")." + fi.completeSuffix());
                         i++;
                     }
                     mReceivedFiles->append(name);
@@ -741,7 +751,11 @@ void DuktoProtocol::sendConnectError(QAbstractSocket::SocketError e)
 QStringList DuktoProtocol::expandTree(const QStringList& files)
 {
     // Percorso base
+#ifdef Q_OS_ANDROID
+    QString bp = AndroidStorage::convertToPath(files.first());
+#else
     QString bp = files.first();
+#endif
     if (bp.right(1) == "/") bp.chop(1);
     mBasePath = QFileInfo(bp).absolutePath();
     if (mBasePath.right(1) == "/") mBasePath.chop(1);
@@ -749,7 +763,14 @@ QStringList DuktoProtocol::expandTree(const QStringList& files)
     // Iterazione sugli elementi
     QStringList expanded;
     for(QStringList::const_iterator iter = files.constBegin(); iter != files.constEnd(); ++iter) {
+#ifdef Q_OS_ANDROID
+        QString path = AndroidStorage::convertToPath(*iter);
+        if (!path.startsWith("content://")) {
+            path = QDir::cleanPath(path);
+        }
+#else
         QString path = QDir::cleanPath(*iter);
+#endif
         if (path.right(1) == "/") path.chop(1);
         addRecursive(expanded, path);
     }
@@ -805,13 +826,13 @@ QByteArray DuktoProtocol::nextElementHeader()
         name = "Screenshot.jpg";
         mSendingScreen = false;
     }
-    else
+    else {
         name = fullname;
+        // Aggiunta nome file all'header
+        name.remove(0, mBasePath.length() + 1);
+    }
 
-    // Aggiunta nome file all'header
-    name.replace(mBasePath + "/", "");
     header.append(name.toUtf8() + '\0');
-
     // Dimensione elemento
     qint64 size = -1;
     QFileInfo fi2(fullname);
@@ -865,14 +886,18 @@ void DuktoProtocol::sendToAllBroadcast(const QByteArray& packet, const QList<qin
 
         // Invio pacchetto per ogni IP di broadcast
         for(QList<QNetworkAddressEntry>::const_iterator addr = addrs.constBegin(); addr != addrs.constEnd(); ++addr)
-            if ((addr->ip().protocol() == QAbstractSocket::IPv4Protocol) && !addr->broadcast().toString().isEmpty())
+        {
+            QHostAddress ipAddr = addr->ip();
+            QHostAddress broadcastAddr = addr->broadcast();
+            if (ipAddr.protocol() == QAbstractSocket::IPv4Protocol && !ipAddr.isLoopback() && !broadcastAddr.toString().isEmpty())
             {
                 for(QList<qint16>::const_iterator port = ports.constBegin(); port != ports.constEnd(); ++port)
                 {
-                    mSocket->writeDatagram(packet.data(), packet.length(), addr->broadcast(), *port);
+                    mSocket->writeDatagram(packet.data(), packet.length(), broadcastAddr, *port);
                     mSocket->flush();
                 }
             }
+        }
     }
 }
 
@@ -895,4 +920,11 @@ void DuktoProtocol::updateBuddyName()
 
     // Invio pacchetto di annuncio con il nuovo nome
     sayHello(QHostAddress::Broadcast, true);
+}
+
+void DuktoProtocol::setDestDir(const QString &dir) {
+    mDestDir = QDir::cleanPath(dir);
+    if (!mDestDir.endsWith(QChar('/'))) {
+        mDestDir.append(QChar('/'));
+    }
 }

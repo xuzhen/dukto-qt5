@@ -1,4 +1,4 @@
-QT += network qml quickwidgets
+QT += core network qml quickwidgets
 linux:!android:QT += dbus
 CONFIG += c++11
 
@@ -95,6 +95,11 @@ contains(DEFINES, SINGLE_APP) {
     DEFINES += QAPPLICATION_CLASS=QApplication
 }
 
+contains(DEFINES, NOTIFY_LIBNOTIFY) {
+    CONFIG+=link_pkgconfig
+    PKGCONFIG+=libnotify
+}
+
 OTHER_FILES += CMakeLists.txt
 
 win32 {
@@ -107,7 +112,32 @@ win32 {
 
 mac:ICON = dukto.icns
 
-contains(DEFINES, NOTIFY_LIBNOTIFY) {
-    CONFIG+=link_pkgconfig
-    PKGCONFIG+=libnotify
+android {
+    lessThan(QT_MAJOR_VERSION, 6): QT += androidextras
+    TARGET = Dukto
+
+    ANDROID_VERSION_NAME = $$VERSION
+    defineReplace(androidVersionCode) {
+        segments = $$split(1, ".")
+        for (segment, $$list($$member(segments, 1, -1))) {
+            verCode = "$${verCode}$$format_number($$segment, width=2 zeropad)"
+        }
+        equals(ANDROID_ABIS, arm64-v8a): abiCode = 1
+        else: equals(ANDROID_ABIS, armeabi-v7a): abiCode = 0
+        else: abiCode = 2
+        return ($$first(segments)$${verCode}$${ANDROID_MIN_SDK_VERSION}$${abiCode})
+    }
+    ANDROID_VERSION_CODE = $$androidVersionCode($$VERSION)
+
+    greaterThan(QT_MAJOR_VERSION, 5) {
+        ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android/qt6
+        OTHER_FILES += $$PWD/android/qt6/AndroidManifest.xml
+    } else {
+        ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android/qt5
+        OTHER_FILES += $$PWD/android/qt5/AndroidManifest.xml
+    }
+    SOURCES += androidutils.cpp
+    HEADERS += androidutils.h
+
+    DEFINES += ANDROID_TARGET_SDK_VERSION=$$ANDROID_TARGET_SDK_VERSION
 }

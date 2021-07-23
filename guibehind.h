@@ -170,6 +170,7 @@ public slots:
     void resetProgressStatus();
     void abortTransfer();
     bool isDesktopApp();
+    bool isStorageAvailable();
     void initialize();
     void refreshNeighbors();
 

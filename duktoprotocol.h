@@ -30,6 +30,10 @@
 
 #include "peer.h"
 
+#ifdef Q_OS_ANDROID
+#include "androidutils.h"
+#endif
+
 class DuktoProtocol : public QObject
 {
     Q_OBJECT
@@ -50,6 +54,7 @@ public:
     inline bool isBusy() { return mIsSending || mIsReceiving; }
     void abortCurrentTransfer();
     void updateBuddyName();
+    void setDestDir(const QString &dir);
     
 private slots:
     void newUdpData();
@@ -91,6 +96,10 @@ private:
 
     QHash<QString, Peer> mPeers;                // Elenco peer individuati
 
+#ifdef Q_OS_ANDROID
+    AndroidMulticastLock mLock;
+#endif
+
     // Send and receive members
     qint16 mLocalUdpPort;
     qint16 mLocalTcpPort;
@@ -103,7 +112,7 @@ private:
     // Sending members
     QStringList mFilesToSend;                   // Elenco degli elementi da trasmettere
     qint64 mSentData = 0;                       // Quantità di dati totale trasmessi
-    qint64 mSentBuffer = 0;                    // Quantità di dati rimanenti nel buffer di trasmissione
+    qint64 mSentBuffer = 0;                     // Quantità di dati rimanenti nel buffer di trasmissione
     QString mBasePath;                          // Percorso base per l'invio di file e cartelle
     QString mTextToSend;                        // Testo da inviare (in caso di invio testuale)
     bool mSendingScreen = false;                // Flag che indica se si sta inviando uno screenshot
@@ -119,6 +128,7 @@ private:
     QByteArray mTextToReceive;                  // Testo ricevuto in caso di invio testo
     bool mReceivingText = false;                // Ricezione di testo in corso
     QByteArray mPartialName;                    // Nome prossimo file letto solo in parte
+    QString mDestDir;
     enum RecvStatus {
         FILENAME,
         FILESIZE,

@@ -42,7 +42,7 @@
 #endif
 
 #if defined(Q_OS_ANDROID)
-#include <QProcess>
+#include "androidutils.h"
 #endif
 
 // Returns the system username
@@ -76,7 +76,12 @@ QString Platform::getHostname()
     if (!hostname.isEmpty()) return hostname;
 
 #ifdef Q_OS_ANDROID
-    hostname = getAndroidModel().replace(QChar(' '), QChar('-'));
+    AndroidSettings s;
+    hostname = s.getStringValue(AndroidSettings::Global, "device_name");
+    if (hostname.isEmpty()) {
+        hostname = AndroidEnvironment::buildInfo("MODEL");
+    }
+    hostname.replace(QChar(' '), QChar('-'));
 #else
     // Get the hostname
     // (replace ".local" for MacOSX)
@@ -136,7 +141,7 @@ QString Platform::getDefaultPath()
 #elif defined(Q_OS_MAC)
     return QString(getenv("HOME")) + "/Desktop";
 #elif defined(Q_OS_ANDROID)
-    return "/sdcard/Download";
+    return AndroidStorage::getExternalStorage();
 #elif defined(Q_OS_UNIX)
     return QString(getenv("HOME"));
 #else
@@ -144,32 +149,6 @@ QString Platform::getDefaultPath()
 #endif
 
 }
-
-#ifdef Q_OS_ANDROID
-QString Platform::getAndroidProperty(const QString &name) {
-    // Start the process
-    QProcess process;
-    process.start("getprop", QStringList() << name, QIODevice::ReadOnly);
-    if (!process.waitForFinished()) {
-        return QString();
-    }
-    return QString::fromUtf8(process.readAllStandardOutput()).trimmed();
-}
-
-QString Platform::getAndroidModel() {
-    QString model = getAndroidProperty("ro.product.vender.model");
-    if (model.isEmpty()) {
-        model = getAndroidProperty("ro.product.product.model");
-        if (model.isEmpty()) {
-            model = getAndroidProperty("ro.product.model");
-            if (model.isEmpty()) {
-                model = "Android";
-            }
-        }
-    }
-    return model;
-}
-#endif
 
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
 // Special function for Linux

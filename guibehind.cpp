@@ -24,6 +24,10 @@
 #include "updateschecker.h"
 #include "systemtray.h"
 
+#ifdef Q_OS_ANDROID
+#include "androidutils.h"
+#endif
+
 #include <QQmlContext>
 #include <QTimer>
 #include <QDesktopServices>
@@ -64,8 +68,8 @@ GuiBehind::GuiBehind(Settings *settings) :
     // Destination buddy
     mDestBuddy = new DestinationBuddy(this);
 
-    // Change current folder
-    QDir::setCurrent(mSettings->currentPath());
+    // Set destination folder
+    mDuktoProtocol.setDestDir(mSettings->currentPath());
 
     // Set current theme color
     mTheme.setThemeColor(mSettings->themeColor());
@@ -279,8 +283,12 @@ void GuiBehind::changeDestinationFolder()
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (dirname.isEmpty()) return;
 
-    // Set the new folder as current
-    QDir::setCurrent(dirname);
+#ifdef Q_OS_ANDROID
+    dirname = AndroidStorage::convertToPath(dirname);
+#endif
+
+    // Set the new folder as destination
+    mDuktoProtocol.setDestDir(dirname);
 
     // Save the new setting
     setCurrentPath(dirname);
@@ -491,7 +499,11 @@ void GuiBehind::sendFileComplete()
 {
     // Show completed message
     setMessagePageTitle("Send");
+#ifdef MOBILE_APP
+    setMessagePageText("Your data has been sent to your buddy!");
+#else
     setMessagePageText("Your data has been sent to your buddy!\n\nDo you want to send other files to your buddy? Just drag and drop them here!");
+#endif
     setMessagePageBackState("send");
 
 #ifdef Q_OS_WIN
@@ -866,6 +878,19 @@ bool GuiBehind::isDesktopApp() {
     return false;
 #else
     return true;
+#endif
+}
+
+bool GuiBehind::isStorageAvailable() {
+#ifndef MOBILE_APP
+    return true;
+#elif defined(Q_OS_ANDROID)
+    if (AndroidStorage::isPermissionGranted()) {
+        return true;
+    }
+    return AndroidStorage::requestPermission();
+#else
+    return false;
 #endif
 }
 

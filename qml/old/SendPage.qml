@@ -171,7 +171,7 @@ Rectangle {
         anchors.topMargin: 15
         anchors.left: localBuddy.left
         anchors.right: localBuddy.right
-        buttonEnabled: guiBehind.currentTransferBuddy !== ""
+        buttonEnabled: guiBehind.isStorageAvailable() && guiBehind.currentTransferBuddy !== ""
         label: "Send some files"
         onClicked: guiBehind.sendSomeFiles()
     }
@@ -182,7 +182,7 @@ Rectangle {
         anchors.topMargin: 15
         anchors.left: localBuddy.left
         anchors.right: localBuddy.right
-        buttonEnabled: guiBehind.currentTransferBuddy !== ""
+        buttonEnabled: guiBehind.isStorageAvailable() && guiBehind.currentTransferBuddy !== ""
         label: "Send a folder"
         onClicked: guiBehind.sendFolder()
     }
