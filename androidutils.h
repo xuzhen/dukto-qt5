@@ -65,6 +65,26 @@ private:
 
 /*============================================================*/
 
+class AndroidContentReader : public AndroidUtilsBase
+{
+public:
+    explicit AndroidContentReader(const QString &uri);
+    ~AndroidContentReader();
+    QString getFileName();
+    qint64 getSize();
+    QString getMimeType();
+    bool isDir();
+    bool open();
+    QByteArray read(int size);
+    int read(int size, char *buffer);
+    void close();
+private:
+    QString uriString;
+    QJniObject uriObject;
+    QJniObject *stream = nullptr;
+};
+
+/*============================================================*/
 namespace AndroidStorage {
     bool requestPermission();
     bool isPermissionGranted();
