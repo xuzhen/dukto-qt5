@@ -57,6 +57,7 @@ class AndroidMulticastLock : public AndroidUtilsBase
 {
 public:
     AndroidMulticastLock();
+    ~AndroidMulticastLock();
     bool acquire();
     void release();
 private:

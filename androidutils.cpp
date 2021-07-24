@@ -127,9 +127,16 @@ AndroidMulticastLock::AndroidMulticastLock() {
     }
 }
 
+AndroidMulticastLock::~AndroidMulticastLock() {
+    release();
+}
+
 bool AndroidMulticastLock::acquire() {
     if (lock.isValid() == false) {
         return false;
+    }
+    if (lock.callMethod<jboolean>("isHeld")) {
+        return true;
     }
     lock.callMethod<void>("acquire");
     return lock.callMethod<jboolean>("isHeld");
