@@ -291,7 +291,7 @@ bool AndroidStorage::requestPermission() {
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QtAndroid::PermissionResultMap result = QtAndroid::requestPermissionsSync(permissions);
-    foreach (QtAndroid::PermissionResult r, result) {
+    for (QtAndroid::PermissionResult r: result) {
         if (r != QtAndroid::PermissionResult::Granted) {
             return false;
         }
@@ -299,7 +299,7 @@ bool AndroidStorage::requestPermission() {
     return true;
 #else
     QFutureWatcher<QPermission::PermissionResult> watcher;
-    foreach (QString p, permissions) {
+    for (const QString &p: permissions) {
         QFuture<QPermission::PermissionResult> future = qApp->requestPermission(p);
         watcher.setFuture(future);
         watcher.waitForFinished();
@@ -318,7 +318,7 @@ bool AndroidStorage::isPermissionGranted() {
         permissions << "android.permission.MANAGE_EXTERNAL_STORAGE";
     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    foreach (QString p, permissions) {
+    for (const QString &p: permissions) {
         if (QtAndroid::checkPermission(p) != QtAndroid::PermissionResult::Granted) {
             return false;
         }
@@ -326,7 +326,7 @@ bool AndroidStorage::isPermissionGranted() {
     return true;
 #else
     QFutureWatcher<QPermission::PermissionResult> watcher;
-    foreach (QString p, permissions) {
+    for (const QString &p: permissions) {
         QFuture<QPermission::PermissionResult> future = qApp->checkPermission(p);
         watcher.setFuture(future);
         watcher.waitForFinished();
@@ -352,7 +352,7 @@ QString AndroidStorage::convertToPath(const QString &url) {
     static const QStringList contentUrls = QStringList() <<
                                            QStringLiteral("content://com.android.externalstorage.documents/tree/primary%3A") <<
                                            QStringLiteral("content://com.android.externalstorage.documents/document/primary%3A");
-    foreach (QString u, contentUrls) {
+    for (const QString &u: contentUrls) {
         if (url.startsWith(u)) {
             return QDir(getExternalStorage()).filePath(QUrl::fromPercentEncoding(url.mid(u.length()).toUtf8()));
         }
