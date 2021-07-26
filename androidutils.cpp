@@ -76,6 +76,10 @@ QJniObject AndroidUtilsBase::getContentResolver() {
     return resolver;
 }
 
+QJniObject AndroidUtilsBase::getContext() {
+    return context;
+}
+
 bool AndroidUtilsBase::clearExceptions() {
     QJniEnvironment env;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -87,6 +91,10 @@ bool AndroidUtilsBase::clearExceptions() {
 #else
     return env.checkAndClearExceptions();
 #endif
+}
+
+bool AndroidUtilsBase::hasExceptions() {
+    return QJniEnvironment()->ExceptionCheck();
 }
 
 /*============================================================*/
@@ -152,11 +160,7 @@ void AndroidMulticastLock::release() {
 /*============================================================*/
 
 
-AndroidContentReader::AndroidContentReader(const QString &uri) : uriString(uri) {
-    uriObject = QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", QJniObject::fromString(uri).object<jstring>());
-    if (uriObject.isValid() == false) {
-        clearExceptions();
-    }
+AndroidContentReader::AndroidContentReader(const QString &uri) : uriString(uri), uriObject(AndroidStorage::getUri(uri)) {
 }
 
 AndroidContentReader::~AndroidContentReader() {
@@ -225,10 +229,6 @@ QString AndroidContentReader::getMimeType() {
     return mimeType;
 }
 
-bool AndroidContentReader::isDir() {
-    return uriString.startsWith("content://com.android.externalstorage.documents/tree/");
-}
-
 bool AndroidContentReader::open() {
     close();
     if (uriObject.isValid() == false) {
@@ -265,6 +265,7 @@ int AndroidContentReader::read(int size, char* buffer) {
         env->GetByteArrayRegion(array, 0, r, reinterpret_cast<jbyte*>(buffer));
     }
     env->DeleteLocalRef(array);
+    clearExceptions();
     return r;
 }
 
@@ -273,9 +274,62 @@ void AndroidContentReader::close() {
         return;
     }
     stream->callMethod<void>("close");
+    clearExceptions();
     delete stream;
     stream = nullptr;
 }
+
+/*============================================================*/
+
+AndroidContentWriter::AndroidContentWriter(const QString &uri) : uriString(uri), uriObject(AndroidStorage::getUri(uri)) {
+}
+
+bool AndroidContentWriter::open() {
+    if (uriObject.isValid() == false) {
+        return false;
+    }
+    close();
+    stream = new QJniObject(getContentResolver().callObjectMethod("openOutputStream", "(Landroid/net/Uri;)Ljava/io/OutputStream;", uriObject.object<jobject>()));
+    if (stream->isValid() == false) {
+        clearExceptions();
+        delete stream;
+        stream = nullptr;
+        return false;
+    }
+    return true;
+}
+
+bool AndroidContentWriter::write(const QByteArray &data) {
+    return write(data.constData(), data.size());
+}
+
+bool AndroidContentWriter::write(const char *data, int size) {
+    if (stream == nullptr) {
+        return false;
+    }
+    QJniEnvironment env;
+    jbyteArray array = env->NewByteArray(size);
+    if (array == nullptr) {
+        return false;
+    }
+    env->SetByteArrayRegion(array, 0, size, reinterpret_cast<const jbyte*>(data));
+    stream->callMethod<void>("write", "([B)V", array);
+    bool r = hasExceptions();
+    env->DeleteLocalRef(array);
+    clearExceptions();
+    return r;
+}
+
+void AndroidContentWriter::close() {
+    if (stream == nullptr) {
+        return;
+    }
+    stream->callMethod<void>("close");
+    clearExceptions();
+    delete stream;
+    stream = nullptr;
+}
+
 
 /*============================================================*/
 
@@ -290,8 +344,8 @@ bool AndroidStorage::requestPermission() {
     }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QtAndroid::PermissionResultMap result = QtAndroid::requestPermissionsSync(permissions);
-    for (QtAndroid::PermissionResult r: result) {
+    const QtAndroid::PermissionResultMap result = QtAndroid::requestPermissionsSync(permissions);
+    for (const QtAndroid::PermissionResult &r: result) {
         if (r != QtAndroid::PermissionResult::Granted) {
             return false;
         }
@@ -360,5 +414,73 @@ QString AndroidStorage::convertToPath(const QString &url) {
     return url;
 }
 
+QJniObject AndroidStorage::getUri(const QString &uriString) {
+    QJniObject uri = QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", QJniObject::fromString(uriString).object<jstring>());
+    if (uri.isValid() == false) {
+        clearExceptions();
+    }
+    return uri;
+}
+
+bool AndroidStorage::isDir(const QString &uri) {
+    return isDir(getUri(uri));
+}
+
+bool AndroidStorage::isDir(const QJniObject &uriObject) {
+    if (uriObject.isValid() == false) {
+        return false;
+    }
+    jboolean r = QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "isTreeUri", "(Landroid/net/Uri;)Z", uriObject.object<jobject>());
+    clearExceptions();
+    return r;
+}
+
+QJniObject AndroidStorage::getDocumentUri(const QJniObject &uri) {
+    if (QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "isDocumentUri", "(Landroid/content/Context;Landroid/net/Uri;)Z", getContext().object<jobject>(), uri.object<jobject>())) {
+        return uri;
+    }
+    QJniObject docId = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "getTreeDocumentId", "(Landroid/net/Uri;)Ljava/lang/String;", uri.object<jobject>());
+    if (!docId.isValid()) {
+        clearExceptions();
+        return QJniObject();
+    }
+    QJniObject docUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "buildDocumentUriUsingTree", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;", uri.object<jobject>(), docId.object<jobject>());
+    if (!docUri.isValid()) {
+        clearExceptions();
+        return QJniObject();
+    }
+    return docUri;
+}
+
+QString AndroidStorage::createDir(const QString &parentDirUri, const QString &subDirName) {
+    static QString dirMime = QStringLiteral("vnd.android.document/directory");
+    return createFile(parentDirUri, subDirName, dirMime);
+}
+
+QString AndroidStorage::createFile(const QString &parentDirUri, const QString &fileName, const QString &mimeType) {
+    QJniObject parentUriObj = getUri(parentDirUri);
+    if (isDir(parentUriObj) == false) {
+        return QString();
+    }
+    QJniObject parentDocUri = getDocumentUri(parentUriObj);
+    if (parentDocUri.isValid() == false) {
+        return QString();
+    }
+    QJniObject subDirUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "createDocument", "(Landroid/content/ContentResolver;Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;", getContentResolver().object<jobject>(), parentDocUri.object<jobject>(), QJniObject::fromString(mimeType).object<jstring>(), QJniObject::fromString(fileName).object<jstring>());
+    clearExceptions();
+    return subDirUri.toString();
+}
+
+bool AndroidStorage::removeFile(const QString &uri) {
+    QJniObject uriObj = getUri(uri);
+    if (uriObj.isValid() == false) {
+        return false;
+    }
+    QJniObject docUri = getDocumentUri(uriObj);
+    if (docUri.isValid() == false) {
+        return false;
+    }
+    return QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "deleteDocument", "(Landroid/content/ContentResolver;Landroid/net/Uri;)Z", getContentResolver().object<jobject>(), docUri.object<jobject>());
+}
 
 #endif

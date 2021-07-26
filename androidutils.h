@@ -26,10 +26,12 @@ class AndroidUtilsBase
 public:
     AndroidUtilsBase();
     static bool clearExceptions();
+    static bool hasExceptions();
 
 protected:
     QJniObject getSystemService(const QString &name);
     QJniObject getContentResolver();
+    QJniObject getContext();
 private:
     QJniObject context;
 };
@@ -74,7 +76,6 @@ public:
     QString getFileName();
     qint64 getSize();
     QString getMimeType();
-    bool isDir();
     bool open();
     QByteArray read(int size);
     int read(int size, char *buffer);
@@ -85,13 +86,42 @@ private:
     QJniObject *stream = nullptr;
 };
 
+class AndroidContentWriter : public AndroidUtilsBase
+{
+public:
+    explicit AndroidContentWriter(const QString &uri);
+    bool open();
+    bool write(const QByteArray &data);
+    bool write(const char *data, int size);
+    void close();
+private:
+    QString uriString;
+    QJniObject uriObject;
+    QJniObject *stream = nullptr;
+};
+
 /*============================================================*/
-namespace AndroidStorage {
-    bool requestPermission();
-    bool isPermissionGranted();
-    QString getExternalStorage();
-    QString convertToPath(const QString &url);
-}
+
+class AndroidStorage : AndroidUtilsBase {
+public:
+    AndroidStorage() = default;
+    static bool requestPermission();
+    static bool isPermissionGranted();
+    static QString getExternalStorage();
+    static QString convertToPath(const QString &url);
+
+    static QJniObject getUri(const QString &uriString);
+
+    static bool isDir(const QString &uri);
+
+    QString createDir(const QString &parentDirUri, const QString &subDirName);
+    QString createFile(const QString &parentDirUri, const QString &fileName, const QString &mimeType = "*/*");
+    bool removeFile(const QString &uri);
+
+private:
+    static bool isDir(const QJniObject &uriObject);
+    QJniObject getDocumentUri(const QJniObject &uri);
+};
 
 
 #endif
