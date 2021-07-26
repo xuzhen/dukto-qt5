@@ -24,7 +24,7 @@ namespace AndroidEnvironment {
 class AndroidUtilsBase
 {
 public:
-    AndroidUtilsBase();
+    AndroidUtilsBase() = default;
     static bool clearExceptions();
     static bool hasExceptions();
 
@@ -32,8 +32,6 @@ protected:
     QJniObject getSystemService(const QString &name);
     QJniObject getContentResolver();
     QJniObject getContext();
-private:
-    QJniObject context;
 };
 
 /*============================================================*/
@@ -72,6 +70,7 @@ class AndroidContentReader : public AndroidUtilsBase
 {
 public:
     explicit AndroidContentReader(const QString &uri);
+    explicit AndroidContentReader(const QJniObject &uri);
     ~AndroidContentReader();
     QString getFileName();
     qint64 getSize();
@@ -81,7 +80,6 @@ public:
     int read(int size, char *buffer);
     void close();
 private:
-    QString uriString;
     QJniObject uriObject;
     QJniObject *stream = nullptr;
 };
@@ -90,19 +88,20 @@ class AndroidContentWriter : public AndroidUtilsBase
 {
 public:
     explicit AndroidContentWriter(const QString &uri);
+    explicit AndroidContentWriter(const QJniObject &uri);
     bool open();
     bool write(const QByteArray &data);
     bool write(const char *data, int size);
     void close();
 private:
-    QString uriString;
     QJniObject uriObject;
     QJniObject *stream = nullptr;
 };
 
 /*============================================================*/
 
-class AndroidStorage : AndroidUtilsBase {
+class AndroidStorage : AndroidUtilsBase
+{
 public:
     AndroidStorage() = default;
     static bool requestPermission();
@@ -113,13 +112,16 @@ public:
     static QJniObject getUri(const QString &uriString);
 
     static bool isDir(const QString &uri);
+    static bool isDir(const QJniObject &uri);
+
+    QList<QJniObject> getEntryList(const QString &dirUri);
+    QList<QJniObject> getEntryList(const QJniObject &dirUri);
 
     QString createDir(const QString &parentDirUri, const QString &subDirName);
     QString createFile(const QString &parentDirUri, const QString &fileName, const QString &mimeType = "*/*");
     bool removeFile(const QString &uri);
 
 private:
-    static bool isDir(const QJniObject &uriObject);
     QJniObject getDocumentUri(const QJniObject &uri);
 };
 

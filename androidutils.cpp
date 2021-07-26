@@ -35,29 +35,20 @@ QString AndroidEnvironment::buildInfo(const QString &name) {
 
 /*============================================================*/
 
-AndroidUtilsBase::AndroidUtilsBase() {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QJniObject activity = QtAndroid::androidActivity();
-    context = activity.callObjectMethod("getApplicationContext","()Landroid/content/Context;");
-#else
-    context = qApp->nativeInterface<QNativeInterface::QAndroidApplication>()->context();
-#endif
-}
-
 /*
 QString AndroidUtilsBase::getPackageName() {
     static QString packageName;
     if (packageName.isEmpty()) {
-        packageName = context.callObjectMethod("getPackageName", "()Ljava/lang/String;").toString();
+        packageName = getContext().callObjectMethod("getPackageName", "()Ljava/lang/String;").toString();
     }
     return packageName;
 }
 */
 
 QJniObject AndroidUtilsBase::getSystemService(const QString &name) {
-    if (context.isValid()) {
+    if (getContext().isValid()) {
         QJniObject serviceString = QJniObject::fromString(name);
-        QJniObject service = context.callObjectMethod("getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;", serviceString.object<jstring>());
+        QJniObject service = getContext().callObjectMethod("getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;", serviceString.object<jstring>());
         clearExceptions();
         return service;
     } else {
@@ -68,8 +59,8 @@ QJniObject AndroidUtilsBase::getSystemService(const QString &name) {
 QJniObject AndroidUtilsBase::getContentResolver() {
     static QJniObject resolver;
     if (resolver.isValid() == false) {
-        if (context.isValid()) {
-            resolver = context.callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
+        if (getContext().isValid()) {
+            resolver = getContext().callObjectMethod("getContentResolver", "()Landroid/content/ContentResolver;");
             clearExceptions();
         }
     }
@@ -77,11 +68,19 @@ QJniObject AndroidUtilsBase::getContentResolver() {
 }
 
 QJniObject AndroidUtilsBase::getContext() {
+    static QJniObject context;
+    if (context.isValid() == false) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        context = QtAndroid::androidActivity().callObjectMethod("getApplicationContext","()Landroid/content/Context;");
+#else
+        context = qApp->nativeInterface<QNativeInterface::QAndroidApplication>()->context();
+#endif
+    }
     return context;
 }
 
 bool AndroidUtilsBase::clearExceptions() {
-    QJniEnvironment env;
+    static QJniEnvironment env;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (env->ExceptionCheck()) {
         env->ExceptionClear();
@@ -94,7 +93,8 @@ bool AndroidUtilsBase::clearExceptions() {
 }
 
 bool AndroidUtilsBase::hasExceptions() {
-    return QJniEnvironment()->ExceptionCheck();
+    static QJniEnvironment env;
+    return env->ExceptionCheck();
 }
 
 /*============================================================*/
@@ -114,7 +114,7 @@ QString AndroidSettings::getStringValue(Scope scope, const QString &key) {
     return QJniObject::callStaticObjectMethod(className(scope),
                                               "getString",
                                               "(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;",
-                                              getContentResolver().object<jobject>(),
+                                              getContentResolver().object(),
                                               QJniObject::fromString(key).object<jstring>()).toString();
 }
 
@@ -122,7 +122,7 @@ int32_t AndroidSettings::getIntValue(Scope scope, const QString &key) {
     return QJniObject::callStaticMethod<jint>(className(scope),
                                               "getInt",
                                               "(Landroid/content/ContentResolver;Ljava/lang/String;)I",
-                                              getContentResolver().object<jobject>(),
+                                              getContentResolver().object(),
                                               QJniObject::fromString(key).object<jstring>());
 }
 
@@ -160,7 +160,10 @@ void AndroidMulticastLock::release() {
 /*============================================================*/
 
 
-AndroidContentReader::AndroidContentReader(const QString &uri) : uriString(uri), uriObject(AndroidStorage::getUri(uri)) {
+AndroidContentReader::AndroidContentReader(const QString &uri) : uriObject(AndroidStorage::getUri(uri)) {
+}
+
+AndroidContentReader::AndroidContentReader(const QJniObject &uri) : uriObject(uri) {
 }
 
 AndroidContentReader::~AndroidContentReader() {
@@ -234,7 +237,7 @@ bool AndroidContentReader::open() {
     if (uriObject.isValid() == false) {
         return false;
     }
-    stream = new QJniObject(getContentResolver().callObjectMethod("openInputStream", "(Landroid/net/Uri;)Ljava/io/InputStream;", uriObject.object<jobject>()));
+    stream = new QJniObject(getContentResolver().callObjectMethod("openInputStream", "(Landroid/net/Uri;)Ljava/io/InputStream;", uriObject.object()));
     if (stream->isValid() == false) {
         clearExceptions();
         delete stream;
@@ -281,7 +284,10 @@ void AndroidContentReader::close() {
 
 /*============================================================*/
 
-AndroidContentWriter::AndroidContentWriter(const QString &uri) : uriString(uri), uriObject(AndroidStorage::getUri(uri)) {
+AndroidContentWriter::AndroidContentWriter(const QString &uri) : uriObject(AndroidStorage::getUri(uri)) {
+}
+
+AndroidContentWriter::AndroidContentWriter(const QJniObject &uri) : uriObject(uri) {
 }
 
 bool AndroidContentWriter::open() {
@@ -289,7 +295,7 @@ bool AndroidContentWriter::open() {
         return false;
     }
     close();
-    stream = new QJniObject(getContentResolver().callObjectMethod("openOutputStream", "(Landroid/net/Uri;)Ljava/io/OutputStream;", uriObject.object<jobject>()));
+    stream = new QJniObject(getContentResolver().callObjectMethod("openOutputStream", "(Landroid/net/Uri;)Ljava/io/OutputStream;", uriObject.object()));
     if (stream->isValid() == false) {
         clearExceptions();
         delete stream;
@@ -426,30 +432,73 @@ bool AndroidStorage::isDir(const QString &uri) {
     return isDir(getUri(uri));
 }
 
-bool AndroidStorage::isDir(const QJniObject &uriObject) {
-    if (uriObject.isValid() == false) {
+bool AndroidStorage::isDir(const QJniObject &uri) {
+    if (uri.isValid() == false) {
         return false;
     }
-    jboolean r = QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "isTreeUri", "(Landroid/net/Uri;)Z", uriObject.object<jobject>());
+    jboolean r = QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "isTreeUri", "(Landroid/net/Uri;)Z", uri.object());
     clearExceptions();
     return r;
 }
 
 QJniObject AndroidStorage::getDocumentUri(const QJniObject &uri) {
-    if (QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "isDocumentUri", "(Landroid/content/Context;Landroid/net/Uri;)Z", getContext().object<jobject>(), uri.object<jobject>())) {
+    if (QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "isDocumentUri", "(Landroid/content/Context;Landroid/net/Uri;)Z", getContext().object(), uri.object())) {
         return uri;
     }
-    QJniObject docId = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "getTreeDocumentId", "(Landroid/net/Uri;)Ljava/lang/String;", uri.object<jobject>());
+    QJniObject docId = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "getTreeDocumentId", "(Landroid/net/Uri;)Ljava/lang/String;", uri.object());
     if (!docId.isValid()) {
         clearExceptions();
         return QJniObject();
     }
-    QJniObject docUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "buildDocumentUriUsingTree", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;", uri.object<jobject>(), docId.object<jobject>());
+    QJniObject docUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "buildDocumentUriUsingTree", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;", uri.object(), docId.object());
     if (!docUri.isValid()) {
         clearExceptions();
         return QJniObject();
     }
     return docUri;
+}
+
+QList<QJniObject> AndroidStorage::getEntryList(const QString &dirUri) {
+    return getEntryList(getUri(dirUri));
+}
+
+QList<QJniObject> AndroidStorage::getEntryList(const QJniObject &dirUri) {
+    if (isDir(dirUri) == false) {
+        return QList<QJniObject>();
+    }
+    QJniObject dirDocUri = getDocumentUri(dirUri);
+    if (dirDocUri.isValid() == false) {
+        return QList<QJniObject>();
+    }
+    QJniObject dirDocId = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "getDocumentId", "(Landroid/net/Uri;)Ljava/lang/String;", dirDocUri.object());
+    if (dirDocId.isValid() == false) {
+        clearExceptions();
+        return QList<QJniObject>();
+    }
+    QJniObject childrenUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "buildChildDocumentsUriUsingTree", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;", dirDocUri.object(), dirDocId.object());
+    if (childrenUri.isValid() == false) {
+        clearExceptions();
+        return QList<QJniObject>();
+    }
+    QList<QJniObject> entries;
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
+    if (cursor.isValid()) {
+        jint idIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("document_id").object<jstring>());
+        if (idIndex != -1) {
+            while (cursor.callMethod<jboolean>("moveToNext")) {
+                QJniObject childDocId = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", idIndex);
+                QJniObject childDocUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "buildDocumentUriUsingTree", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;", childrenUri.object(), childDocId.object());
+                if (childDocUri.isValid() == false) {
+                    clearExceptions();
+                    return QList<QJniObject>();
+                }
+                entries.append(childDocUri);
+            }
+        }
+        cursor.callMethod<void>("close");
+    }
+    clearExceptions();
+    return entries;
 }
 
 QString AndroidStorage::createDir(const QString &parentDirUri, const QString &subDirName) {
@@ -466,7 +515,7 @@ QString AndroidStorage::createFile(const QString &parentDirUri, const QString &f
     if (parentDocUri.isValid() == false) {
         return QString();
     }
-    QJniObject subDirUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "createDocument", "(Landroid/content/ContentResolver;Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;", getContentResolver().object<jobject>(), parentDocUri.object<jobject>(), QJniObject::fromString(mimeType).object<jstring>(), QJniObject::fromString(fileName).object<jstring>());
+    QJniObject subDirUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "createDocument", "(Landroid/content/ContentResolver;Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;", getContentResolver().object(), parentDocUri.object(), QJniObject::fromString(mimeType).object<jstring>(), QJniObject::fromString(fileName).object<jstring>());
     clearExceptions();
     return subDirUri.toString();
 }
@@ -480,7 +529,7 @@ bool AndroidStorage::removeFile(const QString &uri) {
     if (docUri.isValid() == false) {
         return false;
     }
-    return QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "deleteDocument", "(Landroid/content/ContentResolver;Landroid/net/Uri;)Z", getContentResolver().object<jobject>(), docUri.object<jobject>());
+    return QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "deleteDocument", "(Landroid/content/ContentResolver;Landroid/net/Uri;)Z", getContentResolver().object(), docUri.object());
 }
 
 #endif
