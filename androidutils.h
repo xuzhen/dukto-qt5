@@ -29,9 +29,9 @@ public:
     static bool hasExceptions();
 
 protected:
-    QJniObject getSystemService(const QString &name);
-    QJniObject getContentResolver();
-    QJniObject getContext();
+    static QJniObject getSystemService(const QString &name);
+    static QJniObject getContentResolver();
+    static QJniObject getContext();
 };
 
 /*============================================================*/
@@ -45,10 +45,10 @@ public:
         System,
     };
     AndroidSettings() = default;
-    QString getStringValue(Scope scope, const QString &key);
-    int32_t getIntValue(Scope scope, const QString &key);
+    static QString getStringValue(Scope scope, const QString &key);
+    static int32_t getIntValue(Scope scope, const QString &key);
 private:
-    const char *className(Scope scope);
+    static const char *className(Scope scope);
 };
 
 /*============================================================*/
@@ -89,6 +89,7 @@ class AndroidContentWriter : public AndroidUtilsBase
 public:
     explicit AndroidContentWriter(const QString &uri);
     explicit AndroidContentWriter(const QJniObject &uri);
+    ~AndroidContentWriter();
     bool open();
     bool write(const QByteArray &data);
     bool write(const char *data, int size);
@@ -106,23 +107,24 @@ public:
     AndroidStorage() = default;
     static bool requestPermission();
     static bool isPermissionGranted();
+
     static QString getExternalStorage();
     static QString convertToPath(const QString &url);
 
-    static QJniObject getUri(const QString &uriString);
+    static QJniObject parseUri(const QString &uriString);
 
     static bool isDir(const QString &uri);
     static bool isDir(const QJniObject &uri);
 
-    QList<QJniObject> getEntryList(const QString &dirUri);
-    QList<QJniObject> getEntryList(const QJniObject &dirUri);
+    static QList<QJniObject> getEntryList(const QString &dirUri);
+    static QList<QJniObject> getEntryList(const QJniObject &dirUri);
 
-    QString createDir(const QString &parentDirUri, const QString &subDirName);
-    QString createFile(const QString &parentDirUri, const QString &fileName, const QString &mimeType = "*/*");
-    bool removeFile(const QString &uri);
+    static QString createDir(const QString &parentDirUri, const QString &subDirName);
+    static QString createFile(const QString &parentDirUri, const QString &fileName, const QString &mimeType = "*/*");
+    static bool removeFile(const QString &uri);
 
 private:
-    QJniObject getDocumentUri(const QJniObject &uri);
+    static QJniObject getDocumentUri(const QJniObject &uri);
 };
 
 

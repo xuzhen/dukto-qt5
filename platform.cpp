@@ -76,8 +76,7 @@ QString Platform::getHostname()
     if (!hostname.isEmpty()) return hostname;
 
 #ifdef Q_OS_ANDROID
-    AndroidSettings s;
-    hostname = s.getStringValue(AndroidSettings::Global, "device_name");
+    hostname = AndroidSettings::getStringValue(AndroidSettings::Global, "device_name");
     if (hostname.isEmpty()) {
         hostname = AndroidEnvironment::buildInfo("MODEL");
     }

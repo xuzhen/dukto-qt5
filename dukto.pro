@@ -129,6 +129,8 @@ android {
     }
     ANDROID_VERSION_CODE = $$androidVersionCode($$VERSION)
 
+    ANDROID_MIN_SDK_VERSION = 21
+
     greaterThan(QT_MAJOR_VERSION, 5) {
         ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android/qt6
         OTHER_FILES += $$PWD/android/qt6/AndroidManifest.xml

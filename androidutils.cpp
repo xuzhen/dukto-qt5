@@ -73,7 +73,7 @@ QJniObject AndroidUtilsBase::getContext() {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         context = QtAndroid::androidActivity().callObjectMethod("getApplicationContext","()Landroid/content/Context;");
 #else
-        context = qApp->nativeInterface<QNativeInterface::QAndroidApplication>()->context();
+        context = QNativeInterface::QAndroidApplication::context();
 #endif
     }
     return context;
@@ -160,7 +160,7 @@ void AndroidMulticastLock::release() {
 /*============================================================*/
 
 
-AndroidContentReader::AndroidContentReader(const QString &uri) : uriObject(AndroidStorage::getUri(uri)) {
+AndroidContentReader::AndroidContentReader(const QString &uri) : uriObject(AndroidStorage::parseUri(uri)) {
 }
 
 AndroidContentReader::AndroidContentReader(const QJniObject &uri) : uriObject(uri) {
@@ -250,7 +250,11 @@ bool AndroidContentReader::open() {
 QByteArray AndroidContentReader::read(int size) {
     QByteArray buffer;
     buffer.resize(size);
-    read(size, buffer.data());
+    int r = read(size, buffer.data());
+    if (r == -1) {
+        return QByteArray();
+    }
+    buffer.resize(r);
     return buffer;
 }
 
@@ -261,6 +265,7 @@ int AndroidContentReader::read(int size, char* buffer) {
     QJniEnvironment env;
     jbyteArray array = env->NewByteArray(size);
     if (array == nullptr) {
+        clearExceptions();
         return -1;
     }
     jint r = stream->callMethod<jint>("read", "([B)I", array);
@@ -284,10 +289,14 @@ void AndroidContentReader::close() {
 
 /*============================================================*/
 
-AndroidContentWriter::AndroidContentWriter(const QString &uri) : uriObject(AndroidStorage::getUri(uri)) {
+AndroidContentWriter::AndroidContentWriter(const QString &uri) : uriObject(AndroidStorage::parseUri(uri)) {
 }
 
 AndroidContentWriter::AndroidContentWriter(const QJniObject &uri) : uriObject(uri) {
+}
+
+AndroidContentWriter::~AndroidContentWriter() {
+    close();
 }
 
 bool AndroidContentWriter::open() {
@@ -420,7 +429,7 @@ QString AndroidStorage::convertToPath(const QString &url) {
     return url;
 }
 
-QJniObject AndroidStorage::getUri(const QString &uriString) {
+QJniObject AndroidStorage::parseUri(const QString &uriString) {
     QJniObject uri = QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", QJniObject::fromString(uriString).object<jstring>());
     if (uri.isValid() == false) {
         clearExceptions();
@@ -429,7 +438,7 @@ QJniObject AndroidStorage::getUri(const QString &uriString) {
 }
 
 bool AndroidStorage::isDir(const QString &uri) {
-    return isDir(getUri(uri));
+    return isDir(parseUri(uri));
 }
 
 bool AndroidStorage::isDir(const QJniObject &uri) {
@@ -459,7 +468,7 @@ QJniObject AndroidStorage::getDocumentUri(const QJniObject &uri) {
 }
 
 QList<QJniObject> AndroidStorage::getEntryList(const QString &dirUri) {
-    return getEntryList(getUri(dirUri));
+    return getEntryList(parseUri(dirUri));
 }
 
 QList<QJniObject> AndroidStorage::getEntryList(const QJniObject &dirUri) {
@@ -507,7 +516,7 @@ QString AndroidStorage::createDir(const QString &parentDirUri, const QString &su
 }
 
 QString AndroidStorage::createFile(const QString &parentDirUri, const QString &fileName, const QString &mimeType) {
-    QJniObject parentUriObj = getUri(parentDirUri);
+    QJniObject parentUriObj = parseUri(parentDirUri);
     if (isDir(parentUriObj) == false) {
         return QString();
     }
@@ -521,7 +530,7 @@ QString AndroidStorage::createFile(const QString &parentDirUri, const QString &f
 }
 
 bool AndroidStorage::removeFile(const QString &uri) {
-    QJniObject uriObj = getUri(uri);
+    QJniObject uriObj = parseUri(uri);
     if (uriObj.isValid() == false) {
         return false;
     }
