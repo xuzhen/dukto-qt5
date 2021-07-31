@@ -113,18 +113,19 @@ public:
 
     static QJniObject parseUri(const QString &uriString);
 
-    static bool isDir(const QString &uri);
     static bool isDir(const QJniObject &uri);
+    static bool exists(const QJniObject &parentDirUri, const QString &fileName, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
 
-    static QList<QJniObject> getEntryList(const QString &dirUri);
     static QList<QJniObject> getEntryList(const QJniObject &dirUri);
 
-    static QString createDir(const QString &parentDirUri, const QString &subDirName);
-    static QString createFile(const QString &parentDirUri, const QString &fileName, const QString &mimeType = "*/*");
-    static bool removeFile(const QString &uri);
+    static QJniObject createDir(const QJniObject &parentDirUri, const QString &subDirName);
+    static QJniObject createPath(const QJniObject &parentDirUri, const QStringList &path);
+    static QJniObject createFile(const QJniObject &parentDirUri, const QString &fileName, const QString &mimeType = "*/*");
+    static bool removeFile(const QJniObject &uri);
 
 private:
     static QJniObject getDocumentUri(const QJniObject &uri);
+    static QJniObject getChildrenUri(const QJniObject &uri);
 };
 
 
