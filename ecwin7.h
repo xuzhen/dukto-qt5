@@ -132,7 +132,6 @@ private:
     HWND mWindowId;
     UINT mTaskbarMessageId;
     ITaskbarList3 *mTaskbar = nullptr;
-    HICON mOverlayIcon = nullptr;
 };
 #endif
 

@@ -19,16 +19,37 @@
 
 #include "ecwin7.h"
 
-// Windows only GUID definitions
 #if defined(Q_OS_WIN)
+#include <QLibrary>
+
+// Windows only GUID definitions
 DEFINE_GUID(CLSID_TaskbarList,0x56fdf344,0xfd6d,0x11d0,0x95,0x8a,0x0,0x60,0x97,0xc9,0xa0,0x90);
 DEFINE_GUID(IID_ITaskbarList3,0xea1afb91,0x9e28,0x4b86,0x90,0xE9,0x9e,0x9f,0x8a,0x5e,0xef,0xaf);
+
+#ifndef MSGFLT_ALLOW
+#define MSGFLT_ALLOW 1
+#endif
+
+typedef BOOL (*ChangeWindowMessageFilterExFunc)(HWND,UINT,DWORD,PVOID); // Win7+
+typedef BOOL (*ChangeWindowMessageFilterFunc)(UINT,DWORD); // WinVista+
 
 // Constructor: variabiles initialization
 EcWin7::EcWin7(QWindow *window)
 {
     mWindowId = reinterpret_cast<HWND>(window->winId());
     mTaskbarMessageId = RegisterWindowMessage(L"TaskbarButtonCreated");
+
+    // for process with elevated privileges
+    QLibrary lib("user32.dll");
+    ChangeWindowMessageFilterExFunc pChangeWindowMessageFilterEx = reinterpret_cast<ChangeWindowMessageFilterExFunc>(lib.resolve("ChangeWindowMessageFilterEx"));
+    if (pChangeWindowMessageFilterEx != nullptr) {
+        pChangeWindowMessageFilterEx(mWindowId, mTaskbarMessageId, MSGFLT_ALLOW, NULL);
+    } else {
+        ChangeWindowMessageFilterFunc pChangeWindowMessageFilter = reinterpret_cast<ChangeWindowMessageFilterFunc>(lib.resolve("ChangeWindowMessageFilter"));
+        if (pChangeWindowMessageFilter != nullptr) {
+            pChangeWindowMessageFilter(mTaskbarMessageId, MSGFLT_ALLOW);
+        }
+    }
 }
 
 // Windows event handler callback function
@@ -41,7 +62,7 @@ bool EcWin7::winEvent(MSG * message, void * result)
                                       0,
                                       CLSCTX_INPROC_SERVER,
                                       IID_ITaskbarList3,
-                                      reinterpret_cast<void**> (&(mTaskbar)));
+                                      reinterpret_cast<void**>(&mTaskbar));
         *static_cast<HRESULT *>(result) = hr;
         return true;
     }
@@ -63,30 +84,24 @@ void EcWin7::setProgressState(ToolBarProgressState state)
 }
 
 // Set new overlay icon and corresponding description (for accessibility)
-// (call with iconName == "" and description == "" to remove any previous overlay icon)
+// (call with iconName == "" to remove any previous overlay icon)
 void EcWin7::setOverlayIcon(const QString &iconName, const QString &description)
 {
     if (!mTaskbar) return;
-    HICON oldIcon = nullptr;
-    if (mOverlayIcon != nullptr) oldIcon = mOverlayIcon;
     if (iconName.isEmpty())
     {
         mTaskbar->SetOverlayIcon(mWindowId, nullptr, nullptr);
-        mOverlayIcon = nullptr;
     }
     else
     {
-        mOverlayIcon = (HICON) LoadImage(GetModuleHandle(nullptr),
-                                 iconName.toStdWString().c_str(),
-                                 IMAGE_ICON,
-                                 0,
-                                 0,
-                                 0);
-        mTaskbar->SetOverlayIcon(mWindowId, mOverlayIcon, description.toStdWString().c_str());
-    }
-    if ((oldIcon != nullptr) && (oldIcon != mOverlayIcon))
-    {
-        DestroyIcon(oldIcon);
+        HICON overlayIcon = static_cast<HICON>(LoadImage(GetModuleHandle(nullptr),
+                                                         iconName.toStdWString().c_str(),
+                                                         IMAGE_ICON,
+                                                         0,
+                                                         0,
+                                                         0));
+        mTaskbar->SetOverlayIcon(mWindowId, overlayIcon, description.toStdWString().c_str());
+        DestroyIcon(overlayIcon);
     }
 }
 #endif
