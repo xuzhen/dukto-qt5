@@ -73,8 +73,7 @@ public:
     explicit AndroidContentReader(const QJniObject &uri);
     ~AndroidContentReader();
     QString getFileName();
-    qint64 getSize();
-    QString getMimeType();
+    qint64 getAvaiableBytes();
     bool open();
     QByteArray read(int size);
     int read(int size, char *buffer);
@@ -115,6 +114,9 @@ public:
 
     static bool isDir(const QJniObject &uri);
     static bool exists(const QJniObject &parentDirUri, const QString &fileName, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
+
+    static qint64 getSize(const QJniObject &uri);
+    static QString getMimeType(const QJniObject &uri);
 
     static QList<QJniObject> getEntryList(const QJniObject &dirUri);
 

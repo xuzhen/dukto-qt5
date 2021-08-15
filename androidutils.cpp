@@ -198,38 +198,13 @@ QString AndroidContentReader::getFileName() {
     return filename;
 }
 
-qint64 AndroidContentReader::getSize() {
-    qint64 size = -1;
-    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", uriObject.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
-    if (cursor.isValid()) {
-        if (cursor.callMethod<jboolean>("moveToFirst")) {
-            // getColumnIndex(OpenableColumns.SIZE)
-            jint index = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("_size").object<jstring>());
-            if (index != -1) {
-                size = cursor.callMethod<jlong>("getLong", "(I)J", index);
-            }
-        }
-        cursor.callMethod<void>("close");
-    }
-    clearExceptions();
-    if (size != -1) {
-        return size;
-    }
-
+qint64 AndroidContentReader::getAvaiableBytes() {
     if (stream == nullptr) {
         return -1;
     }
-    size = stream->callMethod<jint>("available", "()I");
-    return size;
-}
-
-QString AndroidContentReader::getMimeType() {
-    if (uriObject.isValid() == false) {
-        return "";
-    }
-    QString mimeType = getContentResolver().callObjectMethod("getType", "(Landroid/net/Uri;)Ljava/lang/String;", uriObject.object<jstring>()).toString();
+    qint64 size = stream->callMethod<jint>("available", "()I");
     clearExceptions();
-    return mimeType;
+    return size;
 }
 
 bool AndroidContentReader::open() {
@@ -469,6 +444,37 @@ bool AndroidStorage::exists(const QJniObject &parentDirUri, const QString &fileN
     clearExceptions();
     return false;
 }
+
+
+qint64 AndroidStorage::getSize(const QJniObject &uri) {
+    if (uri.isValid() == false) {
+        return -1;
+    }
+    qint64 size = -1;
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", uri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
+    if (cursor.isValid()) {
+        if (cursor.callMethod<jboolean>("moveToFirst")) {
+            // getColumnIndex(OpenableColumns.SIZE)
+            jint index = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("_size").object<jstring>());
+            if (index != -1) {
+                size = cursor.callMethod<jlong>("getLong", "(I)J", index);
+            }
+        }
+        cursor.callMethod<void>("close");
+    }
+    clearExceptions();
+    return size;
+}
+
+QString AndroidStorage::getMimeType(const QJniObject &uri) {
+    if (uri.isValid() == false) {
+        return QString();
+    }
+    QString mimeType = getContentResolver().callObjectMethod("getType", "(Landroid/net/Uri;)Ljava/lang/String;", uri.object<jstring>()).toString();
+    clearExceptions();
+    return mimeType;
+}
+
 
 QJniObject AndroidStorage::getDocumentUri(const QJniObject &uri) {
     if (uri.isValid() == false) {
