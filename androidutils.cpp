@@ -307,7 +307,7 @@ bool AndroidContentWriter::write(const char *data, int size) {
     bool r = hasExceptions();
     env->DeleteLocalRef(array);
     clearExceptions();
-    return r;
+    return !r;
 }
 
 void AndroidContentWriter::close() {
@@ -322,6 +322,9 @@ void AndroidContentWriter::close() {
 
 
 /*============================================================*/
+
+QString AndroidStorage::dirMimeType = QStringLiteral("vnd.android.document/directory");
+
 
 bool AndroidStorage::requestPermission() {
     if (AndroidEnvironment::sdkVersion() < 23) {
@@ -416,9 +419,7 @@ bool AndroidStorage::isDir(const QJniObject &uri) {
     if (uri.isValid() == false) {
         return false;
     }
-    jboolean r = QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "isTreeUri", "(Landroid/net/Uri;)Z", uri.object());
-    clearExceptions();
-    return r;
+    return (getMimeType(getDocumentUri(uri)) == dirMimeType);
 }
 
 bool AndroidStorage::exists(const QJniObject &parentDirUri, const QString &fileName, Qt::CaseSensitivity cs) {
@@ -445,6 +446,60 @@ bool AndroidStorage::exists(const QJniObject &parentDirUri, const QString &fileN
     return false;
 }
 
+
+QJniObject AndroidStorage::getEntry(const QJniObject &parentDirUri, const QString &childDirName, Qt::CaseSensitivity cs) {
+    QJniObject childrenUri = getChildrenUri(parentDirUri);
+    if (childrenUri.isValid() == false) {
+        return QJniObject();
+    }
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
+    if (cursor.isValid()) {
+        jint idIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("document_id").object<jstring>());
+        jint nameIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("_display_name").object<jstring>());
+        if (idIndex != -1 && nameIndex != -1) {
+            while (cursor.callMethod<jboolean>("moveToNext")) {
+                QString docName = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", nameIndex).toString();
+                if (childDirName.compare(docName, cs) == 0) {
+                    QJniObject childDocId = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", idIndex);
+                    QJniObject childDocUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "buildDocumentUriUsingTree", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;", childrenUri.object(), childDocId.object<jstring>());
+                    cursor.callMethod<void>("close");
+                    clearExceptions();
+                    return childDocUri;
+                }
+            }
+        }
+        cursor.callMethod<void>("close");
+    }
+    clearExceptions();
+    return QJniObject();
+}
+
+
+QList<QJniObject> AndroidStorage::getEntryList(const QJniObject &dirUri) {
+    QJniObject childrenUri = getChildrenUri(dirUri);
+    if (childrenUri.isValid() == false) {
+        return QList<QJniObject>();
+    }
+    QList<QJniObject> entries;
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
+    if (cursor.isValid()) {
+        jint idIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("document_id").object<jstring>());
+        if (idIndex != -1) {
+            while (cursor.callMethod<jboolean>("moveToNext")) {
+                QJniObject childDocId = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", idIndex);
+                QJniObject childDocUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "buildDocumentUriUsingTree", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;", childrenUri.object(), childDocId.object<jstring>());
+                if (childDocUri.isValid() == false) {
+                    clearExceptions();
+                    return QList<QJniObject>();
+                }
+                entries.append(childDocUri);
+            }
+        }
+        cursor.callMethod<void>("close");
+    }
+    clearExceptions();
+    return entries;
+}
 
 qint64 AndroidStorage::getSize(const QJniObject &uri) {
     if (uri.isValid() == false) {
@@ -481,6 +536,7 @@ QJniObject AndroidStorage::getDocumentUri(const QJniObject &uri) {
         return QJniObject();
     }
     if (QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "isDocumentUri", "(Landroid/content/Context;Landroid/net/Uri;)Z", getContext().object(), uri.object())) {
+        clearExceptions();
         return uri;
     }
     QJniObject docId = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "getTreeDocumentId", "(Landroid/net/Uri;)Ljava/lang/String;", uri.object());
@@ -497,11 +553,11 @@ QJniObject AndroidStorage::getDocumentUri(const QJniObject &uri) {
 }
 
 QJniObject AndroidStorage::getChildrenUri(const QJniObject &uri) {
-    if (isDir(uri) == false) {
-        return QJniObject();
-    }
     QJniObject docUri = getDocumentUri(uri);
     if (docUri.isValid() == false) {
+        return QJniObject();
+    }
+    if (isDir(docUri) == false) {
         return QJniObject();
     }
     QJniObject docId = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "getDocumentId", "(Landroid/net/Uri;)Ljava/lang/String;", docUri.object());
@@ -517,39 +573,23 @@ QJniObject AndroidStorage::getChildrenUri(const QJniObject &uri) {
     return childrenUri;
 }
 
-QList<QJniObject> AndroidStorage::getEntryList(const QJniObject &dirUri) {
-    QJniObject childrenUri = getChildrenUri(dirUri);
-    if (childrenUri.isValid() == false) {
-        return QList<QJniObject>();
-    }
-    QList<QJniObject> entries;
-    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
-    if (cursor.isValid()) {
-        jint idIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("document_id").object<jstring>());
-        if (idIndex != -1) {
-            while (cursor.callMethod<jboolean>("moveToNext")) {
-                QJniObject childDocId = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", idIndex);
-                QJniObject childDocUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "buildDocumentUriUsingTree", "(Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;", childrenUri.object(), childDocId.object());
-                if (childDocUri.isValid() == false) {
-                    clearExceptions();
-                    return QList<QJniObject>();
-                }
-                entries.append(childDocUri);
-            }
+QJniObject AndroidStorage::createDir(const QJniObject &parentDirUri, const QString &childDirName) {
+    QJniObject uri = getEntry(parentDirUri, childDirName);
+    if (uri.isValid()) {
+        if (isDir(uri)) {
+            return uri;
+        } else {
+            return QJniObject();
         }
-        cursor.callMethod<void>("close");
     }
-    clearExceptions();
-    return entries;
-}
-
-QJniObject AndroidStorage::createDir(const QJniObject &parentDirUri, const QString &subDirName) {
-    static QString dirMime = QStringLiteral("vnd.android.document/directory");
-    return createFile(parentDirUri, subDirName, dirMime);
+    return createFile(parentDirUri, childDirName, dirMimeType);
 }
 
 QJniObject AndroidStorage::createPath(const QJniObject &parentDirUri, const QStringList &path) {
-    QJniObject uri = parentDirUri;
+    QJniObject uri = getDocumentUri(parentDirUri);
+    if (uri.isValid() == false) {
+        return QJniObject();
+    }
     for (const QString &dir: path) {
         if (dir.isEmpty()) {
             continue;
@@ -563,11 +603,11 @@ QJniObject AndroidStorage::createPath(const QJniObject &parentDirUri, const QStr
 }
 
 QJniObject AndroidStorage::createFile(const QJniObject &parentDirUri, const QString &fileName, const QString &mimeType) {
-    if (isDir(parentDirUri) == false) {
-        return QJniObject();
-    }
     QJniObject parentDocUri = getDocumentUri(parentDirUri);
     if (parentDocUri.isValid() == false) {
+        return QJniObject();
+    }
+    if (isDir(parentDocUri) == false) {
         return QJniObject();
     }
     QJniObject subDirUri = QJniObject::callStaticObjectMethod("android/provider/DocumentsContract", "createDocument", "(Landroid/content/ContentResolver;Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;", getContentResolver().object(), parentDocUri.object(), QJniObject::fromString(mimeType).object<jstring>(), QJniObject::fromString(fileName).object<jstring>());

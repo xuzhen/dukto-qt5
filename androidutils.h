@@ -114,13 +114,13 @@ public:
 
     static bool isDir(const QJniObject &uri);
     static bool exists(const QJniObject &parentDirUri, const QString &fileName, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
+    static QJniObject getEntry(const QJniObject &parentDirUri, const QString &childName, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
+    static QList<QJniObject> getEntryList(const QJniObject &dirUri);
 
     static qint64 getSize(const QJniObject &uri);
     static QString getMimeType(const QJniObject &uri);
 
-    static QList<QJniObject> getEntryList(const QJniObject &dirUri);
-
-    static QJniObject createDir(const QJniObject &parentDirUri, const QString &subDirName);
+    static QJniObject createDir(const QJniObject &parentDirUri, const QString &childDirName);
     static QJniObject createPath(const QJniObject &parentDirUri, const QStringList &path);
     static QJniObject createFile(const QJniObject &parentDirUri, const QString &fileName, const QString &mimeType = "*/*");
     static bool removeFile(const QJniObject &uri);
@@ -128,6 +128,7 @@ public:
 private:
     static QJniObject getDocumentUri(const QJniObject &uri);
     static QJniObject getChildrenUri(const QJniObject &uri);
+    static QString dirMimeType;
 };
 
 
