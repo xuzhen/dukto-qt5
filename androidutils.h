@@ -29,6 +29,7 @@ public:
     static bool hasExceptions();
 
 protected:
+    static QString getPackageName();
     static QJniObject getSystemService(const QString &name);
     static QJniObject getContentResolver();
     static QJniObject getContext();
@@ -73,12 +74,14 @@ public:
     explicit AndroidContentReader(const QJniObject &uri);
     ~AndroidContentReader();
     QString getFileName();
+    QString getUri();
     qint64 getAvaiableBytes();
     bool open();
     QByteArray read(int size);
     int read(int size, char *buffer);
     void close();
 private:
+    QString uriString;
     QJniObject uriObject;
     QJniObject *stream = nullptr;
 };
@@ -89,11 +92,14 @@ public:
     explicit AndroidContentWriter(const QString &uri);
     explicit AndroidContentWriter(const QJniObject &uri);
     ~AndroidContentWriter();
+    QString getFileName();
+    QString getUri();
     bool open();
     bool write(const QByteArray &data);
     bool write(const char *data, int size);
     void close();
 private:
+    QString uriString;
     QJniObject uriObject;
     QJniObject *stream = nullptr;
 };
@@ -111,6 +117,9 @@ public:
     static QString convertToPath(const QString &url);
 
     static QJniObject parseUri(const QString &uriString);
+
+    static void grantUriPermission(const QJniObject &uri, bool writable = false);
+    static void revokeUriPermission(const QJniObject &uri);
 
     static bool isDir(const QJniObject &uri);
     static bool exists(const QJniObject &parentDirUri, const QString &fileName, Qt::CaseSensitivity cs = Qt::CaseInsensitive);

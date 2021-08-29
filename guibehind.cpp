@@ -26,6 +26,7 @@
 
 #ifdef Q_OS_ANDROID
 #include "androidutils.h"
+#include <QMessageBox>
 #endif
 
 #include <QQmlContext>
@@ -77,13 +78,15 @@ GuiBehind::GuiBehind(Settings *settings) :
     // Register protocol signals
     connect(&mDuktoProtocol, &DuktoProtocol::peerListAdded, this, &GuiBehind::peerListAdded);
     connect(&mDuktoProtocol, &DuktoProtocol::peerListRemoved, this, &GuiBehind::peerListRemoved);
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileStart, this, &GuiBehind::receiveFileStart);
     connect(&mDuktoProtocol, &DuktoProtocol::transferStatusUpdate, this, &GuiBehind::transferStatusUpdate);
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileComplete, this, &GuiBehind::receiveFileComplete);
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveTextComplete, this, &GuiBehind::receiveTextComplete);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveStarted, this, &GuiBehind::receiveFileStart);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveAborted, this, &GuiBehind::receiveFileCancelled);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveCompleted, this, &GuiBehind::receiveComplete);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileCompleted, this, &GuiBehind::receiveFileComplete);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveDirCompleted, this, &GuiBehind::receiveDirComplete);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveTextCompleted, this, &GuiBehind::receiveTextComplete);
     connect(&mDuktoProtocol, &DuktoProtocol::sendFileComplete, this, &GuiBehind::sendFileComplete);
     connect(&mDuktoProtocol, &DuktoProtocol::sendFileError, this, &GuiBehind::sendFileError);
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileCancelled, this, &GuiBehind::receiveFileCancelled);
     connect(&mDuktoProtocol, &DuktoProtocol::sendFileAborted, this, &GuiBehind::sendFileAborted);
 
     // Register other signals
@@ -116,8 +119,6 @@ GuiBehind::GuiBehind(Settings *settings) :
 
 GuiBehind::~GuiBehind()
 {
-    mDuktoProtocol.sayGoodbye();
-
 #ifdef UPDATER
     if (mUpdatesChecker) mUpdatesChecker->deleteLater();
 #endif
@@ -141,8 +142,9 @@ void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
     view->setSource(QUrl("qrc:/qml/dukto/Dukto.qml"));
     view->restoreGeometry(mSettings->windowGeometry());
 
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveTextComplete, tray, &SystemTray::received_text);
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileComplete, tray, &SystemTray::received_file);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveTextCompleted, tray, &SystemTray::received_text);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileCompleted, tray, &SystemTray::received_file);
+    connect(&mDuktoProtocol, &DuktoProtocol::receiveDirCompleted, tray, &SystemTray::received_folder);
 }
 
 // Add the new buddy to the buddy list
@@ -228,28 +230,22 @@ void GuiBehind::transferStatusUpdate(qint64 total, qint64 partial)
 #endif
 }
 
-void GuiBehind::receiveFileComplete(QStringList *files, qint64 totalSize) {
-
+void GuiBehind::receiveFileComplete(const QString &name, const QString &path, qint64 size) {
     // Add an entry to recent activities
-    QDir d(".");
-    if (files->size() == 1)
-        mRecentList.addRecent(files->at(0), d.absoluteFilePath(files->at(0)), "file", mCurrentTransferBuddy, totalSize);
-    else
-        mRecentList.addRecent("Files and folders", d.absolutePath(), "misc", mCurrentTransferBuddy, totalSize);
-
-    // Update GUI
-#ifdef Q_OS_WIN
-    mView->hideTaskbarProgress();
-#endif
-    QApplication::alert(mView, 5000);
-    emit receiveCompleted();
+    mRecentList.addRecent(name, path, "file", mCurrentTransferBuddy, size);
 }
 
-void GuiBehind::receiveTextComplete(QString *text, qint64 totalSize)
-{
+void GuiBehind::receiveDirComplete(const QString &name, const QString &path) {
     // Add an entry to recent activities
-    mRecentList.addRecent("Text snippet", *text, "text", mCurrentTransferBuddy, totalSize);
+    mRecentList.addRecent(name, path, "dir", mCurrentTransferBuddy, -1);
+}
 
+void GuiBehind::receiveTextComplete(const QString &text) {
+    // Add an entry to recent activities
+    mRecentList.addRecent("Text snippet", text, "text", mCurrentTransferBuddy, text.size());
+}
+
+void GuiBehind::receiveComplete() {
     // Update GUI
 #ifdef Q_OS_WIN
     mView->hideTaskbarProgress();
@@ -268,24 +264,26 @@ void GuiBehind::showTextSnippet(const QString &text, const QString &sender)
 
 void GuiBehind::openFile(const QString &path)
 {
+#ifdef Q_OS_ANDROID
+    AndroidStorage::grantUriPermission(AndroidStorage::parseUri(path));
+    QDesktopServices::openUrl(QUrl(path));
+    AndroidStorage::revokeUriPermission(AndroidStorage::parseUri(path));
+#else
     QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+#endif
 }
 
 void GuiBehind::openDestinationFolder()
 {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(QDir::currentPath()));
+    QDesktopServices::openUrl(mSettings->currentPath());
 }
 
 void GuiBehind::changeDestinationFolder()
 {
     // Show system dialog for folder selection
-    QString dirname = QFileDialog::getExistingDirectory(mView, "Change folder", ".",
+    QString dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->currentPath(),
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (dirname.isEmpty()) return;
-
-#ifdef Q_OS_ANDROID
-    dirname = AndroidStorage::convertToPath(dirname);
-#endif
 
     // Set the new folder as destination
     mDuktoProtocol.setDestDir(dirname);
@@ -354,7 +352,7 @@ void GuiBehind::sendSomeFiles()
 void GuiBehind::sendFolder()
 {
     // Show folder selection dialog
-    QString dirname = QFileDialog::getExistingDirectory(mView, "Change folder", ".",
+    QString dirname = QFileDialog::getExistingDirectory(mView, "Send a folder", ".",
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (dirname.isEmpty()) return;
 
@@ -553,14 +551,10 @@ bool GuiBehind::canAcceptDrop()
 }
 
 // Handles send error
-void GuiBehind::sendFileError(int code, const QString &error)
+void GuiBehind::sendFileError(const QString &error)
 {
     setMessagePageTitle("Error");
-    if (error.isEmpty()) {
-        setMessagePageText("Sorry, an error has occurred while sending your data...\n\nError code: " + QString::number(code));
-    } else {
-        setMessagePageText("Sorry, an error has occurred while sending your data...\n\n" + error);
-    }
+    setMessagePageText("Sorry, an error has occurred while sending your data...\n\n" + error);
     setMessagePageBackState("send");
 #ifdef Q_OS_WIN
     mView->stopTaskbarProgress();
@@ -609,7 +603,7 @@ void GuiBehind::changeThemeColor(const QString &color)
 // Called on application closing event
 void GuiBehind::close()
 {
-    mDuktoProtocol.sayGoodbye();
+    mDuktoProtocol.closeServers();
 }
 
 // Reset taskbar progress status
@@ -623,7 +617,7 @@ void GuiBehind::resetProgressStatus()
 // Broadcast hello
 void GuiBehind::discoveryNeighbors()
 {
-    mDuktoProtocol.sayHello(QHostAddress::Broadcast);
+    mDuktoProtocol.greeting();
 }
 
 // Show updates message
@@ -862,15 +856,23 @@ bool GuiBehind::closeToTray() {
     return mSettings->closeToTrayEnabled();
 }
 
-void GuiBehind::setInitError(const QString &error) {
+void GuiBehind::setInitError(const QString &error, const QString &action) {
     if (error != mInitError) {
         mInitError = error;
         emit initErrorChanged();
+    }
+    if (action != mInitErrorAction) {
+        mInitErrorAction = action;
+        emit initErrorActionChanged();
     }
 }
 
 QString GuiBehind::initError() {
     return mInitError;
+}
+
+QString GuiBehind::initErrorAction() {
+    return mInitErrorAction;
 }
 
 bool GuiBehind::isDesktopApp() {
@@ -881,20 +883,13 @@ bool GuiBehind::isDesktopApp() {
 #endif
 }
 
-bool GuiBehind::isStorageAvailable() {
-#ifndef MOBILE_APP
-    return true;
-#elif defined(Q_OS_ANDROID)
-    if (AndroidStorage::isPermissionGranted()) {
-        return true;
-    }
-    return AndroidStorage::requestPermission();
-#else
-    return false;
-#endif
-}
-
 void GuiBehind::initialize() {
+#ifdef Q_OS_ANDROID
+    if (mSettings->currentPath().isEmpty()) {
+        setInitError(QStringLiteral("The directory for received files hasn't been specified."), QStringLiteral("Choose a directory"));
+        return;
+    }
+#endif
     if (mDuktoProtocol.setupUdpServer(NETWORK_PORT) == false) {
         mDuktoProtocol.closeServers();
         setInitError(QStringLiteral("The UDP port %1 has been used by another application. Please quit that application and try again.").arg(QString::number(NETWORK_PORT)));
@@ -910,6 +905,14 @@ void GuiBehind::initialize() {
     discoveryNeighbors();
     mPeriodicHelloTimer->start(60000);
 }
+
+void GuiBehind::reinitialize(const QString &action) {
+    if (action == QStringLiteral("Choose a directory")) {
+        changeDestinationFolder();
+    }
+    initialize();
+}
+
 
 void GuiBehind::refreshNeighbors() {
     mBuddiesList.clearBuddies();

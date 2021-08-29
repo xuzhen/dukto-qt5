@@ -35,7 +35,7 @@ QString AndroidEnvironment::buildInfo(const QString &name) {
 
 /*============================================================*/
 
-/*
+
 QString AndroidUtilsBase::getPackageName() {
     static QString packageName;
     if (packageName.isEmpty()) {
@@ -43,7 +43,7 @@ QString AndroidUtilsBase::getPackageName() {
     }
     return packageName;
 }
-*/
+
 
 QJniObject AndroidUtilsBase::getSystemService(const QString &name) {
     if (getContext().isValid()) {
@@ -160,10 +160,14 @@ void AndroidMulticastLock::release() {
 /*============================================================*/
 
 
-AndroidContentReader::AndroidContentReader(const QString &uri) : uriObject(AndroidStorage::parseUri(uri)) {
+AndroidContentReader::AndroidContentReader(const QString &uri) : uriString(uri), uriObject(AndroidStorage::parseUri(uri)) {
 }
 
 AndroidContentReader::AndroidContentReader(const QJniObject &uri) : uriObject(uri) {
+    if (uri.isValid()) {
+        uriString = uri.callObjectMethod("getPath", "()Ljava/lang/String;").toString();
+        clearExceptions();
+    }
 }
 
 AndroidContentReader::~AndroidContentReader() {
@@ -172,7 +176,7 @@ AndroidContentReader::~AndroidContentReader() {
 
 QString AndroidContentReader::getFileName() {
     if (uriObject.isValid() == false) {
-        return "";
+        return QString();
     }
     QString filename;
     QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", uriObject.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
@@ -188,14 +192,13 @@ QString AndroidContentReader::getFileName() {
     }
     clearExceptions();
     if (filename.isEmpty()) {
-        filename = uriObject.callObjectMethod("getPath", "()Ljava/lang/String;").toString();
-        clearExceptions();
-        int pos = filename.lastIndexOf('/');
-        if (pos >= 0) {
-            filename = filename.mid(pos + 1);
-        }
+        filename = uriString.section(QChar('/'), -1);
     }
     return filename;
+}
+
+QString AndroidContentReader::getUri() {
+    return uriString;
 }
 
 qint64 AndroidContentReader::getAvaiableBytes() {
@@ -264,14 +267,22 @@ void AndroidContentReader::close() {
 
 /*============================================================*/
 
-AndroidContentWriter::AndroidContentWriter(const QString &uri) : uriObject(AndroidStorage::parseUri(uri)) {
+AndroidContentWriter::AndroidContentWriter(const QString &uri) : uriString(uri), uriObject(AndroidStorage::parseUri(uri)) {
 }
 
-AndroidContentWriter::AndroidContentWriter(const QJniObject &uri) : uriObject(uri) {
+AndroidContentWriter::AndroidContentWriter(const QJniObject &uri) : uriString(uri.toString()), uriObject(uri) {
 }
 
 AndroidContentWriter::~AndroidContentWriter() {
     close();
+}
+
+QString AndroidContentWriter::getFileName() {
+    return AndroidContentReader(uriObject).getFileName();
+}
+
+QString AndroidContentWriter::getUri() {
+    return uriString;
 }
 
 bool AndroidContentWriter::open() {
@@ -332,10 +343,11 @@ bool AndroidStorage::requestPermission() {
     }
     QStringList permissions;
     permissions << "android.permission.WRITE_EXTERNAL_STORAGE";
+    /*
     if (AndroidEnvironment::targetVersion() >= 30) {
         permissions << "android.permission.MANAGE_EXTERNAL_STORAGE";
     }
-
+    */
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const QtAndroid::PermissionResultMap result = QtAndroid::requestPermissionsSync(permissions);
     for (const QtAndroid::PermissionResult &r: result) {
@@ -361,9 +373,11 @@ bool AndroidStorage::requestPermission() {
 bool AndroidStorage::isPermissionGranted() {
     QStringList permissions;
     permissions << "android.permission.WRITE_EXTERNAL_STORAGE";
+    /*
     if (AndroidEnvironment::targetVersion() >= 30) {
         permissions << "android.permission.MANAGE_EXTERNAL_STORAGE";
     }
+    */
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     for (const QString &p: permissions) {
         if (QtAndroid::checkPermission(p) != QtAndroid::PermissionResult::Granted) {
@@ -395,24 +409,29 @@ QString AndroidStorage::getExternalStorage() {
     return storagePath;
 }
 
-QString AndroidStorage::convertToPath(const QString &url) {
-    static const QStringList contentUrls = QStringList() <<
-                                           QStringLiteral("content://com.android.externalstorage.documents/tree/primary%3A") <<
-                                           QStringLiteral("content://com.android.externalstorage.documents/document/primary%3A");
-    for (const QString &u: contentUrls) {
-        if (url.startsWith(u)) {
-            return QDir(getExternalStorage()).filePath(QUrl::fromPercentEncoding(url.mid(u.length()).toUtf8()));
-        }
-    }
-    return url;
-}
-
 QJniObject AndroidStorage::parseUri(const QString &uriString) {
     QJniObject uri = QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", QJniObject::fromString(uriString).object<jstring>());
     if (uri.isValid() == false) {
         clearExceptions();
     }
     return uri;
+}
+
+
+void AndroidStorage::grantUriPermission(const QJniObject &uri, bool writable) {
+    // 1  = Intent.FLAG_GRANT_READ_URI_PERMISSION
+    // 2  = Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+    // 64 = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+    getContext().callMethod<void>("grantUriPermission", "(Ljava/lang/String;Landroid/net/Uri;I)V", QJniObject::fromString(getPackageName()).object<jstring>(), uri.object(), (writable ? (1 | 2 | 64) : (1 | 64)));
+    getContentResolver().callMethod<void>("takePersistableUriPermission", "(Landroid/net/Uri;I)V", uri.object(), (writable ? (1 | 2) : 1));
+    clearExceptions();
+}
+
+void AndroidStorage::revokeUriPermission(const QJniObject &uri) {
+    // 1  = Intent.FLAG_GRANT_READ_URI_PERMISSION
+    // 2  = Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+    getContentResolver().callMethod<void>("releasePersistableUriPermission", "(Landroid/net/Uri;I)V", uri.object(), 1 | 2);
+    clearExceptions();
 }
 
 bool AndroidStorage::isDir(const QJniObject &uri) {

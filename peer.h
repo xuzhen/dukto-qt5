@@ -25,10 +25,13 @@ class Peer
 {
 public:
     Peer() = default;
-    Peer(const QHostAddress &a, const QString &n, const qint16 &p) : address(a), name(n), port(p) { }
+    Peer(const QHostAddress &a, const QString &n, const quint16 &p) : address(a), name(n), port(p) { }
     QHostAddress address;
     QString name;
-    qint16 port;
+    quint16 port;
 };
+
+// for used in queued signal
+Q_DECLARE_METATYPE(Peer)
 
 #endif // PEER_H

@@ -30,9 +30,9 @@
 
 #include "peer.h"
 
-#ifdef Q_OS_ANDROID
-#include "androidutils.h"
-#endif
+class Messenger;
+class Receiver;
+class Sender;
 
 class DuktoProtocol : public QObject
 {
@@ -44,97 +44,42 @@ public:
     bool setupUdpServer(quint16 port);
     bool setupTcpServer(quint16 port);
     void closeServers();
-    void sayHello(const QHostAddress &dest);
-    void sayHello(const QHostAddress &dest, qint16 port);
-    void sayGoodbye();
-    inline QHash<QString, Peer>& getPeers() { return mPeers; }
+    void greeting();
     void sendFile(const QString &ipDest, qint16 port, const QStringList &files);
     void sendText(const QString &ipDest, qint16 port, const QString &text);
     void sendScreen(const QString &ipDest, qint16 port, const QString &path);
-    inline bool isBusy() { return mIsSending || mIsReceiving; }
     void abortCurrentTransfer();
     void updateBuddyName();
     void setDestDir(const QString &dir);
     
 private slots:
-    void newUdpData();
     void newIncomingConnection();
-    void readNewData();
-    void closedConnection();
-    void closedConnectionTmp();
-    void sendMetaData();
-    void sendData(qint64 b);
-    void sendConnectError(QAbstractSocket::SocketError);
 
 signals:
      void peerListAdded(Peer peer);
      void peerListRemoved(Peer peer);
      void sendFileComplete();
-     void sendFileError(int code, QString error);
+     void sendFileError(QString error);
      void sendFileAborted();
-     void receiveFileStart(QString senderIp);
-     void receiveFileComplete(QStringList *files, qint64 totalSize);
-     void receiveTextComplete(QString *text, qint64 totalSize);
-     void receiveFileCancelled(QString error);
+     void receiveStarted(QString senderIp);
+     void receiveCompleted();
+     void receiveAborted(QString error);
+     void receiveFileCompleted(QString name, QString path, qint64 size);
+     void receiveDirCompleted(QString name, QString path);
+     void receiveTextCompleted(QString text);
      void transferStatusUpdate(qint64 total, qint64 partial);
 
 private:
-    QByteArray getSystemSignature();
-    QStringList expandTree(const QStringList& files);
-    void addRecursive(QStringList& e, const QString &path);
-    qint64 computeTotalSize(const QStringList& e);
-    QByteArray nextElementHeader();
-    void sendToAllBroadcast(const QByteArray& packet, const QList<qint16>& ports);
-    void closeCurrentTransfer(bool aborted = false);
+    void createSender(const QString &ipDest, qint16 port);
 
-    void handleMessage(const QByteArray &data, const QHostAddress &sender);
-    void updateStatus();
-
-    QUdpSocket *mSocket = nullptr;              // Socket UDP segnalazione
+    Messenger *mMessenger = nullptr;
+    Receiver *mReceiver = nullptr;
+    Sender *mSender = nullptr;
     QTcpServer *mTcpServer = nullptr;           // Socket TCP attesa dati
     QTcpSocket *mCurrentSocket = nullptr;       // Socket TCP dell'attuale trasferimento file
-
-    QHash<QString, Peer> mPeers;                // Elenco peer individuati
-
-#ifdef Q_OS_ANDROID
-    AndroidMulticastLock mLock;
-#endif
-
-    // Send and receive members
-    qint16 mLocalUdpPort;
     qint16 mLocalTcpPort;
-    bool mIsSending = false;
-    bool mIsReceiving = false;
-    QFile *mCurrentFile = nullptr;              // Puntatore al file aperto corrente
-    qint64 mTotalSize = 0;                      // Quantità totale di dati da inviare o ricevere
-    int mFileCounter = 0;                       // Puntatore all'elemento correntemente da trasmettere o ricevere
 
-    // Sending members
-    QStringList mFilesToSend;                   // Elenco degli elementi da trasmettere
-    qint64 mSentData = 0;                       // Quantità di dati totale trasmessi
-    qint64 mSentBuffer = 0;                     // Quantità di dati rimanenti nel buffer di trasmissione
-    QString mBasePath;                          // Percorso base per l'invio di file e cartelle
-    QString mTextToSend;                        // Testo da inviare (in caso di invio testuale)
-    bool mSendingScreen = false;                // Flag che indica se si sta inviando uno screenshot
-
-    // Receive members
-    qint64 mElementsToReceiveCount = 0;         // Numero di elementi da ricevere
-    qint64 mTotalReceivedData = 0;              // Quantità di dati ricevuti totale
-    qint64 mElementReceivedData = 0;            // Quantità di dati ricevuti per l'elemento corrente
-    qint64 mElementSize = 0;                    // Dimensione dell'elemento corrente
-    QString mRootFolderName;                    // Nome della cartella principale ricevuta
-    QString mRootFolderRenamed;                 // Nome della cartella principale da utilizzare
-    QStringList *mReceivedFiles = nullptr;      // Elenco degli elementi da trasmettere
-    QByteArray mTextToReceive;                  // Testo ricevuto in caso di invio testo
-    bool mReceivingText = false;                // Ricezione di testo in corso
-    QByteArray mPartialName;                    // Nome prossimo file letto solo in parte
     QString mDestDir;
-    enum RecvStatus {
-        FILENAME,
-        FILESIZE,
-        DATA
-    } mRecvStatus = FILENAME;
-
 };
 
 #endif // DUKTOPROTOCOL_H

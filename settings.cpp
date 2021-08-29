@@ -23,6 +23,10 @@
 #include <QDir>
 #include "theme.h"
 
+#ifdef Q_OS_ANDROID
+#include "androidutils.h"
+#endif
+
 Settings::Settings(QObject *parent) :
     QObject(parent), mSettings("msec.it", "Dukto")
 {
@@ -39,10 +43,14 @@ QString Settings::currentPath()
 
     // Else return the default path for this platform
     path = Platform::getDefaultPath();
+#ifdef Q_OS_ANDROID
+    return path;
+#else
     if (QDir(path).exists())
         return path;
     else
         return ".";
+#endif
 }
 
 void Settings::savePath(const QString &path)

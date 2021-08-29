@@ -89,17 +89,21 @@ void SystemTray::on_activated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void SystemTray::received_file(QStringList* files, qint64)
+void SystemTray::received_file(const QString &name, const QString &path, qint64 size)
 {
-    if(files->size() == 1)
-        notify("Recieved File", files->at(0));
-    else
-        notify("Recieved Files and Folders", "");
+    Q_UNUSED(size)
+    Q_UNUSED(path)
+    notify("Recieved File", name);
 }
 
-void SystemTray::received_text(QString* text, qint64)
+void SystemTray::received_folder(const QString &name, const QString &path) {
+    Q_UNUSED(path)
+    notify("Recieved Folder", name);
+}
+
+void SystemTray::received_text(const QString &text)
 {
-    notify("Recieved Text Snippet", *text);
+    notify("Recieved Text Snippet", text);
 }
 
 void SystemTray::notify(const QString &title, const QString &body)

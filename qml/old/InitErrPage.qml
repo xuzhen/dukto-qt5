@@ -22,7 +22,7 @@ Rectangle {
     id: initErrPage
     color: "#00000000"
 
-    signal retry()
+    signal action(string actionName)
 
     MouseArea {
         anchors.fill: parent
@@ -89,13 +89,14 @@ Rectangle {
         }
 
         ButtonDark {
+            id: actionButton
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.rightMargin: 10
             anchors.bottomMargin: 10
             buttonEnabled: true
-            label: "Retry"
-            onClicked: initErrPage.retry();
+            label: guiBehind.initErrorAction
+            onClicked: initErrPage.action(actionButton.label);
         }
     }
 }

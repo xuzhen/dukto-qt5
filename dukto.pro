@@ -48,6 +48,11 @@ unix {
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
     guibehind.cpp \
+    network/buddymessage.cpp \
+    network/filedata.cpp \
+    network/messenger.cpp \
+    network/receiver.cpp \
+    network/sender.cpp \
     platform.cpp \
     buddylistitemmodel.cpp \
     duktoprotocol.cpp \
@@ -61,6 +66,11 @@ SOURCES += main.cpp \
 
 HEADERS += \
     guibehind.h \
+    network/buddymessage.h \
+    network/filedata.h \
+    network/messenger.h \
+    network/receiver.h \
+    network/sender.h \
     platform.h \
     buddylistitemmodel.h \
     duktoprotocol.h \

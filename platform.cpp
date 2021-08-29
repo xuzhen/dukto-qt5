@@ -140,7 +140,7 @@ QString Platform::getDefaultPath()
 #elif defined(Q_OS_MAC)
     return QString(getenv("HOME")) + "/Desktop";
 #elif defined(Q_OS_ANDROID)
-    return AndroidStorage::getExternalStorage();
+    return "";
 #elif defined(Q_OS_UNIX)
     return QString(getenv("HOME"));
 #else

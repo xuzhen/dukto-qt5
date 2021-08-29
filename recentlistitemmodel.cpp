@@ -50,14 +50,15 @@ void RecentListItemModel::addRecent(const QString &name, const QString &value, c
     QString datetime = now.toString(Qt::SystemLocaleShortDate);
 #endif
 
-    // Convert size data
     QString sizeFormatted;
-    if (size < 1024)
-        sizeFormatted = QString::number(size) + " B";
-    else if (size < 1048576)
-        sizeFormatted = QString::number(size * BYTES_TO_KB, 'f', 1) + " KB";
-    else
-        sizeFormatted = QString::number(size * BYTES_TO_MB, 'f', 1) + " MB";
+    if (size >= 0) {
+        if (size < 1024)
+            sizeFormatted = QString::number(size) + " B";
+        else if (size < 1048576)
+            sizeFormatted = QString::number(size * BYTES_TO_KB, 'f', 1) + " KB";
+        else
+            sizeFormatted = QString::number(size * BYTES_TO_MB, 'f', 1) + " MB";
+    }
 
     // Icon
     if (type == "text")
@@ -67,10 +68,12 @@ void RecentListItemModel::addRecent(const QString &name, const QString &value, c
     else
         it->setData("RecentFiles.png", RecentListItemModel::TypeIcon);
 
-    if (type == "text")
-        it->setData(name, RecentListItemModel::Name);
-    else
+    if (type == "file") {
         it->setData(name + " (" + sizeFormatted + ")", RecentListItemModel::Name);
+    } else {
+        it->setData(name, RecentListItemModel::Name);
+    }
+
     it->setData(value, RecentListItemModel::Value);
     it->setData(type, RecentListItemModel::Type);
     it->setData(datetime, RecentListItemModel::DateTime);

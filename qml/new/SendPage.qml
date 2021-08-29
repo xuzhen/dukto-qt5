@@ -183,7 +183,7 @@ Rectangle {
         anchors.topMargin: 15
         anchors.left: localBuddy.left
         anchors.right: localBuddy.right
-        buttonEnabled: guiBehind.isStorageAvailable() && guiBehind.currentTransferBuddy !== ""
+        buttonEnabled: guiBehind.currentTransferBuddy !== ""
         label: "Send some files"
         Connections {
             function onClicked() {
@@ -198,7 +198,7 @@ Rectangle {
         anchors.topMargin: 15
         anchors.left: localBuddy.left
         anchors.right: localBuddy.right
-        buttonEnabled: guiBehind.isStorageAvailable() && guiBehind.currentTransferBuddy !== ""
+        buttonEnabled: guiBehind.currentTransferBuddy !== ""
         label: "Send a folder"
         Connections {
             function onClicked() {

@@ -57,7 +57,8 @@ class GuiBehind : public QObject
     Q_PROPERTY(QString buddyName READ buddyName WRITE setBuddyName NOTIFY buddyNameChanged)
     Q_PROPERTY(bool showNotification READ showNotification WRITE setShowNotification NOTIFY showNotificationChanged)
     Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
-    Q_PROPERTY(QString initError READ initError WRITE setInitError NOTIFY initErrorChanged)
+    Q_PROPERTY(QString initError READ initError NOTIFY initErrorChanged)
+    Q_PROPERTY(QString initErrorAction READ initErrorAction NOTIFY initErrorActionChanged)
 
 public:
     explicit GuiBehind(Settings* settings);
@@ -105,8 +106,9 @@ public:
     bool showNotification();
     void setCloseToTray(bool enabled);
     bool closeToTray();
-    void setInitError(const QString &error);
+    void setInitError(const QString &error, const QString &action = "Retry");
     QString initError();
+    QString initErrorAction();
 
 protected:
     bool eventFilter(QObject *, QEvent *event);
@@ -132,6 +134,7 @@ signals:
     void showNotificationChanged();
     void closeToTrayChanged();
     void initErrorChanged();
+    void initErrorActionChanged();
 
     // Received by QML
     void transferStart();
@@ -147,10 +150,12 @@ public slots:
     void peerListRemoved(const Peer &peer);
     void receiveFileStart(const QString &senderIp);
     void transferStatusUpdate(qint64 total, qint64 partial);
-    void receiveFileComplete(QStringList *files, qint64 totalSize);
-    void receiveTextComplete(QString *text, qint64 totalSize);
+    void receiveFileComplete(const QString &name, const QString &path, qint64 size);
+    void receiveDirComplete(const QString &name, const QString &path);
+    void receiveTextComplete(const QString &text);
+    void receiveComplete();
     void sendFileComplete();
-    void sendFileError(int code, const QString &error);
+    void sendFileError(const QString &error);
     void receiveFileCancelled(const QString &error);
     void sendFileAborted();
 
@@ -170,8 +175,8 @@ public slots:
     void resetProgressStatus();
     void abortTransfer();
     bool isDesktopApp();
-    bool isStorageAvailable();
     void initialize();
+    void reinitialize(const QString &action);
     void refreshNeighbors();
 
 private slots:
@@ -213,6 +218,7 @@ private:
     bool mShowUpdateBanner;
     QString mScreenTempPath;
     QString mInitError;
+    QString mInitErrorAction;
 
     bool prepareStartTransfer(QString *ip, qint16 *port);
     void startTransfer(const QStringList &files);

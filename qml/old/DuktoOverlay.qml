@@ -128,7 +128,7 @@ Rectangle {
         width: parent.width
         x: -parent.width
         opacity: 0
-        onRetry: guiBehind.initialize()
+        onAction: guiBehind.reinitialize(actionName)
     }
 
     states: [

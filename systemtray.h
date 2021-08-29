@@ -31,8 +31,9 @@ class SystemTray : public QSystemTrayIcon
         ~SystemTray();
 
     public slots:
-        void received_file(QStringList *files, qint64);
-        void received_text(QString *text, qint64);
+        void received_file(const QString &name, const QString &path, qint64 size);
+        void received_folder(const QString &name, const QString &path);
+        void received_text(const QString &text);
 
     private slots:
         void on_activated(QSystemTrayIcon::ActivationReason reason);

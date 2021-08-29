@@ -151,8 +151,8 @@ Rectangle {
         x: -parent.width
         opacity: 0
         Connections {
-            function onRetry() {
-                guiBehind.initialize();
+            function onAction(actionName) {
+                guiBehind.reinitialize(actionName);
             }
         }
     }
