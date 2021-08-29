@@ -1,91 +1,84 @@
 <?xml version="1.0"?>
-<manifest package="com.github.xuzhen.dukto" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="-- %%INSERT_VERSION_NAME%% --" android:versionCode="-- %%INSERT_VERSION_CODE%% --" android:installLocation="auto">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.github.xuzhen.dukto"
+    android:installLocation="auto"
+    android:versionCode="-- %%INSERT_VERSION_CODE%% --"
+    android:versionName="-- %%INSERT_VERSION_NAME%% --">
+
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
 
-    <!-- The following comment will be replaced upon deployment with default features based on the dependencies of the application.
-         Remove the comment if you do not require these default features. -->
+    <!-- The comment below will be replaced with dependencies permissions upon deployment.
+             Remove the comment if you do not require these default features. -->
     <!-- %%INSERT_FEATURES -->
 
-    <supports-screens android:largeScreens="true" android:normalScreens="true" android:smallScreens="true" android:anyDensity="true"/>
-    <application android:requestLegacyExternalStorage="true" android:hardwareAccelerated="true" android:name="org.qtproject.qt.android.bindings.QtApplication" android:label="-- %%INSERT_APP_NAME%% --" android:extractNativeLibs="true" android:icon="@drawable/icon">
-        <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density" android:name="org.qtproject.qt.android.bindings.QtActivity" android:label="-- %%INSERT_APP_NAME%% --" android:screenOrientation="unspecified" android:launchMode="singleInstance">
+    <supports-screens
+        android:anyDensity="true"
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true" />
+    <application
+        android:name="org.qtproject.qt.android.bindings.QtApplication"
+        android:extractNativeLibs="true"
+        android:hardwareAccelerated="true"
+        android:label="-- %%INSERT_APP_NAME%% --"
+		android:requestLegacyExternalStorage="true"
+		android:icon="@drawable/icon">
+        <activity
+            android:name="org.qtproject.qt.android.bindings.QtActivity"
+            android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation|mcc|mnc|density"
+            android:label="-- %%INSERT_APP_NAME%% --"
+            android:launchMode="singleInstance"
+            android:screenOrientation="unspecified">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-
-            <!-- Application arguments -->
-            <meta-data android:name="android.app.arguments" android:value="-- %%INSERT_APP_ARGUMENTS%% --"/>
             <!-- Application arguments -->
 
-            <meta-data android:name="android.app.lib_name" android:value="-- %%INSERT_APP_LIB_NAME%% --"/>
-            <meta-data android:name="android.app.qt_sources_resource_id" android:resource="@array/qt_sources"/>
-            <meta-data android:name="android.app.repository" android:value="default"/>
-            <meta-data android:name="android.app.qt_libs_resource_id" android:resource="@array/qt_libs"/>
-            <meta-data android:name="android.app.bundled_libs_resource_id" android:resource="@array/bundled_libs"/>
-            <!-- Deploy Qt libs as part of package -->
-            <meta-data android:name="android.app.bundle_local_qt_libs" android:value="-- %%BUNDLE_LOCAL_QT_LIBS%% --"/>
+            <meta-data
+                android:name="android.app.arguments"
+                android:value="-- %%INSERT_APP_ARGUMENTS%% --" />
+            <!-- Application arguments -->
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="-- %%INSERT_APP_LIB_NAME%% --" />
 
-            <!-- Run with local libs -->
-            <meta-data android:name="android.app.use_local_qt_libs" android:value="-- %%USE_LOCAL_QT_LIBS%% --"/>
-            <meta-data android:name="android.app.libs_prefix" android:value="/data/local/tmp/qt/"/>
-            <meta-data android:name="android.app.load_local_libs_resource_id" android:resource="@array/load_local_libs"/>
-            <meta-data android:name="android.app.load_local_jars" android:value="-- %%INSERT_LOCAL_JARS%% --"/>
-            <meta-data android:name="android.app.static_init_classes" android:value="-- %%INSERT_INIT_CLASSES%% --"/>
             <!-- Used to specify custom system library path to run with local system libs -->
-            <!-- <meta-data android:name="android.app.system_libs_prefix" android:value="/system/lib/"/> -->
+<!--            <meta-data android:name="android.app.system_libs_prefix" android:value="/system/lib/"/>-->
             <!-- Splash screen -->
-            <!-- Orientation-specific (portrait/landscape) data is checked first. If not available for current orientation,
-                 then android.app.splash_screen_drawable. For best results, use together with splash_screen_sticky and
-                 use hideSplashScreen() with a fade-out animation from Qt Android Extras to hide the splash screen when you
-                 are done populating your window with content. -->
-            <!-- meta-data android:name="android.app.splash_screen_drawable_portrait" android:resource="@drawable/logo_portrait" / -->
-            <!-- meta-data android:name="android.app.splash_screen_drawable_landscape" android:resource="@drawable/logo_landscape" / -->
-            <!-- meta-data android:name="android.app.splash_screen_drawable" android:resource="@drawable/logo"/ -->
-            <!-- meta-data android:name="android.app.splash_screen_sticky" android:value="true"/ -->
+            <!-- Orientation-specific (portrait/landscape) data is checked first. If not available
+                 for current orientation, then android.app.splash_screen_drawable. For best
+                 results, use together with splash_screen_sticky and use hideSplashScreen() with
+                 a fade-out animation to hide the splash screen when you are done populating
+                 your window with content. -->
+<!--            <meta-data android:name="android.app.splash_screen_drawable_portrait" android:resource="@drawable/logo_portrait" />-->
+<!--            <meta-data android:name="android.app.splash_screen_drawable_landscape" android:resource="@drawable/logo_landscape" />-->
+<!--            <meta-data android:name="android.app.splash_screen_drawable" android:resource="@drawable/logo"/>-->
+<!--            <meta-data android:name="android.app.splash_screen_sticky" android:value="true"/>-->
             <!-- Splash screen -->
+
             <!-- Background running -->
             <!-- Warning: changing this value to true may cause unexpected crashes if the
                           application still try to draw after
-                          "applicationStateChanged(Qt::ApplicationSuspended)"
-                          signal is sent! -->
-            <meta-data android:name="android.app.background_running" android:value="false"/>
+                          "applicationStateChanged(Qt::ApplicationSuspended)" signal is sent! -->
+            <meta-data
+                android:name="android.app.background_running"
+                android:value="false" />
             <!-- Background running -->
-            <!-- auto screen scale factor -->
-            <meta-data android:name="android.app.auto_screen_scale_factor" android:value="false"/>
-            <!-- auto screen scale factor -->
+
             <!-- extract android style -->
             <!-- available android:values :
-                * default - In most cases this will be the same as "full", but it can also be something else if needed, e.g., for compatibility reasons
+                * default - In most cases this will be the same as "full", but it can also be
+                *           something else if needed, e.g., for compatibility reasons
                 * full - useful QWidget & Quick Controls 1 apps
                 * minimal - useful for Quick Controls 2 apps, it is much faster than "full"
-                * none - useful for apps that don't use any of the above Qt modules
-                -->
-            <meta-data android:name="android.app.extract_android_style" android:value="minimal"/>
+                * none - useful for apps that don't use any of the above Qt modules -->
+            <meta-data
+                android:name="android.app.extract_android_style"
+                android:value="minimal" />
             <!-- extract android style -->
-            <!-- Handle shared incoming urls -->
-            <!--
-            <intent-filter>
-                <action android:name="android.intent.action.SEND"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="*/*"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="*/*"/>
-                <data android:scheme="file"/>
-                <data android:scheme="content"/>
-                        </intent-filter>
-                        -->
         </activity>
-        <!-- For adding service(s) please check: https://wiki.qt.io/AndroidServices -->
-        <!-- Register the File Provider for document sharing -->
-        <!--<provider android:name="android.support.v4.content.FileProvider" android:authorities="com.github.xuzhen.dukto.fileprovider" android:grantUriPermissions="true" android:exported="false">
-            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths"/>
-        </provider>-->
     </application>
-
 </manifest>
