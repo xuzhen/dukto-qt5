@@ -120,11 +120,6 @@ class AndroidStorage : AndroidUtilsBase
 {
 public:
     AndroidStorage() = default;
-    static bool requestPermission();
-    static bool isPermissionGranted();
-
-    static QString getExternalStorage();
-    static QString convertToPath(const QString &url);
 
     static QJniObject parseUri(const QString &uriString);
 

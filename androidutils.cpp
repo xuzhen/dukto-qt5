@@ -369,79 +369,6 @@ void AndroidContentWriter::close() {
 
 QString AndroidStorage::dirMimeType = QStringLiteral("vnd.android.document/directory");
 
-
-bool AndroidStorage::requestPermission() {
-    if (AndroidEnvironment::sdkVersion() < 23) {
-        return true;
-    }
-    QStringList permissions;
-    permissions << "android.permission.WRITE_EXTERNAL_STORAGE";
-    /*
-    if (AndroidEnvironment::targetVersion() >= 30) {
-        permissions << "android.permission.MANAGE_EXTERNAL_STORAGE";
-    }
-    */
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const QtAndroid::PermissionResultMap result = QtAndroid::requestPermissionsSync(permissions);
-    for (const QtAndroid::PermissionResult &r: result) {
-        if (r != QtAndroid::PermissionResult::Granted) {
-            return false;
-        }
-    }
-    return true;
-#else
-    QFutureWatcher<QPermission::PermissionResult> watcher;
-    for (const QString &p: permissions) {
-        QFuture<QPermission::PermissionResult> future = qApp->requestPermission(p);
-        watcher.setFuture(future);
-        watcher.waitForFinished();
-        if (future.result() != QPermission::Authorized) {
-            return false;
-        }
-    }
-    return true;
-#endif
-}
-
-bool AndroidStorage::isPermissionGranted() {
-    QStringList permissions;
-    permissions << "android.permission.WRITE_EXTERNAL_STORAGE";
-    /*
-    if (AndroidEnvironment::targetVersion() >= 30) {
-        permissions << "android.permission.MANAGE_EXTERNAL_STORAGE";
-    }
-    */
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    for (const QString &p: permissions) {
-        if (QtAndroid::checkPermission(p) != QtAndroid::PermissionResult::Granted) {
-            return false;
-        }
-    }
-    return true;
-#else
-    QFutureWatcher<QPermission::PermissionResult> watcher;
-    for (const QString &p: permissions) {
-        QFuture<QPermission::PermissionResult> future = qApp->checkPermission(p);
-        watcher.setFuture(future);
-        watcher.waitForFinished();
-        if (future.result() != QPermission::Authorized) {
-            return false;
-        }
-    }
-    return true;
-#endif
-}
-
-QString AndroidStorage::getExternalStorage() {
-    static QString storagePath;
-    if (storagePath.isEmpty()) {
-        QJniObject mediaDir = QJniObject::callStaticObjectMethod("android/os/Environment", "getExternalStorageDirectory", "()Ljava/io/File;");
-        QJniObject mediaPath = mediaDir.callObjectMethod("getAbsolutePath", "()Ljava/lang/String;");
-        storagePath = mediaPath.toString();
-    }
-    return storagePath;
-}
-
 QJniObject AndroidStorage::parseUri(const QString &uriString) {
     QJniObject uri = QJniObject::callStaticObjectMethod("android/net/Uri", "parse", "(Ljava/lang/String;)Landroid/net/Uri;", QJniObject::fromString(uriString).object<jstring>());
     if (uri.isValid() == false) {
@@ -449,7 +376,6 @@ QJniObject AndroidStorage::parseUri(const QString &uriString) {
     }
     return uri;
 }
-
 
 void AndroidStorage::grantUriPermission(const QJniObject &uri, bool writable) {
     // 1  = Intent.FLAG_GRANT_READ_URI_PERMISSION
