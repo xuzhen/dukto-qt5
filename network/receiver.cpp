@@ -57,7 +57,6 @@ void Receiver::processData() {
      * ...
      */
     while (socket->bytesAvailable() > 0) {
-        QCoreApplication::processEvents();
         switch (recvStatus) {
             case PHASE_TOTAL_ELEMENTS: {
                 if (socket->bytesAvailable() < static_cast<qint64>(sizeof(sessionElements))) {
@@ -159,6 +158,8 @@ void Receiver::processData() {
                 currentElementReceived += d.size();
                 sessionBytesReceived += d.size();
                 emit progress(sessionBytes, sessionBytesReceived);
+                // refresh ui
+                QCoreApplication::processEvents();
 
                 if (currentElementType == TEXT_ELEMENT) {
                     readBuffer.append(d);
