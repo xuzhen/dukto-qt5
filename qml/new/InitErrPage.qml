@@ -72,7 +72,7 @@ Rectangle {
             anchors.leftMargin: 60
             anchors.topMargin: 5
             font.pixelSize: 64
-            text: "Initialization Failed"
+            text: "Initializing..."
         }
 
         SText {
