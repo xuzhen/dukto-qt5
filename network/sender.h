@@ -51,6 +51,10 @@ private:
     } sendStatus = PHASE_TOTAL_ELEMENTS_AND_SIZE;
 
     static QByteArray textElementName;
+
+#ifdef Q_OS_ANDROID
+    volatile AndroidScreenOn screenOn;
+#endif
 };
 
 #endif // SENDER_H

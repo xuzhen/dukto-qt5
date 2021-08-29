@@ -33,6 +33,7 @@ protected:
     static QJniObject getSystemService(const QString &name);
     static QJniObject getContentResolver();
     static QJniObject getContext();
+    static QJniObject getActivity();
 };
 
 /*============================================================*/
@@ -63,6 +64,15 @@ public:
     void release();
 private:
     QJniObject lock;
+};
+
+class AndroidScreenOn : public AndroidUtilsBase
+{
+public:
+    AndroidScreenOn();
+    ~AndroidScreenOn();
+private:
+    QJniObject window;
 };
 
 /*============================================================*/

@@ -79,6 +79,14 @@ QJniObject AndroidUtilsBase::getContext() {
     return context;
 }
 
+QJniObject AndroidUtilsBase::getActivity() {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return QtAndroid::androidActivity();
+#else
+    return QNativeInterface::QAndroidApplication::context();
+#endif
+}
+
 bool AndroidUtilsBase::clearExceptions() {
     static QJniEnvironment env;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -159,6 +167,31 @@ void AndroidMulticastLock::release() {
 
 /*============================================================*/
 
+AndroidScreenOn::AndroidScreenOn() : window(getActivity().callObjectMethod("getWindow", "()Landroid/view/Window;")) {
+    auto code = [this]() {
+        // 128 = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        window.callMethod<void>("addFlags", "(I)V", static_cast<jint>(128));
+    };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread(code).waitForFinished();
+#else
+    QtAndroid::runOnAndroidThreadSync(code);
+#endif
+}
+
+AndroidScreenOn::~AndroidScreenOn() {
+    auto code = [this]() {
+        // 128 = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        window.callMethod<void>("clearFlags", "(I)V", static_cast<jint>(128));
+    };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread(code).waitForFinished();
+#else
+    QtAndroid::runOnAndroidThreadSync(code);
+#endif
+}
+
+/*============================================================*/
 
 AndroidContentReader::AndroidContentReader(const QString &uri) : uriString(uri), uriObject(AndroidStorage::parseUri(uri)) {
 }

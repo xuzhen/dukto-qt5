@@ -6,6 +6,7 @@
 
 #ifdef Q_OS_ANDROID
 class AndroidContentWriter;
+class AndroidScreenOn;
 #else
 class QFile;
 #endif
@@ -78,6 +79,10 @@ private:
     } recvStatus = PHASE_TOTAL_ELEMENTS;
 
     static QString textElementName;
+
+#ifdef Q_OS_ANDROID
+    AndroidScreenOn *screenOn;
+#endif
 };
 
 #endif // RECEIVER_H

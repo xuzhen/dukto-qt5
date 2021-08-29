@@ -20,6 +20,11 @@ Receiver::Receiver(QTcpSocket *socket, const QString &destDir, QObject *parent) 
 #else
     connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Receiver::connectionError, Qt::QueuedConnection);
 #endif
+
+#ifdef Q_OS_ANDROID
+    screenOn = new AndroidScreenOn();
+#endif
+
     if (socket->bytesAvailable()) {
         processData();
     }
@@ -32,6 +37,9 @@ Receiver::~Receiver() {
         socket->deleteLater();
     }
     delete currentFile;
+#ifdef Q_OS_ANDROID
+    delete screenOn;
+#endif
 }
 
 void Receiver::processData() {
