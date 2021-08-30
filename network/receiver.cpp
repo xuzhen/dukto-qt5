@@ -158,8 +158,6 @@ void Receiver::processData() {
                 currentElementReceived += d.size();
                 sessionBytesReceived += d.size();
                 emit progress(sessionBytes, sessionBytesReceived);
-                // refresh ui
-                QCoreApplication::processEvents();
 
                 if (currentElementType == TEXT_ELEMENT) {
                     readBuffer.append(d);
@@ -215,15 +213,17 @@ void Receiver::terminateSession(const QString &error) {
 }
 
 void Receiver::terminateConnection() {
-    disconnect(socket, &QTcpSocket::readyRead, this, &Receiver::processData);
+    if (socket != nullptr) {
+        disconnect(socket, &QTcpSocket::readyRead, this, &Receiver::processData);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    disconnect(socket, &QTcpSocket::errorOccurred, this, &Receiver::connectionError);
+        disconnect(socket, &QTcpSocket::errorOccurred, this, &Receiver::connectionError);
 #else
-    disconnect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Receiver::connectionError);
+        disconnect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Receiver::connectionError);
 #endif
-    socket->close();
-    socket->deleteLater();
-    socket = nullptr;
+        socket->close();
+        socket->deleteLater();
+        socket = nullptr;
+    }
 }
 
 bool Receiver::prepareFilesystem() {
