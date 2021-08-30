@@ -163,8 +163,8 @@ void Sender::sendData() {
                     return;
                 }
                 // nothing written, go to PHASE_FINALIZATION directly
-                __attribute__ ((fallthrough));
             }
+            // fall through
             case PHASE_FINALIZATION: {
                 filesToSend.clear();
                 disconnectSlots();
