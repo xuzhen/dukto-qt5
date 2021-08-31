@@ -114,6 +114,10 @@ void Sender::sendData() {
                 return;
             }
             case PHASE_ELEMENT_DATA: {
+                if (socket->bytesToWrite() >= 1024 * 1024) {
+                    // do not leave too much data in sending buffer
+                    return;
+                }
                 bool waitBytesWritten = false;
                 if (filesToSend.size() == 0) {
                     // text
@@ -157,7 +161,7 @@ void Sender::sendData() {
                     }
                 }
 
-                // all data sent
+                // all data written
                 if (waitBytesWritten) {
                     sendStatus = PHASE_FINALIZATION;
                     return;
@@ -166,14 +170,15 @@ void Sender::sendData() {
             }
             // fall through
             case PHASE_FINALIZATION: {
-                filesToSend.clear();
-                disconnectSlots();
-                emit completed();
-                QTimer::singleShot(1000, this, [this]() {
+                if (socket->bytesToWrite() == 0) {
+                    // end connection until all data sent
+                    filesToSend.clear();
+                    disconnectSlots();
+                    emit completed();
                     socket->disconnectFromHost();
                     socket->deleteLater();
                     socket = nullptr;
-                });
+                }
                 return;
             }
         }

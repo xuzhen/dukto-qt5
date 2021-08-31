@@ -49,6 +49,7 @@ bool FileData::open() {
     if (reader == nullptr) {
         reader = new AndroidContentReader(path);
     }
+    readBytes = 0;
     return reader->open();
 #else
     if (reader == nullptr) {
@@ -62,7 +63,13 @@ QByteArray FileData::read(qint64 size) {
     if (reader == nullptr)  {
         return QByteArray();
     }
+#ifdef Q_OS_ANDROID
+    QByteArray d = reader->read(size);
+    readBytes += d.size();
+    return d;
+#else
     return reader->read(size);
+#endif
 }
 
 bool FileData::eof() {
@@ -70,7 +77,7 @@ bool FileData::eof() {
         return true;
     }
 #ifdef Q_OS_ANDROID
-    return reader->getAvaiableBytes() == 0;
+    return readBytes >= size;
 #else
     return reader->atEnd();
 #endif

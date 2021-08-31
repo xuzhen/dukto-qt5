@@ -1,7 +1,6 @@
 #include "receiver.h"
 #include <QHostAddress>
 #include <QTimer>
-#include <QCoreApplication>
 #include <algorithm>
 
 #ifdef Q_OS_ANDROID
@@ -79,7 +78,7 @@ void Receiver::processData() {
                     return;
                 }
                 socket->read(reinterpret_cast<char*>(&sessionBytes), sizeof(sessionBytes));
-                if (sessionBytes <= 0) {
+                if (sessionBytes < 0) {
                     // invalid data
                     terminateConnection();
                     return;
@@ -139,6 +138,7 @@ void Receiver::processData() {
                     sessionElementsReceived++;
                     if (sessionElementsReceived < sessionElements) {
                         recvStatus = PHASE_ELEMENT_NAME;
+                        break;
                     } else {
                         endSession();
                         return;
@@ -152,24 +152,30 @@ void Receiver::processData() {
                     currentElementReceived = 0;
                     recvStatus = PHASE_ELEMENT_DATA;
                 }
-                break;
+                if (currentElementBytes > 0) {
+                    break;
+                }
+                // an empty file, go to PHASE_ELEMENT_DATA
             }
+            // fall through
             case PHASE_ELEMENT_DATA: {
-                QByteArray d = socket->read(std::min<qint64>(currentElementBytes - currentElementReceived, 1024 * 1024));
-                currentElementReceived += d.size();
-                sessionBytesReceived += d.size();
-                emit progress(sessionBytes, sessionBytesReceived);
+                if (currentElementBytes > 0) {
+                    QByteArray d = socket->read(std::min<qint64>(currentElementBytes - currentElementReceived, 1024 * 1024));
+                    currentElementReceived += d.size();
+                    sessionBytesReceived += d.size();
+                    emit progress(sessionBytes, sessionBytesReceived);
 
-                if (currentElementType == TEXT_ELEMENT) {
-                    readBuffer.append(d);
-                } else {
+                    if (currentElementType == TEXT_ELEMENT) {
+                        readBuffer.append(d);
+                    } else {
 #ifdef Q_OS_ANDROID
-                    if (currentFile->write(d) == false) {
+                        if (currentFile->write(d) == false) {
 #else
-                    if (currentFile->write(d) < d.size()) {
+                        if (currentFile->write(d) < d.size()) {
 #endif
-                        terminateSession(QStringLiteral("Failed to write to %1").arg(currentElementName));
-                        return;
+                            terminateSession(QStringLiteral("Failed to write to %1").arg(currentElementName));
+                            return;
+                        }
                     }
                 }
 

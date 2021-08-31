@@ -131,6 +131,7 @@ public:
     static QJniObject getEntry(const QJniObject &parentDirUri, const QString &childName, Qt::CaseSensitivity cs = Qt::CaseInsensitive);
     static QList<QJniObject> getEntryList(const QJniObject &dirUri);
 
+    static QString getFileName(const QJniObject &uri);
     static qint64 getSize(const QJniObject &uri);
     static QString getMimeType(const QJniObject &uri);
 
@@ -141,7 +142,7 @@ public:
 
 private:
     static QJniObject getDocumentUri(const QJniObject &uri);
-    static QJniObject getChildrenUri(const QJniObject &uri);
+    static QJniObject getChildDocumentsUri(const QJniObject &uri);
     static QString dirMimeType;
 };
 

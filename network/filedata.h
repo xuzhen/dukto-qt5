@@ -36,6 +36,7 @@ private:
     static bool processDir(const QString &relPath, const QJniObject &fullUri, QList<FileData> &list, qint64 &totalSize, QString &error);
     AndroidContentReader *reader = nullptr;
     QJniObject path;
+    qint64 readBytes = 0;
 #else
     FileData(qint64 size, const QString &relPath, const QString &fullPath);
     static bool processDir(const QString &relPath, const QString &fullPath, QList<FileData> &list, qint64 &totalSize, QString &error);

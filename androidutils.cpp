@@ -196,11 +196,7 @@ AndroidScreenOn::~AndroidScreenOn() {
 AndroidContentReader::AndroidContentReader(const QString &uri) : uriString(uri), uriObject(AndroidStorage::parseUri(uri)) {
 }
 
-AndroidContentReader::AndroidContentReader(const QJniObject &uri) : uriObject(uri) {
-    if (uri.isValid()) {
-        uriString = uri.callObjectMethod("getPath", "()Ljava/lang/String;").toString();
-        clearExceptions();
-    }
+AndroidContentReader::AndroidContentReader(const QJniObject &uri) : uriString(uri.toString()), uriObject(uri) {
 }
 
 AndroidContentReader::~AndroidContentReader() {
@@ -208,26 +204,7 @@ AndroidContentReader::~AndroidContentReader() {
 }
 
 QString AndroidContentReader::getFileName() {
-    if (uriObject.isValid() == false) {
-        return QString();
-    }
-    QString filename;
-    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", uriObject.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
-    if (cursor.isValid()) {
-        if (cursor.callMethod<jboolean>("moveToFirst")) {
-            // getColumnIndex(OpenableColumns.DISPLAY_NAME)
-            jint index = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("_display_name").object<jstring>());
-            if (index != -1) {
-                filename = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", index).toString();
-            }
-        }
-        cursor.callMethod<void>("close");
-    }
-    clearExceptions();
-    if (filename.isEmpty()) {
-        filename = uriString.section(QChar('/'), -1);
-    }
-    return filename;
+    return AndroidStorage::getFileName(uriObject);
 }
 
 QString AndroidContentReader::getUri() {
@@ -311,7 +288,7 @@ AndroidContentWriter::~AndroidContentWriter() {
 }
 
 QString AndroidContentWriter::getFileName() {
-    return AndroidContentReader(uriObject).getFileName();
+    return AndroidStorage::getFileName(uriObject);
 }
 
 QString AndroidContentWriter::getUri() {
@@ -401,11 +378,11 @@ bool AndroidStorage::isDir(const QJniObject &uri) {
 }
 
 bool AndroidStorage::exists(const QJniObject &parentDirUri, const QString &fileName, Qt::CaseSensitivity cs) {
-    QJniObject childrenUri = getChildrenUri(parentDirUri);
+    QJniObject childrenUri = getChildDocumentsUri(parentDirUri);
     if (childrenUri.isValid() == false) {
         return false;
     }
-    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object(), nullptr, nullptr, nullptr, nullptr);
     if (cursor.isValid()) {
         jint nameIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("_display_name").object<jstring>());
         if (nameIndex != -1) {
@@ -426,11 +403,11 @@ bool AndroidStorage::exists(const QJniObject &parentDirUri, const QString &fileN
 
 
 QJniObject AndroidStorage::getEntry(const QJniObject &parentDirUri, const QString &childDirName, Qt::CaseSensitivity cs) {
-    QJniObject childrenUri = getChildrenUri(parentDirUri);
+    QJniObject childrenUri = getChildDocumentsUri(parentDirUri);
     if (childrenUri.isValid() == false) {
         return QJniObject();
     }
-    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object(), nullptr, nullptr, nullptr, nullptr);
     if (cursor.isValid()) {
         jint idIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("document_id").object<jstring>());
         jint nameIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("_display_name").object<jstring>());
@@ -454,12 +431,12 @@ QJniObject AndroidStorage::getEntry(const QJniObject &parentDirUri, const QStrin
 
 
 QList<QJniObject> AndroidStorage::getEntryList(const QJniObject &dirUri) {
-    QJniObject childrenUri = getChildrenUri(dirUri);
+    QJniObject childrenUri = getChildDocumentsUri(dirUri);
     if (childrenUri.isValid() == false) {
         return QList<QJniObject>();
     }
     QList<QJniObject> entries;
-    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", childrenUri.object(), nullptr, nullptr, nullptr, nullptr);
     if (cursor.isValid()) {
         jint idIndex = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("document_id").object<jstring>());
         if (idIndex != -1) {
@@ -479,12 +456,39 @@ QList<QJniObject> AndroidStorage::getEntryList(const QJniObject &dirUri) {
     return entries;
 }
 
+QString AndroidStorage::getFileName(const QJniObject &uri) {
+    QJniObject docUri = getDocumentUri(uri);
+    if (docUri.isValid() == false) {
+        return QString();
+    }
+    QString filename;
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", docUri.object(), nullptr, nullptr, nullptr, nullptr);
+    if (cursor.isValid()) {
+        if (cursor.callMethod<jboolean>("moveToFirst")) {
+            // getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            jint index = cursor.callMethod<jint>("getColumnIndex", "(Ljava/lang/String;)I", QJniObject::fromString("_display_name").object<jstring>());
+            if (index != -1) {
+                filename = cursor.callObjectMethod("getString", "(I)Ljava/lang/String;", index).toString();
+            }
+        }
+        cursor.callMethod<void>("close");
+    }
+    clearExceptions();
+    if (filename.isEmpty()) {
+        filename = docUri.toString().section(QChar('/'), -1);
+    } else if (filename.contains(QChar(':'))) {
+
+    }
+    return filename;
+}
+
 qint64 AndroidStorage::getSize(const QJniObject &uri) {
-    if (uri.isValid() == false) {
+    QJniObject docUri = getDocumentUri(uri);
+    if (docUri.isValid() == false) {
         return -1;
     }
     qint64 size = -1;
-    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", uri.object<jstring>(), nullptr, nullptr, nullptr, nullptr);
+    QJniObject cursor = getContentResolver().callObjectMethod("query", "(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;", docUri.object(), nullptr, nullptr, nullptr, nullptr);
     if (cursor.isValid()) {
         if (cursor.callMethod<jboolean>("moveToFirst")) {
             // getColumnIndex(OpenableColumns.SIZE)
@@ -503,7 +507,7 @@ QString AndroidStorage::getMimeType(const QJniObject &uri) {
     if (uri.isValid() == false) {
         return QString();
     }
-    QString mimeType = getContentResolver().callObjectMethod("getType", "(Landroid/net/Uri;)Ljava/lang/String;", uri.object<jstring>()).toString();
+    QString mimeType = getContentResolver().callObjectMethod("getType", "(Landroid/net/Uri;)Ljava/lang/String;", uri.object()).toString();
     clearExceptions();
     return mimeType;
 }
@@ -530,7 +534,7 @@ QJniObject AndroidStorage::getDocumentUri(const QJniObject &uri) {
     return docUri;
 }
 
-QJniObject AndroidStorage::getChildrenUri(const QJniObject &uri) {
+QJniObject AndroidStorage::getChildDocumentsUri(const QJniObject &uri) {
     QJniObject docUri = getDocumentUri(uri);
     if (docUri.isValid() == false) {
         return QJniObject();

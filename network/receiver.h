@@ -65,9 +65,9 @@ private:
 
     QMap<QString,QString> dirNameMap;
 #ifdef Q_OS_ANDROID
-    AndroidContentWriter *currentFile;
+    AndroidContentWriter *currentFile = nullptr;
 #else
-    QFile *currentFile;
+    QFile *currentFile = nullptr;
 #endif
 
     enum RECV_PHASE {

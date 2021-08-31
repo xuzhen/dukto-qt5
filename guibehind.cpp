@@ -270,9 +270,10 @@ void GuiBehind::showTextSnippet(const QString &text, const QString &sender)
 void GuiBehind::openFile(const QString &path)
 {
 #ifdef Q_OS_ANDROID
-    AndroidStorage::grantUriPermission(AndroidStorage::parseUri(path));
+    QJniObject uri = AndroidStorage::parseUri(path);
+    AndroidStorage::grantUriPermission(uri);
     QDesktopServices::openUrl(QUrl(path));
-    AndroidStorage::revokeUriPermission(AndroidStorage::parseUri(path));
+    AndroidStorage::revokeUriPermission(uri);
 #else
     QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 #endif
@@ -347,9 +348,24 @@ void GuiBehind::sendDroppedFiles(QStringList *files)
 void GuiBehind::sendSomeFiles()
 {
     // Show file selection dialog
-    QStringList files = QFileDialog::getOpenFileNames(mView, "Send some files");
-    if (files.isEmpty()) return;
-
+    QStringList files;
+#ifdef Q_OS_ANDROID
+    // Qt use QUrl::toString(QUrl::PrettyDecoded) to convert QUrl to QString in
+    // QFileDialog::getOpenFileNames' internal implementation. Some characters
+    // like spaces will be wrongly decoded
+    const QList<QUrl> urls = QFileDialog::getOpenFileUrls(mView, "Send some files");
+    if (urls.isEmpty()) {
+        return;
+    }
+    for (const QUrl &url: urls) {
+        files << url.toString(QUrl::FullyEncoded);
+    }
+#else
+    files = QFileDialog::getOpenFileNames(mView, "Send some files");
+    if (files.isEmpty()) {
+        return;
+    }
+#endif
     // Send files
     startTransfer(files);
 }
@@ -357,9 +373,22 @@ void GuiBehind::sendSomeFiles()
 void GuiBehind::sendFolder()
 {
     // Show folder selection dialog
-    QString dirname = QFileDialog::getExistingDirectory(mView, "Send a folder", ".",
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if (dirname.isEmpty()) return;
+    QString dirname;
+#ifdef Q_OS_ANDROID
+    // Qt use QUrl::toString(QUrl::PrettyDecoded) to convert QUrl to QString in
+    // QFileDialog::getExistingDirectory's internal implementation. Some characters
+    // like spaces will be wrongly decoded
+    QUrl url = QFileDialog::getExistingDirectoryUrl(mView, "Send a folder", QUrl(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (url.isEmpty()) {
+        return;
+    }
+    dirname = url.toString(QUrl::FullyEncoded);
+#else
+    dirname = QFileDialog::getExistingDirectory(mView, "Send a folder", ".", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (dirname.isEmpty()) {
+        return;
+    }
+#endif
 
     // Send files
     QStringList toSend;
