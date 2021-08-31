@@ -11,7 +11,7 @@ DEFINES += SINGLE_APP
 #DEFINES += UPDATER
 
 # Use libnotify for notifications (Linux only)
-DEFINES += NOTIFY_LIBNOTIFY
+#DEFINES += NOTIFY_LIBNOTIFY
 
 #==========================================
 
