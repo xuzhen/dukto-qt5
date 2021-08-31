@@ -30,27 +30,31 @@ bool Messenger::start(quint16 listenPort) {
         stop();
     }
 
-    if (socket->bind(QHostAddress::AnyIPv4, listenPort) == false) {
-        return false;
-    }
     localPort = listenPort;
-    connect(socket, &QUdpSocket::readyRead, this, &Messenger::processDatagram, Qt::QueuedConnection);
+    // Do NOT use Qt::QueuedConnection, otherwise the readyRead signal will go wrong
+    connect(socket, &QUdpSocket::readyRead, this, &Messenger::processDatagram, Qt::UniqueConnection);
 
 #ifdef Q_OS_ANDROID
     // acquire MulticastLock for receiving multicast messages
     // https://developer.android.com/reference/android/net/wifi/WifiManager.MulticastLock
-    lock = new AndroidMulticastLock();
-    lock->acquire();
+    if (lock == nullptr) {
+        lock = new AndroidMulticastLock();
+        lock->acquire();
+    }
 #endif
 
-    processDatagram();
-    return true;
+    return socket->bind(QHostAddress::AnyIPv4, listenPort);
 }
 
 void Messenger::stop() {
     sayGoodbye();
     socket->disconnect(this);
     socket->close();
+#ifdef Q_OS_ANDROID
+    if (lock != nullptr) {
+        lock->release();
+    }
+#endif
 }
 
 void Messenger::processDatagram() {
@@ -158,12 +162,12 @@ void Messenger::broadcastMessage(const BuddyMessage &message) {
     localAddrs.clear();
 
     // broadcast to all interfaces
-    QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
+    const QList<QNetworkInterface> ifaces = QNetworkInterface::allInterfaces();
     for (const QNetworkInterface &iface: ifaces) {
         if (iface.flags().testFlag(QNetworkInterface::IsUp) == false) {
             continue;
         }
-        QList<QNetworkAddressEntry> addrs = iface.addressEntries();
+        const QList<QNetworkAddressEntry> addrs = iface.addressEntries();
         for (const QNetworkAddressEntry &addr: addrs) {
             QHostAddress ipAddr = addr.ip();
             if (ipAddr.protocol() == QAbstractSocket::IPv4Protocol && !ipAddr.isLoopback()) {

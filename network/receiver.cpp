@@ -2,6 +2,7 @@
 #include <QHostAddress>
 #include <QTimer>
 #include <QCoreApplication>
+#include <algorithm>
 
 #ifdef Q_OS_ANDROID
 #include "androidutils.h"
@@ -13,7 +14,7 @@
 QString Receiver::textElementName = QStringLiteral("___DUKTO___TEXT___");
 
 Receiver::Receiver(QTcpSocket *socket, const QString &destDir, QObject *parent) : QObject(parent), socket(socket), destDir(destDir) {
-    connect(socket, &QTcpSocket::readyRead, this, &Receiver::processData, Qt::QueuedConnection);
+    connect(socket, &QTcpSocket::readyRead, this, &Receiver::processData);
     connect(socket, &QTcpSocket::destroyed, this, &Receiver::deleteLater, Qt::QueuedConnection);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     connect(socket, &QTcpSocket::errorOccurred, this, &Receiver::connectionError, Qt::QueuedConnection);
@@ -154,7 +155,7 @@ void Receiver::processData() {
                 break;
             }
             case PHASE_ELEMENT_DATA: {
-                QByteArray d = socket->read(currentElementBytes - currentElementReceived);
+                QByteArray d = socket->read(std::min<qint64>(currentElementBytes - currentElementReceived, 1024 * 1024));
                 currentElementReceived += d.size();
                 sessionBytesReceived += d.size();
                 emit progress(sessionBytes, sessionBytesReceived);

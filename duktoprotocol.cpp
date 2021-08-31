@@ -188,6 +188,7 @@ void DuktoProtocol::abortCurrentTransfer()
     // Abort current connection
     mSender->abort();
     emit sendFileAborted();
+    mSender = nullptr;
 }
 
 // Aggiorna il buddy name dell'utente locale

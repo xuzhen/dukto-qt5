@@ -13,7 +13,7 @@ Sender::Sender(const QString &dest, quint16 port, QObject *parent) : QObject(par
 #else
     connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Sender::connectionError, Qt::QueuedConnection);
 #endif
-    connect(socket, &QTcpSocket::bytesWritten, this, &Sender::sendData, Qt::QueuedConnection);
+    connect(socket, &QTcpSocket::bytesWritten, this, &Sender::sendData);
 }
 
 void Sender::sendFiles(const QStringList &paths) {
@@ -123,7 +123,7 @@ void Sender::sendData() {
                 } else if (currentFile->isDir() == false) {
                     // file
                     if (currentFile->getSize() > 0)  {
-                        QByteArray d = currentFile->read(1000);
+                        QByteArray d = currentFile->read(1024 * 1024);
                         if (d.size() > 0) {
                             socket->write(d);
                             totalBytesSent += d.size();
