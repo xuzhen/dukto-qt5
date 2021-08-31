@@ -112,7 +112,7 @@ public:
     QString initErrorAction();
 
 protected:
-    bool eventFilter(QObject *, QEvent *event);
+    bool eventFilter(QObject *, QEvent *event) override;
 
 signals:
     void currentTransferBuddyChanged();
