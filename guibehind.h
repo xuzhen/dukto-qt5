@@ -32,6 +32,7 @@
 class UpdatesChecker;
 #endif
 class Settings;
+class MiniWebServer;
 class DuktoWindow;
 class SystemTray;
 
@@ -191,6 +192,7 @@ private:
     DuktoWindow *mView = nullptr;
     QTimer *mShowBackTimer = nullptr;
     QTimer *mPeriodicHelloTimer = nullptr;
+    MiniWebServer *mMiniWebServer = nullptr;
     Settings *mSettings;
     DestinationBuddy *mDestBuddy = nullptr;
     BuddyListItemModel mBuddiesList;

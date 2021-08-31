@@ -48,6 +48,7 @@ unix {
 # The .cpp file which was generated for your project. Feel free to hack it.
 SOURCES += main.cpp \
     guibehind.cpp \
+    miniwebserver.cpp \
     network/buddymessage.cpp \
     network/filedata.cpp \
     network/messenger.cpp \
@@ -66,6 +67,7 @@ SOURCES += main.cpp \
 
 HEADERS += \
     guibehind.h \
+    miniwebserver.h \
     network/buddymessage.h \
     network/filedata.h \
     network/messenger.h \

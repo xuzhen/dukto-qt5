@@ -19,6 +19,7 @@
 #include "guibehind.h"
 
 #include "settings.h"
+#include "miniwebserver.h"
 #include "duktowindow.h"
 #include "platform.h"
 #include "updateschecker.h"
@@ -65,6 +66,9 @@ GuiBehind::GuiBehind(Settings *settings) :
 
     // Add "Ip" entry
     mBuddiesList.addIpElement();
+
+    // Mini web server
+    mMiniWebServer = new MiniWebServer(NETWORK_PORT + 1);
 
     // Destination buddy
     mDestBuddy = new DestinationBuddy(this);
@@ -122,6 +126,7 @@ GuiBehind::~GuiBehind()
 #ifdef UPDATER
     if (mUpdatesChecker) mUpdatesChecker->deleteLater();
 #endif
+    if (mMiniWebServer) mMiniWebServer->deleteLater();
     if (mShowBackTimer) mShowBackTimer->deleteLater();
     if (mPeriodicHelloTimer) mPeriodicHelloTimer->deleteLater();
     if (mDestBuddy) mDestBuddy->deleteLater();
