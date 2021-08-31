@@ -31,11 +31,10 @@ public:
     MiniWebServer(int port);
 
 protected:
-    virtual void incomingConnection(int handle);
+    void incomingConnection(qintptr handle) override;
 
 private slots:
      void readClient();
-     void discardClient();
 
 private:
      QByteArray mAvatarData;

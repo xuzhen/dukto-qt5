@@ -24,6 +24,7 @@
 #include <QFile>
 #include <QImage>
 #include <QBuffer>
+#include <QRegularExpression>
 
 #include "platform.h"
 
@@ -31,8 +32,7 @@ MiniWebServer::MiniWebServer(int port)
 {
     // Load and convert avatar image
     QString path = Platform::getAvatarPath();
-    if (!path.isEmpty())
-    {
+    if (!path.isEmpty()) {
         QImage img(path);
         QImage scaled = img.scaled(64, 64, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         QBuffer tmp(&mAvatarData);
@@ -40,24 +40,24 @@ MiniWebServer::MiniWebServer(int port)
         scaled.save(&tmp, "PNG");
 
         // Start server
-        listen(QHostAddress::Any, port);
+        listen(QHostAddress::AnyIPv4, port);
     }
 }
 
-void MiniWebServer::incomingConnection(int handle)
+void MiniWebServer::incomingConnection(qintptr handle)
 {
     QTcpSocket* s = new QTcpSocket(this);
-    connect(s, SIGNAL(readyRead()), this, SLOT(readClient()));
-    connect(s, SIGNAL(disconnected()), this, SLOT(discardClient()));
+    connect(s, &QTcpSocket::readyRead, this, &MiniWebServer::readClient, Qt::QueuedConnection);
+    connect(s, &QTcpSocket::disconnected, s, &QTcpSocket::deleteLater, Qt::QueuedConnection);
     s->setSocketDescriptor(handle);
 }
 
 void MiniWebServer::readClient()
 {
-    QTcpSocket* socket = (QTcpSocket*)sender();
+    QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
     if (socket->canReadLine()) {
-        QStringList tokens = QString(socket->readLine()).split(QRegExp("[ \r\n][ \r\n]*"));
-        if (tokens[0] == "GET") {
+        QStringList tokens = QString(socket->readLine()).split(QRegularExpression("[ \r\n][ \r\n]*"));
+        if (tokens.at(0) == "GET" && (tokens.at(1) == "/" || tokens.at(1) == "/dukto/avatar")) {
 
             QTextStream os(socket);
             os.setAutoDetectUnicode(true);
@@ -70,14 +70,7 @@ void MiniWebServer::readClient()
             QDataStream ds(socket);
             ds.writeRawData(mAvatarData.data(), mAvatarData.size());
 
-            socket->close();
-            if (socket->state() == QTcpSocket::UnconnectedState) delete socket;
         }
+        socket->close();
     }
-}
-
-void MiniWebServer::discardClient()
-{
-    QTcpSocket* socket = (QTcpSocket*)sender();
-    socket->deleteLater();
 }
