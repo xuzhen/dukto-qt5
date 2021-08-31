@@ -61,6 +61,8 @@ endif()
 
 add_definitions("-DUNICODE")
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 set(DUKTO_HDR
     buddylistitemmodel.h
     destinationbuddy.h
@@ -68,6 +70,12 @@ set(DUKTO_HDR
     duktowindow.h
     guibehind.h
     ipaddressitemmodel.h
+    miniwebserver.h
+    network/buddymessage.h
+    network/filedata.h
+    network/messenger.h
+    network/receiver.h
+    network/sender.h
     peer.h
     platform.h
     recentlistitemmodel.h
@@ -84,6 +92,12 @@ set(DUKTO_SRC
     guibehind.cpp
     ipaddressitemmodel.cpp
     main.cpp
+    miniwebserver.cpp
+    network/buddymessage.cpp
+    network/filedata.cpp
+    network/messenger.cpp
+    network/receiver.cpp
+    network/sender.cpp
     platform.cpp
     recentlistitemmodel.cpp
     settings.cpp
