@@ -6,14 +6,17 @@ QByteArray Sender::textElementName = QStringLiteral("___DUKTO___TEXT___").toUtf8
 
 
 Sender::Sender(const QString &dest, quint16 port, QObject *parent) : QObject(parent), socket(new QTcpSocket()), dest(dest), port(port) {
-    connect(socket, &QTcpSocket::connected, this, &Sender::sendData, Qt::QueuedConnection);
-    connect(socket, &QTcpSocket::destroyed, this, &Sender::deleteLater, Qt::QueuedConnection);
+    connect(socket, &QTcpSocket::connected, this, &Sender::sendData);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    connect(socket, &QTcpSocket::errorOccurred, this, &Sender::connectionError, Qt::QueuedConnection);
+    connect(socket, &QTcpSocket::errorOccurred, this, &Sender::connectionError);
 #else
-    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Sender::connectionError, Qt::QueuedConnection);
+    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Sender::connectionError);
 #endif
     connect(socket, &QTcpSocket::bytesWritten, this, &Sender::sendData);
+}
+
+Sender::~Sender() {
+    abort();
 }
 
 void Sender::sendFiles(const QStringList &paths) {
@@ -61,7 +64,7 @@ void Sender::sendText(const QString &text) {
 
 void Sender::abort() {
     if (socket != nullptr) {
-        disconnectSlots();
+        socket->disconnect(this);
         socket->abort();
         socket->deleteLater();
         socket = nullptr;
@@ -173,11 +176,11 @@ void Sender::sendData() {
                 if (socket->bytesToWrite() == 0) {
                     // end connection until all data sent
                     filesToSend.clear();
-                    disconnectSlots();
-                    emit completed();
+                    socket->disconnect(this);
                     socket->disconnectFromHost();
                     socket->deleteLater();
                     socket = nullptr;
+                    emit completed();
                 }
                 return;
             }
@@ -193,18 +196,6 @@ void Sender::connectionError(QAbstractSocket::SocketError error) {
 
 
 void Sender::reportError(const QString &error) {
-    if (socket != nullptr) {
-        emit aborted(error);
-        abort();
-    }
-}
-
-void Sender::disconnectSlots() {
-    disconnect(socket, &QTcpSocket::connected, this, &Sender::sendData);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    disconnect(socket, &QTcpSocket::errorOccurred, this, &Sender::connectionError);
-#else
-    disconnect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Sender::connectionError);
-#endif
-    disconnect(socket, &QTcpSocket::bytesWritten, this, &Sender::sendData);
+    emit aborted(error);
+    abort();
 }

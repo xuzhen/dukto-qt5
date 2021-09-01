@@ -1,6 +1,5 @@
 #include "receiver.h"
 #include <QHostAddress>
-#include <QTimer>
 #include <algorithm>
 
 #ifdef Q_OS_ANDROID
@@ -14,11 +13,10 @@ QString Receiver::textElementName = QStringLiteral("___DUKTO___TEXT___");
 
 Receiver::Receiver(QTcpSocket *socket, const QString &destDir, QObject *parent) : QObject(parent), socket(socket), destDir(destDir) {
     connect(socket, &QTcpSocket::readyRead, this, &Receiver::processData);
-    connect(socket, &QTcpSocket::destroyed, this, &Receiver::deleteLater, Qt::QueuedConnection);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-    connect(socket, &QTcpSocket::errorOccurred, this, &Receiver::connectionError, Qt::QueuedConnection);
+    connect(socket, &QTcpSocket::errorOccurred, this, &Receiver::connectionError);
 #else
-    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Receiver::connectionError, Qt::QueuedConnection);
+    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Receiver::connectionError);
 #endif
 
 #ifdef Q_OS_ANDROID
@@ -221,12 +219,7 @@ void Receiver::terminateSession(const QString &error) {
 
 void Receiver::terminateConnection() {
     if (socket != nullptr) {
-        disconnect(socket, &QTcpSocket::readyRead, this, &Receiver::processData);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-        disconnect(socket, &QTcpSocket::errorOccurred, this, &Receiver::connectionError);
-#else
-        disconnect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &Receiver::connectionError);
-#endif
+        socket->disconnect(this);
         socket->close();
         socket->deleteLater();
         socket = nullptr;

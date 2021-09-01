@@ -114,15 +114,20 @@ void DuktoProtocol::newIncomingConnection()
     }
 
     mReceiver = new Receiver(s, mDestDir, this);
-    connect(mReceiver, &Receiver::destroyed, this, [this](){
-        mReceiver = nullptr;
-    });
     connect(mReceiver, &Receiver::progress, this, &DuktoProtocol::transferStatusUpdate);
     connect(mReceiver, &Receiver::dirReceived, this, &DuktoProtocol::receiveDirCompleted);
     connect(mReceiver, &Receiver::fileReceived, this, &DuktoProtocol::receiveFileCompleted);
     connect(mReceiver, &Receiver::textReceived, this, &DuktoProtocol::receiveTextCompleted);
-    connect(mReceiver, &Receiver::aborted, this, &DuktoProtocol::receiveAborted);
-    connect(mReceiver, &Receiver::completed, this, &DuktoProtocol::receiveCompleted);
+    connect(mReceiver, &Receiver::aborted, this, [this](const QString &error) {
+        mReceiver->deleteLater();
+        mReceiver = nullptr;
+        emit receiveAborted(error);
+    });
+    connect(mReceiver, &Receiver::completed, this, [this]() {
+        mReceiver->deleteLater();
+        mReceiver = nullptr;
+        emit receiveCompleted();
+    });
 
     // Update GUI
     emit receiveStarted(s->peerAddress().toString());
@@ -132,10 +137,12 @@ void DuktoProtocol::createSender(const QString &ipDest, qint16 port) {
     mSender = new Sender(ipDest, port);
     connect(mSender, &Sender::progress, this, &DuktoProtocol::transferStatusUpdate);
     connect(mSender, &Sender::completed, this, [this]() {
+        mSender->deleteLater();
         mSender = nullptr;
         emit sendFileComplete();
     });
     connect(mSender, &Sender::aborted, this, [this](const QString &error) {
+        mSender->deleteLater();
         mSender = nullptr;
         emit sendFileError(error);
     });

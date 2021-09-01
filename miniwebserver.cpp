@@ -47,8 +47,8 @@ MiniWebServer::MiniWebServer(int port)
 void MiniWebServer::incomingConnection(qintptr handle)
 {
     QTcpSocket* s = new QTcpSocket(this);
-    connect(s, &QTcpSocket::readyRead, this, &MiniWebServer::readClient, Qt::QueuedConnection);
-    connect(s, &QTcpSocket::disconnected, s, &QTcpSocket::deleteLater, Qt::QueuedConnection);
+    connect(s, &QTcpSocket::readyRead, this, &MiniWebServer::readClient);
+    connect(s, &QTcpSocket::disconnected, s, &QTcpSocket::deleteLater);
     s->setSocketDescriptor(handle);
 }
 

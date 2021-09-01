@@ -12,6 +12,7 @@ class Sender : public QObject
     Q_OBJECT
 public:
     explicit Sender(const QString &dest, quint16 port, QObject *parent = nullptr);
+    ~Sender();
 
     void sendFiles(const QStringList &paths);
     void sendFile(const QString &path, const QString &name = QString());
@@ -30,7 +31,6 @@ private slots:
 
 private:
     void reportError(const QString &error);
-    void disconnectSlots();
 
     QTcpSocket *socket;
     QString dest;
