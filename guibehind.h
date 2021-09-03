@@ -46,7 +46,7 @@ class GuiBehind : public QObject
     Q_PROPERTY(QString textSnippetBuddy READ textSnippetBuddy NOTIFY textSnippetBuddyChanged)
     Q_PROPERTY(QString textSnippet READ textSnippet WRITE setTextSnippet NOTIFY textSnippetChanged)
     Q_PROPERTY(bool textSnippetSending READ textSnippetSending NOTIFY textSnippetSendingChanged)
-    Q_PROPERTY(QString currentPath READ currentPath NOTIFY currentPathChanged)
+    Q_PROPERTY(QString destPath READ destPath NOTIFY destPathChanged)
     Q_PROPERTY(bool clipboardTextAvailable READ clipboardTextAvailable NOTIFY clipboardTextAvailableChanged)
     Q_PROPERTY(QString remoteDestinationAddress READ remoteDestinationAddress WRITE setRemoteDestinationAddress NOTIFY remoteDestinationAddressChanged)
     Q_PROPERTY(QString overlayState READ overlayState WRITE setOverlayState NOTIFY overlayStateChanged)
@@ -82,8 +82,8 @@ public:
     void setTextSnippet(const QString &txt);
     bool textSnippetSending();
     void setTextSnippetSending(bool sending);
-    QString currentPath();
-    void setCurrentPath(const QString &path);
+    QString destPath();
+    void setDestPath(const QString &path);
     bool currentTransferSending();
     void setCurrentTransferSending(bool sending);
     bool clipboardTextAvailable();
@@ -122,7 +122,7 @@ signals:
     void textSnippetBuddyChanged();
     void textSnippetChanged();
     void textSnippetSendingChanged();
-    void currentPathChanged();
+    void destPathChanged();
     void clipboardTextAvailableChanged();
     void remoteDestinationAddressChanged();
     void overlayStateChanged();

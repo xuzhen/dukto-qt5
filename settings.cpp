@@ -32,7 +32,7 @@ Settings::Settings(QObject *parent) :
 {
 }
 
-QString Settings::currentPath()
+QString Settings::destPath()
 {
     // Retrieve the last saved path (if any)
     QString path = mSettings.value("DestPath", "").toString();
@@ -53,7 +53,7 @@ QString Settings::currentPath()
 #endif
 }
 
-void Settings::savePath(const QString &path)
+void Settings::saveDestPath(const QString &path)
 {
     // Save the new path
     mSettings.setValue("DestPath", path);

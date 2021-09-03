@@ -97,7 +97,7 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideMiddle
             font.pixelSize: 12
-            text: guiBehind.currentPath
+            text: guiBehind.destPath
         }
     }
 

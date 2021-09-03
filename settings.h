@@ -26,8 +26,8 @@ class Settings : public QObject
 {
 public:
     explicit Settings(QObject *parent = nullptr);
-    QString currentPath();
-    void savePath(const QString &path);
+    QString destPath();
+    void saveDestPath(const QString &path);
     void saveWindowGeometry(const QByteArray &geo);
     QByteArray windowGeometry();
     void saveThemeColor(const QString &color);

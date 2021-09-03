@@ -74,7 +74,7 @@ GuiBehind::GuiBehind(Settings *settings) :
     mDestBuddy = new DestinationBuddy(this);
 
     // Set destination folder
-    mDuktoProtocol.setDestDir(mSettings->currentPath());
+    mDuktoProtocol.setDestDir(mSettings->destPath());
 
     // Set current theme color
     mTheme.setThemeColor(mSettings->themeColor());
@@ -281,13 +281,13 @@ void GuiBehind::openFile(const QString &path)
 
 void GuiBehind::openDestinationFolder()
 {
-    QDesktopServices::openUrl(mSettings->currentPath());
+    QDesktopServices::openUrl(mSettings->destPath());
 }
 
 void GuiBehind::changeDestinationFolder()
 {
     // Show system dialog for folder selection
-    QString dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->currentPath(),
+    QString dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->destPath(),
         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (dirname.isEmpty()) return;
 
@@ -295,7 +295,7 @@ void GuiBehind::changeDestinationFolder()
     mDuktoProtocol.setDestDir(dirname);
 
     // Save the new setting
-    setCurrentPath(dirname);
+    setDestPath(dirname);
 }
 
 void GuiBehind::refreshIpList()
@@ -748,16 +748,16 @@ void GuiBehind::setTextSnippetSending(bool sending)
     emit textSnippetSendingChanged();
 }
 
-QString GuiBehind::currentPath()
+QString GuiBehind::destPath()
 {
-    return mSettings->currentPath();
+    return mSettings->destPath();
 }
 
-void GuiBehind::setCurrentPath(const QString &path)
+void GuiBehind::setDestPath(const QString &path)
 {
-    if (path == mSettings->currentPath()) return;
-    mSettings->savePath(path);
-    emit currentPathChanged();
+    if (path == mSettings->destPath()) return;
+    mSettings->saveDestPath(path);
+    emit destPathChanged();
 }
 
 bool GuiBehind::currentTransferSending()
@@ -919,7 +919,7 @@ bool GuiBehind::isDesktopApp() {
 
 void GuiBehind::initialize() {
 #ifdef Q_OS_ANDROID
-    if (mSettings->currentPath().isEmpty()) {
+    if (mSettings->destPath().isEmpty()) {
         setInitError(QStringLiteral("The directory for received files hasn't been specified."), QStringLiteral("Choose a directory"));
         return;
     }
