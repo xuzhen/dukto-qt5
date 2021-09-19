@@ -68,7 +68,7 @@ Item {
                      onClicked: {
                          if (type === "text")
                             guiBehind.showTextSnippet(value, sender);
-                         else if (type === "file")
+                         else if (type === "file" || type === "dir")
                             guiBehind.openFile(value);
                      }
                  }
