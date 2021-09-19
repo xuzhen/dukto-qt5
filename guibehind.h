@@ -179,6 +179,7 @@ public slots:
     void initialize();
     void reinitialize(const QString &action);
     void refreshNeighbors();
+    void pasteDestinationIp();
 
 private slots:
     void showRandomBack();

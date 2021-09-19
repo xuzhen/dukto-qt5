@@ -957,3 +957,10 @@ void GuiBehind::refreshNeighbors() {
     mBuddiesList.clearBuddies();
     discoveryNeighbors();
 }
+
+void GuiBehind::pasteDestinationIp() {
+    QString text = QApplication::clipboard()->text();
+    if (text.isEmpty() == false) {
+        setRemoteDestinationAddress(text);
+    }
+}

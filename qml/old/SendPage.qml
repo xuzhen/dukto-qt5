@@ -102,7 +102,7 @@ Rectangle {
         anchors.bottom: localBuddy.bottom
         anchors.bottomMargin: 5
         anchors.leftMargin: 74
-        anchors.rightMargin: 20
+        anchors.rightMargin: 24
         border.color: "#888888"
         border.width: 2
         height: 25
@@ -117,12 +117,31 @@ Rectangle {
             color: "#888888"
             selectByMouse: true
             focus: true
+            text: guiBehind.remoteDestinationAddress
+            clip: true
 
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: containsMouse ? Qt.IBeamCursor : Qt.ArrowCursor
                 acceptedButtons: Qt.NoButton
+            }
+        }
+
+        Image {
+            anchors.top: destinationText.top
+            anchors.topMargin: -4
+            anchors.left: destinationText.right
+            anchors.leftMargin: 5
+            source: "Paste.png"
+            height: 25
+            width: 25
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onClicked: guiBehind.pasteDestinationIp();
             }
         }
 
