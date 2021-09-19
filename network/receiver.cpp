@@ -92,7 +92,6 @@ void Receiver::processData() {
                         // wait for more data
                         return;
                     }
-                    readBuffer.append(c);
                     if (c == '\0') {
                         currentElementName = QString::fromUtf8(readBuffer);
                         readBuffer.clear();
@@ -103,6 +102,8 @@ void Receiver::processData() {
                         }
                         recvStatus = PHASE_ELEMENT_SIZE;
                         break;
+                    } else {
+                        readBuffer.append(c);
                     }
                 }
                 break;
@@ -328,7 +329,7 @@ bool Receiver::prepareFilesystem() {
 }
 
 QString Receiver::getNewPath(const QString &originalPath) {
-    QString rootDir = originalPath.section(QChar('/'), 0);
+    QString rootDir = originalPath.section(QChar('/'), 0, 0);
     if (dirNameMap.contains(rootDir)) {
         QString newRootDir = dirNameMap.value(rootDir);
         if (newRootDir.isEmpty() == false) {
