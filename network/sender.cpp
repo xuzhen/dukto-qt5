@@ -164,9 +164,9 @@ void Sender::sendData() {
                     }
                 }
 
-                // all data written
+                // all files written
+                sendStatus = PHASE_FINALIZATION;
                 if (waitBytesWritten) {
-                    sendStatus = PHASE_FINALIZATION;
                     return;
                 }
                 // nothing written, go to PHASE_FINALIZATION directly
