@@ -40,6 +40,16 @@ Receiver::~Receiver() {
 #endif
 }
 
+
+void Receiver::abort() {
+    if (socket != nullptr) {
+        socket->disconnect(this);
+        socket->abort();
+        socket->deleteLater();
+        socket = nullptr;
+    }
+}
+
 void Receiver::processData() {
     /*
      * total element count

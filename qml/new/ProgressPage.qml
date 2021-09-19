@@ -114,7 +114,6 @@ Rectangle {
             anchors.bottomMargin: 17
             width: 75
             label: "Abort"
-            visible: guiBehind.currentTransferSending
             Connections {
                 function onClicked() {
                     guiBehind.abortTransfer()

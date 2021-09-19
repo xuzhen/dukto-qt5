@@ -115,7 +115,6 @@ Rectangle {
             width: 75
             label: "Abort"
             onClicked: guiBehind.abortTransfer()
-            visible: guiBehind.currentTransferSending
         }
 
         SText {

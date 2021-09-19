@@ -608,13 +608,18 @@ void GuiBehind::sendFileError(const QString &error)
 // Handles receive error
 void GuiBehind::receiveFileCancelled(const QString &error)
 {
-    setMessagePageTitle("Error");
-    setMessagePageText("An error has occurred during the transfer... The data you received could be incomplete or broken.\n\n" + error);
-    setMessagePageBackState("");
+    if (error.isEmpty() == false) {
+        setMessagePageTitle("Error");
+        setMessagePageText("An error has occurred during the transfer... The data you received could be incomplete or broken.\n\n" + error);
+        setMessagePageBackState("");
+        emit gotoMessagePage();
+    } else {
+        // no reason, cancelled by user
+        emit receiveCompleted();
+    }
 #ifdef Q_OS_WIN
     mView->stopTaskbarProgress();
 #endif
-    emit gotoMessagePage();
 }
 
 // Event handler to catch the "application activate" event

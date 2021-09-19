@@ -189,13 +189,16 @@ void DuktoProtocol::sendScreen(const QString &ipDest, qint16 port, const QString
 // Interrompe un trasferimento in corso (utilizzabile solo lato invio)
 void DuktoProtocol::abortCurrentTransfer()
 {
-    // Check if it's sending data
-    if (!mSender) return;
-
     // Abort current connection
-    mSender->abort();
-    emit sendFileAborted();
-    mSender = nullptr;
+    if (mSender != nullptr) {
+        mSender->abort();
+        emit sendFileAborted();
+        mSender = nullptr;
+    } else if (mReceiver != nullptr) {
+        mReceiver->abort();
+        emit receiveAborted(QString());
+        mReceiver = nullptr;
+    }
 }
 
 // Aggiorna il buddy name dell'utente locale

@@ -18,6 +18,8 @@ public:
     explicit Receiver(QTcpSocket *socket, const QString &destDir, QObject *parent = nullptr);
     ~Receiver();
 
+    void abort();
+
 signals:
     void started(qint64 totalSize);
     void progress(qint64 total, qint64 received);
