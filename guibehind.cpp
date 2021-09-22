@@ -287,9 +287,22 @@ void GuiBehind::openDestinationFolder()
 void GuiBehind::changeDestinationFolder()
 {
     // Show system dialog for folder selection
-    QString dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->destPath(),
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if (dirname.isEmpty()) return;
+    QString dirname;
+#ifdef Q_OS_ANDROID
+    // Qt use QUrl::toString(QUrl::PrettyDecoded) to convert QUrl to QString in
+    // QFileDialog::getExistingDirectory's internal implementation. Some characters
+    // like spaces will be wrongly decoded
+    QUrl url = QFileDialog::getExistingDirectoryUrl(mView, "Change folder", QUrl(mSettings->destPath()), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (url.isEmpty()) {
+        return;
+    }
+    dirname = url.toString(QUrl::FullyEncoded);
+#else
+    dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->destPath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (dirname.isEmpty()) {
+        return;
+    }
+#endif
 
     // Set the new folder as destination
     mDuktoProtocol.setDestDir(dirname);
@@ -384,7 +397,7 @@ void GuiBehind::sendFolder()
     }
     dirname = url.toString(QUrl::FullyEncoded);
 #else
-    dirname = QFileDialog::getExistingDirectory(mView, "Send a folder", ".", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    dirname = QFileDialog::getExistingDirectory(mView, "Send a folder", QString(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (dirname.isEmpty()) {
         return;
     }
@@ -760,7 +773,6 @@ QString GuiBehind::destPath()
 
 void GuiBehind::setDestPath(const QString &path)
 {
-    if (path == mSettings->destPath()) return;
     mSettings->saveDestPath(path);
     emit destPathChanged();
 }
