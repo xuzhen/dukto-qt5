@@ -60,7 +60,7 @@ void Messenger::stop() {
 void Messenger::processDatagram() {
     QByteArray datagram;
     qint64 size;
-    while ((size = socket->pendingDatagramSize()) != -1) {
+    while ((size = socket->pendingDatagramSize()) > 0) {
         datagram.resize(size);
 
         QHostAddress sender;
