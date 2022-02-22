@@ -223,6 +223,7 @@ private:
     QString mInitError;
     QString mInitErrorAction;
 
+    bool testFolder(const QString &dir);
     bool prepareStartTransfer(QString *ip, qint16 *port);
     void startTransfer(const QStringList &files);
     void startTransfer(const QString &text);

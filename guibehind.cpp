@@ -27,7 +27,6 @@
 
 #ifdef Q_OS_ANDROID
 #include "androidutils.h"
-#include <QMessageBox>
 #endif
 
 #include <QQmlContext>
@@ -40,6 +39,7 @@
 #include <QRegularExpression>
 #include <QTemporaryFile>
 #include <QScreen>
+#include <QMessageBox>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 10 ,0)
 #include <QRandomGenerator>
@@ -288,22 +288,28 @@ void GuiBehind::changeDestinationFolder()
 {
     // Show system dialog for folder selection
     QString dirname;
+    while (true) {
 #ifdef Q_OS_ANDROID
-    // Qt use QUrl::toString(QUrl::PrettyDecoded) to convert QUrl to QString in
-    // QFileDialog::getExistingDirectory's internal implementation. Some characters
-    // like spaces will be wrongly decoded
-    QUrl url = QFileDialog::getExistingDirectoryUrl(mView, "Change folder", QUrl(mSettings->destPath()), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if (url.isEmpty()) {
-        return;
-    }
-    dirname = url.toString(QUrl::FullyEncoded);
-    AndroidStorage::grantUriPermission(AndroidStorage::parseUri(dirname), true);
+        // Qt use QUrl::toString(QUrl::PrettyDecoded) to convert QUrl to QString in
+        // QFileDialog::getExistingDirectory's internal implementation. Some characters
+        // like spaces will be wrongly decoded
+        QUrl url = QFileDialog::getExistingDirectoryUrl(mView, "Change folder", QUrl(mSettings->destPath()), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        if (url.isEmpty()) {
+            return;
+        }
+        dirname = url.toString(QUrl::FullyEncoded);
+        AndroidStorage::grantUriPermission(AndroidStorage::parseUri(dirname), true);
 #else
-    dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->destPath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if (dirname.isEmpty()) {
-        return;
-    }
+        dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->destPath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        if (dirname.isEmpty()) {
+            return;
+        }
 #endif
+        if (testFolder(dirname)) {
+            break;
+        }
+        QMessageBox::critical(mView, "Error", QStringLiteral("The chosen directory is not writable, please choose another one"));
+    };
 
     // Set the new folder as destination
     mDuktoProtocol.setDestDir(dirname);
@@ -935,24 +941,41 @@ bool GuiBehind::isDesktopApp() {
 #endif
 }
 
+bool GuiBehind::testFolder(const QString &dir) {
+#ifdef Q_OS_ANDROID
+    if (AndroidStorage::hasUriPermission(dir) == false) {
+        return false;
+    }
+#else
+    QDir d(dir);
+    if (d.exists() == false && d.mkpath(dir) == false) {
+        return false;
+    }
+    QTemporaryFile tempFile(d.filePath("XXXXXX"));
+    if (tempFile.open() == false) {
+        return false;
+    }
+    tempFile.close();
+    tempFile.remove();
+#endif
+    return true;
+}
+
 void GuiBehind::initialize() {
     QString destDir = mSettings->destPath();
     if (destDir.isEmpty()) {
         setInitError(QStringLiteral("The directory for received files hasn't been specified."), QStringLiteral("Choose a directory"));
         return;
     }
+    if (testFolder(destDir) == false) {
 #ifdef Q_OS_ANDROID
-    if (AndroidStorage::hasUriPermission(destDir) == false) {
-        setInitError(QStringLiteral("The directory for received files is inaccessible."), QStringLiteral("Grant directory permission"));
+        setInitError(QStringLiteral("The directory for received files is inaccessible."), QStringLiteral("Choose another directory"));
         return;
-    }
 #else
-    QDir d(destDir);
-    if (d.exists() == false && d.mkpath(destDir) == false) {
-        setInitError(QStringLiteral("The directory %1 is not existed.").arg(destDir), QStringLiteral("Choose another directory"));
+        setInitError(QStringLiteral("The directory %1 is inaccessible.").arg(destDir), QStringLiteral("Choose another directory"));
         return;
-    }
 #endif
+    }
     if (mDuktoProtocol.setupUdpServer(NETWORK_PORT) == false) {
         mDuktoProtocol.closeServers();
         setInitError(QStringLiteral("The UDP port %1 has been used by another application. Please quit that application and try again.").arg(QString::number(NETWORK_PORT)));
@@ -970,7 +993,7 @@ void GuiBehind::initialize() {
 }
 
 void GuiBehind::reinitialize(const QString &action) {
-    if (action == QStringLiteral("Choose a directory") || action == QStringLiteral("Choose another directory") || action == QStringLiteral("Grant directory permission")) {
+    if (action == QStringLiteral("Choose a directory") || action == QStringLiteral("Choose another directory")) {
         changeDestinationFolder();
     }
     initialize();
