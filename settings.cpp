@@ -38,8 +38,9 @@ QString Settings::destPath()
     QString path = mSettings.value("DestPath", "").toString();
 
     // Check if exists
-    if (!path.isEmpty() && (QDir(path).exists()))
-            return path;
+    if (!path.isEmpty()) {
+        return path;
+    }
 
     // Else return the default path for this platform
     path = Platform::getDefaultPath();

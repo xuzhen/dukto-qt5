@@ -123,6 +123,8 @@ public:
 
     static QJniObject parseUri(const QString &uriString);
 
+    static bool hasUriPermission(const QString &uri, bool writable = true);
+    static bool hasUriPermission(const QJniObject &uri, bool writable = true);
     static void grantUriPermission(const QJniObject &uri, bool writable = false);
     static void revokeUriPermission(const QJniObject &uri);
 

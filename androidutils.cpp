@@ -354,6 +354,39 @@ QJniObject AndroidStorage::parseUri(const QString &uriString) {
     return uri;
 }
 
+bool AndroidStorage::hasUriPermission(const QString &uri, bool writable) {
+    QJniObject objectList = getContentResolver().callObjectMethod("getPersistedUriPermissions", "()Ljava/util/List;");
+    if (objectList.isValid()) {
+        jint size = objectList.callMethod<jint>("size");
+        for (jint i = 0; i < size; i++) {
+            QJniObject permission = objectList.callObjectMethod("get", "(I)Ljava/lang/Object;", i);
+            if (permission.isValid() == false) {
+                clearExceptions();
+                continue;
+            }
+            QJniObject permissionUri = permission.callObjectMethod("getUri", "()Landroid/net/Uri;");
+            if (uri != permissionUri.toString()) {
+                continue;
+            }
+            if (writable) {
+                if (permission.callMethod<jboolean>("isWritePermission")) {
+                    return true;
+                }
+            } else {
+                if (permission.callMethod<jboolean>("isReadPermission")) {
+                    return true;
+                }
+            }
+        }
+    }
+    clearExceptions();
+    return false;
+}
+
+bool AndroidStorage::hasUriPermission(const QJniObject &uri, bool writable) {
+    return hasUriPermission(uri.toString(), writable);
+}
+
 void AndroidStorage::grantUriPermission(const QJniObject &uri, bool writable) {
     // 1  = Intent.FLAG_GRANT_READ_URI_PERMISSION
     // 2  = Intent.FLAG_GRANT_WRITE_URI_PERMISSION

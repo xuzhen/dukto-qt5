@@ -297,6 +297,7 @@ void GuiBehind::changeDestinationFolder()
         return;
     }
     dirname = url.toString(QUrl::FullyEncoded);
+    AndroidStorage::grantUriPermission(AndroidStorage::parseUri(dirname), true);
 #else
     dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->destPath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (dirname.isEmpty()) {
@@ -935,9 +936,20 @@ bool GuiBehind::isDesktopApp() {
 }
 
 void GuiBehind::initialize() {
-#ifdef Q_OS_ANDROID
-    if (mSettings->destPath().isEmpty()) {
+    QString destDir = mSettings->destPath();
+    if (destDir.isEmpty()) {
         setInitError(QStringLiteral("The directory for received files hasn't been specified."), QStringLiteral("Choose a directory"));
+        return;
+    }
+#ifdef Q_OS_ANDROID
+    if (AndroidStorage::hasUriPermission(destDir) == false) {
+        setInitError(QStringLiteral("The directory for received files is inaccessible."), QStringLiteral("Grant directory permission"));
+        return;
+    }
+#else
+    QDir d(destDir);
+    if (d.exists() == false && d.mkpath(destDir) == false) {
+        setInitError(QStringLiteral("The directory %1 is not existed.").arg(destDir), QStringLiteral("Choose another directory"));
         return;
     }
 #endif
@@ -958,7 +970,7 @@ void GuiBehind::initialize() {
 }
 
 void GuiBehind::reinitialize(const QString &action) {
-    if (action == QStringLiteral("Choose a directory")) {
+    if (action == QStringLiteral("Choose a directory") || action == QStringLiteral("Choose another directory") || action == QStringLiteral("Grant directory permission")) {
         changeDestinationFolder();
     }
     initialize();

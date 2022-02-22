@@ -239,11 +239,20 @@ void Receiver::terminateConnection() {
 
 bool Receiver::prepareFilesystem() {
 #ifdef Q_OS_ANDROID
+    QJniObject destDirUri = AndroidStorage::parseUri(destDir);
+    if (AndroidStorage::isDir(destDirUri) == false) {
+        terminateSession(QStringLiteral("The directory for received files is not existed"));
+        return false;
+    }
+    if (AndroidStorage::hasUriPermission(destDir) == false) {
+        terminateSession(QStringLiteral("The directory for received files is inaccessible"));
+        return false;
+    }
     QStringList dirs = currentElementName.split(QChar('/'));
     if (currentElementType == DIR_ELEMENT) {
         // the element is a directory
         dirs[0] = getNewPath(dirs.at(0));
-        QJniObject uri = AndroidStorage::createPath(AndroidStorage::parseUri(destDir), dirs);
+        QJniObject uri = AndroidStorage::createPath(destDirUri, dirs);
         if (uri.isValid() == false) {
             terminateSession(QStringLiteral("Failed to create directory %1").arg(currentElementName));
             return false;
@@ -260,10 +269,10 @@ bool Receiver::prepareFilesystem() {
         if (dirs.length() == 0) {
             // no parent directories
             fileName = getNewFileName(destDir, fileName);
-            parentDirUri = AndroidStorage::parseUri(destDir);
+            parentDirUri = destDirUri;
         } else {
             dirs[0] = getNewPath(dirs.at(0));
-            parentDirUri = AndroidStorage::createPath(AndroidStorage::parseUri(destDir), dirs);
+            parentDirUri = AndroidStorage::createPath(destDirUri, dirs);
             if (parentDirUri.isValid() == false) {
                 terminateSession(QStringLiteral("Failed to create directory %1").arg(dirs.join(QChar('/'))));
                 return false;
@@ -321,6 +330,13 @@ bool Receiver::prepareFilesystem() {
             // with no parent directories
             filePath = getNewFileName(destDir, currentElementName);
             currentTopElementName = filePath;
+            QDir d(destDir);
+            if (d.exists() == false) {
+                if (d.mkpath(destDir) == false) {
+                    terminateSession(QStringLiteral("Failed to create directory %1").arg(destDir));
+                    return false;
+                }
+            }
         }
         filePath = QDir(destDir).filePath(filePath);
         currentFile = new QFile(filePath);
