@@ -946,6 +946,9 @@ bool GuiBehind::testFolder(const QString &dir) {
     if (AndroidStorage::hasUriPermission(dir) == false) {
         return false;
     }
+    if (AndroidStorage::isDir(AndroidStorage::parseUri(dir)) == false) {
+        return false;
+    }
 #else
     QDir d(dir);
     if (d.exists() == false && d.mkpath(dir) == false) {
