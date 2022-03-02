@@ -33,7 +33,7 @@ CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG_OUTPUT
 
 VERSION = 6.0.0
 
-unix {
+unix:!android {
     target.path = /usr/bin
 
     icon.path = /usr/share/pixmaps
@@ -128,6 +128,8 @@ android {
     lessThan(QT_MAJOR_VERSION, 6): QT += androidextras
     TARGET = Dukto
 
+    ANDROID_MIN_SDK_VERSION = 21
+
     ANDROID_VERSION_NAME = $$VERSION
     defineReplace(androidVersionCode) {
         segments = $$split(1, ".")
@@ -141,8 +143,6 @@ android {
     }
     ANDROID_VERSION_CODE = $$androidVersionCode($$VERSION)
 
-    ANDROID_MIN_SDK_VERSION = 21
-
     greaterThan(QT_MAJOR_VERSION, 5) {
         ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android/qt6
         OTHER_FILES += $$PWD/android/qt6/AndroidManifest.xml
@@ -152,6 +152,4 @@ android {
     }
     SOURCES += androidutils.cpp
     HEADERS += androidutils.h
-
-    DEFINES += ANDROID_TARGET_SDK_VERSION=$$ANDROID_TARGET_SDK_VERSION
 }

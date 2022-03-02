@@ -25,10 +25,6 @@ int AndroidEnvironment::sdkVersion() {
     return sdkVer;
 }
 
-int AndroidEnvironment::targetVersion() {
-    return ANDROID_TARGET_SDK_VERSION;
-}
-
 QString AndroidEnvironment::buildInfo(const QString &name) {
     return QJniObject::getStaticObjectField("android/os/Build", name.toLatin1().constData(), "Ljava/lang/String;").toString();
 }

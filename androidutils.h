@@ -15,7 +15,6 @@ typedef QAndroidJniObject QJniObject;
 
 namespace AndroidEnvironment {
     int sdkVersion();
-    int targetVersion();
     QString buildInfo(const QString &name);
 }
 
