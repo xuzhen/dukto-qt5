@@ -1,5 +1,5 @@
 project(dukto)
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR)
 
 #FIXME: updater no longer works
 #OPTION(USE_UPDATER "Add updater for application" OFF)
@@ -11,10 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
-
-if(CMAKE_VERSION VERSION_LESS "3.7.0" AND CMAKE_SYSTEM_NAME STREQUAL "Android")
-    set(ANDROID 1)
-endif()
 
 if(USE_UPDATER)
     add_definitions("-DUPDATER")
@@ -30,6 +26,10 @@ if(USE_NOTIFY_LIBNOTIFY AND UNIX AND NOT APPLE AND NOT ANDROID)
     list(APPEND DUKTO_LIBS ${LIBNOTIFY_LIBRARIES})
 endif()
 
+if(ANDROID)
+    set(ANDROID_ABI ${CMAKE_ANDROID_ARCH_ABI})
+endif()
+
 if(NOT QT_DEFAULT_MAJOR_VERSION)
     find_package(Qt6 QUIET COMPONENTS Core)
     if (NOT Qt6_FOUND)
@@ -43,6 +43,9 @@ endif(NOT QT_DEFAULT_MAJOR_VERSION)
 set(QT_COMPONENTS Gui Network Qml QuickWidgets)
 if(UNIX AND NOT APPLE AND NOT ANDROID)
     list(APPEND QT_COMPONENTS DBus)
+endif()
+if(ANDROID AND QT_DEFAULT_MAJOR_VERSION EQUAL 5)
+       list(APPEND QT_COMPONENTS AndroidExtras)
 endif()
 set(QT_LIBRARIES "")
 foreach(temp ${QT_COMPONENTS})
@@ -109,7 +112,7 @@ set(DUKTO_RESOURCES
     qml.qrc
     qml/common/common.qrc
 )
-if(Qt6_FOUND OR Qt5Core_VERSION VERSION_GREATER "5.14.0" OR Qt5Core_VERSION VERSION_EQUAL "5.14.0")
+if(Qt6_FOUND OR Qt5Core_VERSION VERSION_GREATER_EQUAL "5.14.0")
     list(APPEND DUKTO_RESOURCES "qml/new/main.qrc")
 else()
     list(APPEND DUKTO_RESOURCES "qml/old/main.qrc")
@@ -126,29 +129,53 @@ if(WIN32)
     list(APPEND DUKTO_RESOURCES dukto.rc)
 endif()
 
+if(ANDROID)
+    list(APPEND DUKTO_SRC androidutils.cpp)
+    list(APPEND DUKTO_HDR androidutils.h)
+endif()
+
 if(USE_SINGLE_APP AND NOT ANDROID)
     set(QAPPLICATION_CLASS "QApplication")
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modules/SingleApplication)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/modules/SingleApplication)
 endif()
 
-add_executable(${PROJECT_NAME}
-                ${DUKTO_HDR}
-                ${DUKTO_SRC}
-                ${DUKTO_RESOURCES})
+if(ANDROID)
+    if(QT_DEFAULT_MAJOR_VERSION GREATER 5)
+        # Qt6:
+        # /path/to/qt6/bin/qt-cmake -DANDROID_NDK_ROOT=/path/to/ndk -DANDROID_SDK_ROOT=/path/to/sdk srcdir
+        qt_add_executable(${PROJECT_NAME}
+                          ${DUKTO_HDR}
+                          ${DUKTO_SRC}
+                          ${DUKTO_RESOURCES})
+    else()
+        # Qt5:
+        # export ANDROID_NDK_ROOT=/path/to/ndk ANDROID_SDK_ROOT=/path/to/sdk
+        # cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a -DQT_DEFAULT_MAJOR_VERSION=5 srcdir
+        add_library(${PROJECT_NAME} SHARED
+                    ${DUKTO_HDR}
+                    ${DUKTO_SRC}
+                    ${DUKTO_RESOURCES})
+    endif()
+else()
+    add_executable(${PROJECT_NAME}
+                   ${DUKTO_HDR}
+                   ${DUKTO_SRC}
+                   ${DUKTO_RESOURCES})
+endif(ANDROID)
 
 if(USE_SINGLE_APP AND NOT ANDROID)
     add_dependencies(${PROJECT_NAME} SingleApplication)
     link_directories(${CMAKE_CURRENT_BINARY_DIR}/modules/SingleApplication)
-    target_link_libraries(${PROJECT_NAME} SingleApplication)
+    target_link_libraries(${PROJECT_NAME} PRIVATE SingleApplication)
 endif()
 
-target_link_libraries(${PROJECT_NAME} ${DUKTO_LIBS} ${QT_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${DUKTO_LIBS} ${QT_LIBRARIES})
 
 if(WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES WIN32_EXECUTABLE True)
-    target_link_libraries(${PROJECT_NAME} Ws2_32 ole32 user32)
-endif(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Ws2_32 ole32 user32)
+endif()
 
 If (APPLE)
     SET( MACOSX_BUNDLE_ICON_FILE dukto.icns )
@@ -157,6 +184,48 @@ If (APPLE)
     set_property(TARGET ${PROJECT_NAME} PROPERTY MACOSX_BUNDLE 1)
     find_library(CORE_SERVICES CoreServices REQUIRED)
     target_link_options(${PROJECT_NAME} PRIVATE "${CORE_SERVICES}/CoreServices.tbd")
+endif()
+
+if(ANDROID AND QT_DEFAULT_MAJOR_VERSION EQUAL 5)
+    # find the Android SDK
+    set(ANDROID_SDK_ROOT $ENV{ANDROID_SDK_ROOT})
+    if(NOT ANDROID_SDK_ROOT)
+        message(FATAL_ERROR "You need to set the ANDROID_SDK_ROOT environment variable to your Android SDK directory")
+    endif()
+    message(STATUS "Android SDK: ${ANDROID_SDK_ROOT}")
+
+    # find the Android NDK
+    set(ANDROID_NDK_ROOT $ENV{ANDROID_NDK_ROOT})
+    if(NOT ANDROID_NDK_ROOT)
+        message(FATAL_ERROR "You need to set the ANDROID_NDK_ROOT environment variable to your Android NDK directory")
+    endif()
+    message(STATUS "Android NDK: ${ANDROID_NDK_ROOT}")
+
+    get_filename_component(QT_BINARY_ROOT "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/apk"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/apk"
+    )
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND "${QT_BINARY_ROOT}/qmake"
+            "${CMAKE_CURRENT_SOURCE_DIR}/dukto.pro"
+            "-spec" "android-clang"
+            "CONFIG+=qtquickcompiler"
+            "ANDROID_ABIS=${ANDROID_ABI}"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/apk"
+        COMMENT "Generate APK configuration..."
+    )
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}"
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/libdukto.so" "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}/libDukto_${ANDROID_ABI}.so"
+        COMMAND "${QT_BINARY_ROOT}/androiddeployqt"
+            --output "${CMAKE_CURRENT_BINARY_DIR}/apk"
+            --input android-Dukto-deployment-settings.json
+            --gradle
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/apk"
+        COMMENT "Build APK..."
+    )
 endif()
 
 if(UNIX AND NOT APPLE AND NOT ANDROID)
