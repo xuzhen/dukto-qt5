@@ -30,29 +30,45 @@ if(ANDROID)
     set(ANDROID_ABI ${CMAKE_ANDROID_ARCH_ABI})
 endif()
 
-if(NOT QT_DEFAULT_MAJOR_VERSION)
+if(QT_CMAKE_ROOT)
+    get_filename_component(QT_CMAKE_ROOT "${QT_CMAKE_ROOT}" ABSOLUTE)
+    if(NOT IS_DIRECTORY "${QT_CMAKE_ROOT}")
+        message(FATAL_ERROR "The directory specified by QT_CMAKE_ROOT was not found")
+    endif()
+    if(IS_DIRECTORY "${QT_CMAKE_ROOT}/Qt6")
+        set(QT_MAJOR_VERSION 6)
+    elseif(IS_DIRECTORY "${QT_CMAKE_ROOT}/Qt5")
+        set(QT_MAJOR_VERSION 5)
+    else()
+        message(FATAL_ERROR "Found neither Qt5 nor Qt6 directory in ${QT_CMAKE_ROOT}")
+    endif()
+elseif(NOT QT_MAJOR_VERSION)
     find_package(Qt6 QUIET COMPONENTS Core)
     if (NOT Qt6_FOUND)
         find_package(Qt5 COMPONENTS Core REQUIRED)
-        set(QT_DEFAULT_MAJOR_VERSION 5)
+        set(QT_MAJOR_VERSION 5)
     else()
-        set(QT_DEFAULT_MAJOR_VERSION 6)
-    endif(NOT Qt6_FOUND)
-endif(NOT QT_DEFAULT_MAJOR_VERSION)
+        set(QT_MAJOR_VERSION 6)
+    endif()
+endif(QT_CMAKE_ROOT)
 
-set(QT_COMPONENTS Gui Network Qml QuickWidgets)
+set(QT_COMPONENTS Core Gui Network Qml QuickWidgets)
 if(UNIX AND NOT APPLE AND NOT ANDROID)
     list(APPEND QT_COMPONENTS DBus)
 endif()
-if(ANDROID AND QT_DEFAULT_MAJOR_VERSION EQUAL 5)
-       list(APPEND QT_COMPONENTS AndroidExtras)
+if(ANDROID AND QT_MAJOR_VERSION EQUAL 5)
+    list(APPEND QT_COMPONENTS AndroidExtras)
 endif()
-set(QT_LIBRARIES "")
-foreach(temp ${QT_COMPONENTS})
-    list(APPEND QT_LIBRARIES "Qt${QT_DEFAULT_MAJOR_VERSION}::${temp}")
-endforeach()
 
-find_package(Qt${QT_DEFAULT_MAJOR_VERSION} COMPONENTS ${QT_COMPONENTS} REQUIRED)
+if(QT_CMAKE_ROOT)
+    set(QT_COMPONENTS_EXTRA Quick QmlModels Widgets)
+    set(Qt${QT_MAJOR_VERSION}_DIR "${QT_CMAKE_ROOT}/Qt${QT_MAJOR_VERSION}")
+    foreach(temp ${QT_COMPONENTS} ${QT_COMPONENTS_EXTRA})
+        set(Qt${QT_MAJOR_VERSION}${temp}_DIR "${QT_CMAKE_ROOT}/Qt${QT_MAJOR_VERSION}${temp}")
+    endforeach()
+endif()
+
+find_package(Qt${QT_MAJOR_VERSION} COMPONENTS ${QT_COMPONENTS} REQUIRED)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
@@ -141,17 +157,17 @@ if(USE_SINGLE_APP AND NOT ANDROID)
 endif()
 
 if(ANDROID)
-    if(QT_DEFAULT_MAJOR_VERSION GREATER 5)
-        # Qt6:
-        # /path/to/qt6/bin/qt-cmake -DANDROID_NDK_ROOT=/path/to/ndk -DANDROID_SDK_ROOT=/path/to/sdk srcdir
+    #  Qt6:
+    #    /path/to/qt6/bin/qt-cmake -DANDROID_NDK_ROOT=/path/to/ndk -DANDROID_SDK_ROOT=/path/to/sdk srcdir
+    #  Qt5:
+    #    export ANDROID_NDK_ROOT=/path/to/ndk ANDROID_SDK_ROOT=/path/to/sdk
+    #    cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a -DQT_CMAKE_ROOT=/path/to/qt/cmake srcdir
+    if(QT_MAJOR_VERSION GREATER 5)
         qt_add_executable(${PROJECT_NAME}
                           ${DUKTO_HDR}
                           ${DUKTO_SRC}
                           ${DUKTO_RESOURCES})
     else()
-        # Qt5:
-        # export ANDROID_NDK_ROOT=/path/to/ndk ANDROID_SDK_ROOT=/path/to/sdk
-        # cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a -DQT_DEFAULT_MAJOR_VERSION=5 srcdir
         add_library(${PROJECT_NAME} SHARED
                     ${DUKTO_HDR}
                     ${DUKTO_SRC}
@@ -170,6 +186,10 @@ if(USE_SINGLE_APP AND NOT ANDROID)
     target_link_libraries(${PROJECT_NAME} PRIVATE SingleApplication)
 endif()
 
+set(QT_LIBRARIES "")
+foreach(temp ${QT_COMPONENTS})
+    list(APPEND QT_LIBRARIES "Qt${QT_MAJOR_VERSION}::${temp}")
+endforeach()
 target_link_libraries(${PROJECT_NAME} PRIVATE ${DUKTO_LIBS} ${QT_LIBRARIES})
 
 if(WIN32)
@@ -186,7 +206,7 @@ If (APPLE)
     target_link_options(${PROJECT_NAME} PRIVATE "${CORE_SERVICES}/CoreServices.tbd")
 endif()
 
-if(ANDROID AND QT_DEFAULT_MAJOR_VERSION EQUAL 5)
+if(ANDROID AND QT_MAJOR_VERSION EQUAL 5)
     # find the Android SDK
     set(ANDROID_SDK_ROOT $ENV{ANDROID_SDK_ROOT})
     if(NOT ANDROID_SDK_ROOT)
@@ -202,20 +222,24 @@ if(ANDROID AND QT_DEFAULT_MAJOR_VERSION EQUAL 5)
     message(STATUS "Android NDK: ${ANDROID_NDK_ROOT}")
 
     get_filename_component(QT_BINARY_ROOT "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
-    execute_process(
+
+    add_custom_target("${PROJECT_NAME}_apkdir"
         COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/apk"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/apk"
+        DEPENDS "${PROJECT_NAME}"
+        COMMENT "Preparing APK directory"
     )
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    add_custom_target("${PROJECT_NAME}_apkconf" ALL
         COMMAND "${QT_BINARY_ROOT}/qmake"
             "${CMAKE_CURRENT_SOURCE_DIR}/dukto.pro"
             "-spec" "android-clang"
             "CONFIG+=qtquickcompiler"
             "ANDROID_ABIS=${ANDROID_ABI}"
+        DEPENDS "${PROJECT_NAME}_apkdir"
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/apk"
-        COMMENT "Generate APK configuration..."
+        COMMENT "Generating APK configuration"
     )
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    add_custom_target(apk ALL
         COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}"
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}"
         COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/libdukto.so" "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}/libDukto_${ANDROID_ABI}.so"
@@ -223,8 +247,9 @@ if(ANDROID AND QT_DEFAULT_MAJOR_VERSION EQUAL 5)
             --output "${CMAKE_CURRENT_BINARY_DIR}/apk"
             --input android-Dukto-deployment-settings.json
             --gradle
+        DEPENDS "${PROJECT_NAME}_apkconf"
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/apk"
-        COMMENT "Build APK..."
+        COMMENT "Generating APK"
     )
 endif()
 
