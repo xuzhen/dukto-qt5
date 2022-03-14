@@ -6,7 +6,6 @@ Rectangle {
     id: colorPicker
     property color colorValue: ColorUtils.hsba(hueSlider.value, sbPicker.saturation,
                                                sbPicker.brightness, 1)
-    width: 144; height: 126
     color: "#FFFFFF"
 
     signal changed()

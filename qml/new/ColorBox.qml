@@ -20,10 +20,9 @@ import QtQuick 2.3
 
 Rectangle {
     id: root
-    width: 32
-    height: 32
+    height: width
     border.color: boxArea.containsMouse ? "#555555" : "#f0f0f0"
-    border.width: boxArea.containsMouse ? 2 : 2
+    border.width: 2
     clip: true
 
     signal clicked(color color)

@@ -4,14 +4,24 @@ import QtQuick 2.3
 Item {
     id: root
     property color hueColor : "blue"
-    property real saturation : pickerCursor.x/width
-    property real brightness : 1 - pickerCursor.y/height
+    property real saturation : NaN
+    property real brightness : NaN
 
     signal changed()
 
     function setValue(sat, brigh) {
         pickerCursor.x = sat * width;
         pickerCursor.y = (1 - brigh) * height;
+
+        root.saturation = sat
+        root.brightness = brigh
+        root.changed();
+    }
+
+    onHeightChanged: {
+        if (!isNaN(root.saturation)) {
+            setValue(root.saturation, root.brightness)
+        }
     }
 
     // width: 126; height: 126
@@ -58,6 +68,9 @@ Item {
             if (mouse.buttons & Qt.LeftButton) {
                 pickerCursor.x = Math.max(0, Math.min(width,  mouse.x));
                 pickerCursor.y = Math.max(0, Math.min(height, mouse.y));
+
+                root.saturation = pickerCursor.x/width
+                root.brightness = 1 - pickerCursor.y/height
                 root.changed();
             }
         }

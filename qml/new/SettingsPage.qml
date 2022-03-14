@@ -134,6 +134,8 @@ Rectangle {
         anchors.top: labelColor.bottom
         anchors.topMargin: 8
         anchors.left: labelColor.left
+        width: Math.min(parent.width * 0.4, 200)
+        height: width
         Connections {
             function onChanged() {
                 guiBehind.changeThemeColor(picker.colorValue);
@@ -141,120 +143,130 @@ Rectangle {
         }
     }
 
-    ColorBox {
-        id: cbox1
+    Item {
+        id: colorBoxes
         anchors.top: labelColor.bottom
         anchors.topMargin: 8
+        anchors.bottom: picker.bottom
         anchors.left: picker.right
-        anchors.leftMargin: 20
-        color: "#248B00"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        anchors.leftMargin: picker.width / 4
+        anchors.right: parent.right
+        anchors.rightMargin: 17
+
+        ColorBox {
+            id: cbox1
+            anchors.top: parent.top
+            anchors.left: parent.left
+            color: "#248B00"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
-    }
 
-    ColorBox {
-        id: cbox2
-        anchors.top: cbox1.top
-        anchors.left: cbox1.right
-        anchors.leftMargin: 15
-        color: "#A80000"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        ColorBox {
+            id: cbox2
+            anchors.top: cbox1.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            color: "#A80000"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
-    }
 
-    ColorBox {
-        id: cbox3
-        anchors.top: cbox1.top
-        anchors.left: cbox2.right
-        anchors.leftMargin: 15
-        color: "#3A6CBC"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        ColorBox {
+            id: cbox3
+            anchors.top: cbox1.top
+            anchors.right: parent.right
+            color: "#3A6CBC"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
-    }
 
-    ColorBox {
-        id: cbox4
-        anchors.top: cbox1.bottom
-        anchors.topMargin: 15
-        anchors.left: cbox1.left
-        color: "#2e3436" // "#704214"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        ColorBox {
+            id: cbox4
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: cbox1.left
+            color: "#2e3436" // "#704214"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
-    }
 
-    ColorBox {
-        id: cbox5
-        anchors.left: cbox4.right
-        anchors.top: cbox4.top
-        anchors.leftMargin: 15
-        color: "#B77994"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        ColorBox {
+            id: cbox5
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            color: "#B77994"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
-    }
 
-    ColorBox {
-        id: cbox6
-        anchors.top: cbox4.top
-        anchors.left: cbox5.right
-        anchors.leftMargin: 15
-        color: "#5B2F42"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        ColorBox {
+            id: cbox6
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            color: "#5B2F42"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
-    }
 
-    ColorBox {
-        id: cbox7
-        anchors.top: cbox4.bottom
-        anchors.topMargin: 15
-        anchors.left: cbox4.left
-        color: "#353B56"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        ColorBox {
+            id: cbox7
+            anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            color: "#353B56"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
-    }
 
-    ColorBox {
-        id: cbox8
-        anchors.top: cbox7.top
-        anchors.left: cbox7.right
-        anchors.leftMargin: 15
-        color: "#FB8504"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        ColorBox {
+            id: cbox8
+            anchors.bottom: parent.bottom
+            anchors.horizontalCenter: parent.horizontalCenter
+            color: "#FB8504"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
-    }
 
-    ColorBox {
-        id: cbox9
-        anchors.top: cbox7.top
-        anchors.left: cbox8.right
-        anchors.leftMargin: 15
-        color: "#6D0D71"
-        Connections {
-            function onClicked(color) {
-                picker.setColor(color)
+        ColorBox {
+            id: cbox9
+            anchors.bottom: parent.bottom
+            anchors.right: parent.right
+            color: "#6D0D71"
+            width: picker.width / 4
+            Connections {
+                function onClicked(color) {
+                    picker.setColor(color)
+                }
             }
         }
     }
@@ -262,7 +274,7 @@ Rectangle {
     CheckBox {
         id: nswitch
         visible: guiBehind.isDesktopApp()
-        anchors.top: cbox7.bottom
+        anchors.top: picker.bottom
         anchors.left: labelPath.left
         anchors.topMargin: 30
         text: "Enable Notification"

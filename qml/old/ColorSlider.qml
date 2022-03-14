@@ -2,17 +2,27 @@
 import QtQuick 2.3
 Item {
     id: root
-    property real value: (1 - pickerCursor.y/height)
+    property real value: NaN
     width: 15; height: 300
 
     signal changed()
 
     function setValue(value) {
-        if (value < 0)
+        if (isNaN(value))
+            value = 0.5
+        else if (value < 0)
             value = 0
         else if (value > 1)
             value = 1
         pickerCursor.y = (1 - value) * height;
+        root.value = value
+        root.changed();
+    }
+
+    onHeightChanged: {
+        if (!isNaN(root.value)) {
+            setValue(root.value)
+        }
     }
 
     Item {
@@ -37,6 +47,7 @@ Item {
         function handleMouse(mouse) {
             if (mouse.buttons & Qt.LeftButton) {
                 pickerCursor.y = Math.max(0, Math.min(height, mouse.y))
+                root.value = 1 - pickerCursor.y / root.height
                 root.changed();
             }
         }
