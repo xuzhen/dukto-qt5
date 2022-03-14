@@ -26,7 +26,7 @@ Rectangle {
 
     function refreshColor() {
 
-        picker.setColor(theme.color2);
+        picker.setColor(theme.mainColor);
     }
 
     MouseArea {
@@ -61,7 +61,7 @@ Rectangle {
         anchors.topMargin: 5
         font.pixelSize: 64
         text: "Settings"
-        color: theme.color3
+        color: theme.lighterColor
     }
 
     SText {
@@ -84,7 +84,7 @@ Rectangle {
         anchors.rightMargin: 17
         anchors.topMargin: 8
         height: 30
-        color: theme.color2
+        color: theme.mainColor
         clip: true
 
         Image {

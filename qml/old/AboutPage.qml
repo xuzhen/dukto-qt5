@@ -34,7 +34,7 @@ Flickable {
             y: 15
             width: 64
             height: 64
-            color: theme.color2
+            color: theme.mainColor
             Image {
                 source: "TileGradient.png"
                 anchors.fill: parent

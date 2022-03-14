@@ -27,7 +27,7 @@ Item {
 
     Rectangle {
         id: backRecangle
-        color: theme.color2
+        color: theme.mainColor
         height: parent.height
         width: parent.width
 

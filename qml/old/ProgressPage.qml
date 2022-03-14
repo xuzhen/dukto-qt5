@@ -34,7 +34,7 @@ Rectangle {
 
         Rectangle {
             id: backRecangle
-            color: theme.color2
+            color: theme.mainColor
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -93,7 +93,7 @@ Rectangle {
             anchors.leftMargin: 17
             anchors.rightMargin: 17
             anchors.topMargin: 25
-            color: theme.color3
+            color: theme.lighterColor
             height: 40
 
             Rectangle {

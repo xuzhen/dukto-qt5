@@ -52,7 +52,7 @@ Flipable {
            anchors.top: parent.top
            height: 64
            width: 5
-           color: theme.color3
+           color: theme.lighterColor
        }
    }
 
@@ -67,7 +67,7 @@ Flipable {
 
            front: Rectangle {
                anchors.fill: parent
-               color: theme.color2
+               color: theme.mainColor
                Image {
                    anchors.fill: parent
                    source: "TileGradient.png"
@@ -85,7 +85,7 @@ Flipable {
 
            back: Rectangle {
                anchors.fill: parent
-               color: theme.color2
+               color: theme.mainColor
                Image {
                    anchors.fill: parent
                    source: "TileGradient.png"
@@ -167,7 +167,7 @@ Flipable {
    ListView.onRemove: removeAnimation.start()
 
    Rectangle {
-       color: theme.color2
+       color: theme.mainColor
        x: 40
        width: parent.width - 80
        height: 1

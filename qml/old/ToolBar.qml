@@ -41,7 +41,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 68
-        color: theme.color2
+        color: theme.mainColor
 
         Image {
             anchors.top: parent.top

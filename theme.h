@@ -25,20 +25,20 @@ class Theme : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString color2 READ color2 NOTIFY color2Changed)
-    Q_PROPERTY(QString color3 READ color3 NOTIFY color3Changed)
+    Q_PROPERTY(QString mainColor READ mainColor NOTIFY mainColorChanged)
+    Q_PROPERTY(QString lighterColor READ lighterColor NOTIFY lighterColorChanged)
 
 public:
     explicit Theme(QObject *parent = nullptr);
-    inline QString color2() { return mColor2; }
-    inline QString color3() { return mColor3; }
+    inline QString mainColor() { return mMainColor; }
+    inline QString lighterColor() { return mLighterColor; }
     void setThemeColor(const QString &color);
 
     static const QString DEFAULT_THEME_COLOR;
 
 signals:
-    void color2Changed();
-    void color3Changed();
+    void mainColorChanged();
+    void lighterColorChanged();
 
 public slots:
     float getHue(const QString &color);
@@ -46,8 +46,8 @@ public slots:
     float getLightness(const QString &color);
 
 private:
-    QString mColor2;
-    QString mColor3;
+    QString mMainColor;
+    QString mLighterColor;
 
 };
 

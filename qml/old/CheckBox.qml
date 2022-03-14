@@ -34,7 +34,7 @@ Rectangle {
 
         Rectangle {
             visible: checkbox.checked
-            color: theme.color2
+            color: theme.mainColor
             anchors.margins: 3
             anchors.fill: parent
         }

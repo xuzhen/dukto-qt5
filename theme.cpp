@@ -24,7 +24,7 @@ const QString Theme::DEFAULT_THEME_COLOR = "#248b00";
 
 Theme::Theme(QObject *parent) :
     QObject(parent),
-    mColor2(DEFAULT_THEME_COLOR), mColor3("#4cb328")
+    mMainColor(DEFAULT_THEME_COLOR), mLighterColor("#4cb328")
 {
 }
 
@@ -36,10 +36,10 @@ void Theme::setThemeColor(const QString &color)
     c.setGreen(qMin(c.green() + 40, 255));
     c.setBlue(qMin(c.blue() + 40, 255));
 
-    mColor2 = color;
-    mColor3 = c.name();
-    emit color2Changed();
-    emit color3Changed();
+    mMainColor = color;
+    mLighterColor = c.name();
+    emit mainColorChanged();
+    emit lighterColorChanged();
 }
 
 float Theme::getHue(const QString &color) {

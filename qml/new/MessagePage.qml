@@ -36,7 +36,7 @@ Rectangle {
 
         Rectangle {
             id: backRecangle
-            color: theme.color2
+            color: theme.mainColor
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom

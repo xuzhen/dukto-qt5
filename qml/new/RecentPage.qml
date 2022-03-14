@@ -84,7 +84,7 @@ Item {
                          anchors.top: parent.top
                          anchors.bottom: parent.bottom
                          width: 5
-                         color: theme.color3
+                         color: theme.lighterColor
                      }
                  }
 
@@ -93,7 +93,7 @@ Item {
                      anchors.verticalCenter: parent.verticalCenter
                      width: 32
                      height: 32
-                     color: theme.color2
+                     color: theme.mainColor
                      Image {
                          source: typeIcon
                          width: 32

@@ -64,7 +64,7 @@ Rectangle {
         anchors.topMargin: 5
         font.pixelSize: 64
         text: "Text snippet"
-        color: theme.color3
+        color: theme.lighterColor
     }
 
     SText {
@@ -84,7 +84,7 @@ Rectangle {
 
     Rectangle {
         id: rectangleText
-        border.color: theme.color3
+        border.color: theme.lighterColor
         border.width: 1
         anchors.top: boxSender.bottom
         anchors.topMargin: 10

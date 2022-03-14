@@ -57,7 +57,7 @@ Rectangle {
         anchors.topMargin: 5
         font.pixelSize: 64
         text: "Send data to"
-        color: theme.color3
+        color: theme.lighterColor
     }
 
     BuddyListElement {

@@ -22,7 +22,7 @@ Rectangle {
     id: button
     width: 150
     height: 30
-    border.color: buttonEnabled ? theme.color2 : "#cccccc"
+    border.color: buttonEnabled ? theme.mainColor : "#cccccc"
     border.width: 2
     color: buttonArea.containsMouse ? (buttonArea.pressed ? "#cccccc" : "#eeeeee") : "#ffffff"
 
@@ -33,7 +33,7 @@ Rectangle {
     SText {
         id: textLabel
         anchors.fill: parent
-        color: buttonEnabled ? theme.color2 : "#cccccc"
+        color: buttonEnabled ? theme.mainColor : "#cccccc"
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         font.pixelSize: 12
