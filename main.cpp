@@ -72,17 +72,15 @@ int main(int argc, char *argv[])
     parser.process(app);
 #endif
 
-    Settings settings;
-
-    GuiBehind gb(&settings);
+    GuiBehind gb;
     app.installEventFilter(&gb);
     
-    DuktoWindow viewer(&gb, &settings);
+    DuktoWindow viewer(&gb);
 #ifdef SINGLE_APP
     QObject::connect(&app, &SingleApplication::receivedMessage, &viewer, &DuktoWindow::activateWindow);
 #endif
 
-    SystemTray tray(viewer, &settings);
+    SystemTray tray(viewer);
 
     gb.setViewer(&viewer, &tray);
 #ifndef MOBILE_APP

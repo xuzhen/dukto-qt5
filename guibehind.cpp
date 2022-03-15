@@ -49,8 +49,7 @@
 
 #define NETWORK_PORT 4644 // 6742
 
-GuiBehind::GuiBehind(Settings *settings) :
-    QObject(nullptr), mSettings(settings)
+GuiBehind::GuiBehind() : QObject(nullptr)
 {
     // Status variables
     mCurrentTransferProgress = 0;
@@ -74,10 +73,10 @@ GuiBehind::GuiBehind(Settings *settings) :
     mDestBuddy = new DestinationBuddy(this);
 
     // Set destination folder
-    mDuktoProtocol.setDestDir(mSettings->destPath());
+    mDuktoProtocol.setDestDir(gSettings->destPath());
 
     // Set current theme color
-    mTheme.setThemeColor(mSettings->themeColor());
+    mTheme.setThemeColor(gSettings->themeColor());
 
     // Register protocol signals
     connect(&mDuktoProtocol, &DuktoProtocol::peerListAdded, this, &GuiBehind::peerListAdded);
@@ -145,7 +144,7 @@ void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
 
     // Load GUI
     view->setSource(QUrl("qrc:/qml/dukto/Dukto.qml"));
-    view->restoreGeometry(mSettings->windowGeometry());
+    view->restoreGeometry(gSettings->windowGeometry());
 
     connect(&mDuktoProtocol, &DuktoProtocol::receiveTextCompleted, tray, &SystemTray::received_text);
     connect(&mDuktoProtocol, &DuktoProtocol::receiveFileCompleted, tray, &SystemTray::received_file);
@@ -281,7 +280,7 @@ void GuiBehind::openFile(const QString &path)
 
 void GuiBehind::openDestinationFolder()
 {
-    QDesktopServices::openUrl(mSettings->destPath());
+    QDesktopServices::openUrl(gSettings->destPath());
 }
 
 void GuiBehind::changeDestinationFolder()
@@ -293,14 +292,14 @@ void GuiBehind::changeDestinationFolder()
         // Qt use QUrl::toString(QUrl::PrettyDecoded) to convert QUrl to QString in
         // QFileDialog::getExistingDirectory's internal implementation. Some characters
         // like spaces will be wrongly decoded
-        QUrl url = QFileDialog::getExistingDirectoryUrl(mView, "Change folder", QUrl(mSettings->destPath()), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        QUrl url = QFileDialog::getExistingDirectoryUrl(mView, "Change folder", QUrl(gSettings->destPath()), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
         if (url.isEmpty()) {
             return;
         }
         dirname = url.toString(QUrl::FullyEncoded);
         AndroidStorage::grantUriPermission(AndroidStorage::parseUri(dirname), true);
 #else
-        dirname = QFileDialog::getExistingDirectory(mView, "Change folder", mSettings->destPath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        dirname = QFileDialog::getExistingDirectory(mView, "Change folder", gSettings->destPath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
         if (dirname.isEmpty()) {
             return;
         }
@@ -656,7 +655,7 @@ bool GuiBehind::eventFilter(QObject *, QEvent *event)
 void GuiBehind::changeThemeColor(const QString &color)
 {
     mTheme.setThemeColor(color);
-    mSettings->saveThemeColor(color);
+    gSettings->saveThemeColor(color);
 }
 
 // Called on application closing event
@@ -775,12 +774,12 @@ void GuiBehind::setTextSnippetSending(bool sending)
 
 QString GuiBehind::destPath()
 {
-    return mSettings->destPath();
+    return gSettings->destPath();
 }
 
 void GuiBehind::setDestPath(const QString &path)
 {
-    mSettings->saveDestPath(path);
+    gSettings->saveDestPath(path);
     emit destPathChanged();
 }
 
@@ -863,12 +862,12 @@ void GuiBehind::setMessagePageBackState(const QString &state)
 
 bool GuiBehind::showTermsOnStart()
 {
-    return mSettings->showTermsOnStart();
+    return gSettings->showTermsOnStart();
 }
 
 void GuiBehind::setShowTermsOnStart(bool show)
 {
-    mSettings->saveShowTermsOnStart(show);
+    gSettings->saveShowTermsOnStart(show);
     emit showTermsOnStartChanged();
 }
 
@@ -885,7 +884,7 @@ void GuiBehind::setShowUpdateBanner(bool show)
 
 void GuiBehind::setBuddyName(const QString &name)
 {
-    mSettings->saveBuddyName(QString(name).replace(' ', ""));
+    gSettings->saveBuddyName(QString(name).replace(' ', ""));
     mDuktoProtocol.updateBuddyName();
     mBuddiesList.updateMeElement();
     emit buddyNameChanged();
@@ -893,25 +892,25 @@ void GuiBehind::setBuddyName(const QString &name)
 
 QString GuiBehind::buddyName()
 {
-    return mSettings->buddyName();
+    return gSettings->buddyName();
 }
 
 void GuiBehind::setShowNotification(bool show) {
-    mSettings->saveNotificationEnabled(show);
+    gSettings->saveNotificationEnabled(show);
     emit showNotificationChanged();
 }
 
 bool GuiBehind::showNotification() {
-    return mSettings->notificationEnabled();
+    return gSettings->notificationEnabled();
 }
 
 void GuiBehind::setCloseToTray(bool enabled) {
-    mSettings->saveCloseToTrayEnabled(enabled);
+    gSettings->saveCloseToTrayEnabled(enabled);
     emit closeToTrayChanged();
 }
 
 bool GuiBehind::closeToTray() {
-    return mSettings->closeToTrayEnabled();
+    return gSettings->closeToTrayEnabled();
 }
 
 void GuiBehind::setInitError(const QString &error, const QString &action) {
@@ -965,7 +964,7 @@ bool GuiBehind::testFolder(const QString &dir) {
 }
 
 void GuiBehind::initialize() {
-    QString destDir = mSettings->destPath();
+    QString destDir = gSettings->destPath();
     if (destDir.isEmpty()) {
         setInitError(QStringLiteral("The directory for received files hasn't been specified."), QStringLiteral("Choose a directory"));
         return;

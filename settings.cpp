@@ -32,6 +32,11 @@ Settings::Settings(QObject *parent) :
 {
 }
 
+Settings& Settings::instance() {
+    static Settings theOne;
+    return theOne;
+}
+
 QString Settings::destPath()
 {
     // Retrieve the last saved path (if any)

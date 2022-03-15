@@ -25,13 +25,12 @@
 class EcWin7;
 #endif
 class GuiBehind;
-class Settings;
 
 class DuktoWindow : public QQuickWidget
 {
     Q_OBJECT
 public:
-    explicit DuktoWindow(GuiBehind* gb, Settings *settings, QWidget *parent = nullptr);
+    explicit DuktoWindow(GuiBehind* gb, QWidget *parent = nullptr);
     virtual ~DuktoWindow();
     void showTaskbarProgress(uint percent);
     void hideTaskbarProgress();
@@ -63,7 +62,6 @@ protected:
 
 private:
     GuiBehind *mGuiBehind;
-    Settings *mSettings;
 #ifdef Q_OS_WIN
     EcWin7 *mWin7 = nullptr;
 #endif

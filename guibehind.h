@@ -31,7 +31,6 @@
 #ifdef UPDATER
 class UpdatesChecker;
 #endif
-class Settings;
 class MiniWebServer;
 class DuktoWindow;
 class SystemTray;
@@ -62,7 +61,7 @@ class GuiBehind : public QObject
     Q_PROPERTY(QString initErrorAction READ initErrorAction NOTIFY initErrorActionChanged)
 
 public:
-    explicit GuiBehind(Settings* settings);
+    explicit GuiBehind();
     virtual ~GuiBehind();
 
     void setViewer(DuktoWindow *view, SystemTray *tray);
@@ -194,7 +193,6 @@ private:
     QTimer *mShowBackTimer = nullptr;
     QTimer *mPeriodicHelloTimer = nullptr;
     MiniWebServer *mMiniWebServer = nullptr;
-    Settings *mSettings;
     DestinationBuddy *mDestBuddy = nullptr;
     BuddyListItemModel mBuddiesList;
     RecentListItemModel mRecentList;

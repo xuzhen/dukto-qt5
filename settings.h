@@ -22,10 +22,14 @@
 #include <QObject>
 #include <QSettings>
 
+#define gSettings (&Settings::instance())
+
 class Settings : public QObject
 {
 public:
-    explicit Settings(QObject *parent = nullptr);
+    Q_DISABLE_COPY(Settings)
+    static Settings& instance();
+
     QString destPath();
     void saveDestPath(const QString &path);
     void saveWindowGeometry(const QByteArray &geo);
@@ -42,6 +46,7 @@ public:
     void saveCloseToTrayEnabled(bool enabled);
 
 private:
+    explicit Settings(QObject *parent = nullptr);
     QSettings mSettings;
 
 };

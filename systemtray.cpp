@@ -30,9 +30,9 @@
 #include <QAction>
 #include <QApplication>
 
-SystemTray::SystemTray(DuktoWindow& window, Settings *settings, QObject* parent) :
+SystemTray::SystemTray(DuktoWindow& window, QObject* parent) :
     QSystemTrayIcon(parent),
-    window(window), settings(settings)
+    window(window)
 {
 #ifdef NOTIFY_LIBNOTIFY
     notify_init ("Dukto");
@@ -108,7 +108,7 @@ void SystemTray::received_text(const QString &text)
 
 void SystemTray::notify(const QString &title, const QString &body)
 {
-    if (!settings->notificationEnabled()) {
+    if (!gSettings->notificationEnabled()) {
         return;
     }
 #ifdef NOTIFY_LIBNOTIFY

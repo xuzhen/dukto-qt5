@@ -38,8 +38,8 @@
 static DuktoWindow *instance = nullptr;
 #endif
 
-DuktoWindow::DuktoWindow(GuiBehind *gb, Settings *settings, QWidget *parent) :
-    QQuickWidget(parent), mGuiBehind(gb), mSettings(settings)
+DuktoWindow::DuktoWindow(GuiBehind *gb, QWidget *parent) :
+    QQuickWidget(parent), mGuiBehind(gb)
 {
     // Configure window
     setAcceptDrops(true);
@@ -161,11 +161,11 @@ void DuktoWindow::dropEvent(QDropEvent *event)
 
 void DuktoWindow::closeEvent(QCloseEvent *event)
 {
-    if (isVisible() && mSettings->closeToTrayEnabled()) {
+    if (isVisible() && gSettings->closeToTrayEnabled()) {
         event->ignore();
         hide();
     } else {
-        mSettings->saveWindowGeometry(saveGeometry());
+        gSettings->saveWindowGeometry(saveGeometry());
         event->accept();
     }
 }
