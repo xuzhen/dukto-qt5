@@ -18,9 +18,13 @@
 
 import QtQuick 2.3
 
-Rectangle {
+Flickable {
     id: sendPage
-    color: "#ffffff"
+    clip: true
+    interactive: (labelDrop.y + labelDrop.height + 20) > height
+    flickableDirection: Flickable.VerticalFlick
+    contentHeight: (labelDrop.y + labelDrop.height + 20)
+    boundsBehavior: Flickable.StopAtBounds
 
     signal back()
     signal showTextPage()
@@ -29,117 +33,22 @@ Rectangle {
         destinationText.focus = true;
     }
 
-    MouseArea {
-        anchors.fill: parent
-    }
-
-    Image {
-        id: backIcon
-        source: "BackIconDark.png"
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.topMargin: 5
-        anchors.leftMargin: 5
+    Rectangle {
+        color: "#ffffff"
+        height: sendPage.height + sendPage.contentY
+        width: sendPage.width
 
         MouseArea {
             anchors.fill: parent
-            hoverEnabled: true
-            cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
-            Connections {
-                function onClicked() {
-                    sendPage.back();
-                }
-            }
-        }
-    }
-
-    SmoothText {
-        id: boxTitle
-        anchors.left: backIcon.right
-        anchors.top: parent.top
-        anchors.leftMargin: 15
-        anchors.topMargin: 5
-        font.pixelSize: 64
-        text: "Send data to"
-        color: theme.lighterColor
-    }
-
-    BuddyListElement {
-        id: localBuddy
-        visible: destinationBuddy.ip !== "IP"
-        anchors.top: backIcon.bottom
-        anchors.topMargin: 25
-        anchors.left: parent.left
-        anchors.leftMargin: 30
-        anchors.right: parent.right
-        anchors.rightMargin: 30
-        buddyGeneric: destinationBuddy.genericAvatar
-        buddyAvatar: destinationBuddy.avatar
-        buddyOsLogo:destinationBuddy.osLogo
-        buddyUsername: destinationBuddy.username
-        buddySystem: destinationBuddy.system
-        buddyIp: "-"
-    }
-
-    BuddyListElement {
-        id: remoteBuddy
-        visible: destinationBuddy.ip === "IP"
-        anchors.top: backIcon.bottom
-        anchors.topMargin: 25
-        anchors.left: parent.left
-        anchors.leftMargin: 30
-        anchors.right: parent.right
-        anchors.rightMargin: 30
-        buddyGeneric: "UnknownLogo.png"
-        buddyAvatar: ""
-        buddyOsLogo: ""
-        buddyUsername: "Destination:"
-        buddySystem: ""
-        buddyIp: "-"
-    }
-
-    Rectangle {
-        id: destRect
-        visible: destinationBuddy.ip === "IP"
-        anchors.left: localBuddy.left
-        anchors.right: localBuddy.right
-        anchors.bottom: localBuddy.bottom
-        anchors.bottomMargin: 5
-        anchors.leftMargin: 74
-        anchors.rightMargin: 24
-        border.color: "#888888"
-        border.width: 2
-        height: 25
-
-        TextInput {
-            id: destinationText
-            anchors.fill: parent
-            anchors.margins: 4
-            readOnly: false
-            smooth: true
-            font.pixelSize: 14
-            color: "#888888"
-            selectByMouse: true
-            focus: true
-            text: guiBehind.remoteDestinationAddress
-            clip: true
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: containsMouse ? Qt.IBeamCursor : Qt.ArrowCursor
-                acceptedButtons: Qt.NoButton
-            }
         }
 
         Image {
-            anchors.top: destinationText.top
-            anchors.topMargin: -4
-            anchors.left: destinationText.right
+            id: backIcon
+            source: "BackIconDark.png"
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.topMargin: 5
             anchors.leftMargin: 5
-            source: "Paste.png"
-            height: 25
-            width: 25
 
             MouseArea {
                 anchors.fill: parent
@@ -147,114 +56,215 @@ Rectangle {
                 cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
                 Connections {
                     function onClicked() {
-                        guiBehind.pasteDestinationIp();
+                        sendPage.back();
                     }
                 }
             }
         }
 
-        Binding {
-            target: guiBehind
-            property: "remoteDestinationAddress"
-            value: destinationText.text
+        SmoothText {
+            id: boxTitle
+            anchors.left: backIcon.right
+            anchors.top: parent.top
+            anchors.leftMargin: 15
+            anchors.topMargin: 5
+            font.pixelSize: 64
+            text: "Send data to"
+            color: theme.lighterColor
         }
-    }
 
-    SText {
-        id: labelAction
-        anchors.left: localBuddy.left
-        anchors.top: localBuddy.bottom
-        anchors.topMargin: 35
-        font.pixelSize: 17
-        color: "#555555"
-        text: "What do you want to do?"
-    }
+        BuddyListElement {
+            id: localBuddy
+            visible: destinationBuddy.ip !== "IP"
+            anchors.top: backIcon.bottom
+            anchors.topMargin: 25
+            anchors.left: parent.left
+            anchors.leftMargin: 30
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            buddyGeneric: destinationBuddy.genericAvatar
+            buddyAvatar: destinationBuddy.avatar
+            buddyOsLogo:destinationBuddy.osLogo
+            buddyUsername: destinationBuddy.username
+            buddySystem: destinationBuddy.system
+            buddyIp: "-"
+        }
 
-    ButtonDark {
-        id: buttonSendText
-        anchors.top: labelAction.bottom
-        anchors.topMargin: 15
-        anchors.left: localBuddy.left
-        anchors.right: localBuddy.right
-        buttonEnabled: guiBehind.currentTransferBuddy !== ""
-        label: "Send some text"
-        Connections {
-            function onClicked() {
-                sendPage.showTextPage();
+        BuddyListElement {
+            id: remoteBuddy
+            visible: destinationBuddy.ip === "IP"
+            anchors.top: backIcon.bottom
+            anchors.topMargin: 25
+            anchors.left: parent.left
+            anchors.leftMargin: 30
+            anchors.right: parent.right
+            anchors.rightMargin: 30
+            buddyGeneric: "UnknownLogo.png"
+            buddyAvatar: ""
+            buddyOsLogo: ""
+            buddyUsername: "Destination:"
+            buddySystem: ""
+            buddyIp: "-"
+        }
+
+        Rectangle {
+            id: destRect
+            visible: destinationBuddy.ip === "IP"
+            anchors.left: localBuddy.left
+            anchors.right: localBuddy.right
+            anchors.bottom: localBuddy.bottom
+            anchors.bottomMargin: 5
+            anchors.leftMargin: 74
+            anchors.rightMargin: 24
+            border.color: "#888888"
+            border.width: 2
+            height: 25
+
+            TextInput {
+                id: destinationText
+                anchors.fill: parent
+                anchors.margins: 4
+                readOnly: false
+                smooth: true
+                font.pixelSize: 14
+                color: "#888888"
+                selectByMouse: true
+                focus: true
+                text: guiBehind.remoteDestinationAddress
+                clip: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: containsMouse ? Qt.IBeamCursor : Qt.ArrowCursor
+                    acceptedButtons: Qt.NoButton
+                }
+            }
+
+            Image {
+                anchors.top: destinationText.top
+                anchors.topMargin: -4
+                anchors.left: destinationText.right
+                anchors.leftMargin: 5
+                source: "Paste.png"
+                height: 25
+                width: 25
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: containsMouse ? Qt.PointingHandCursor : Qt.ArrowCursor
+                    Connections {
+                        function onClicked() {
+                            guiBehind.pasteDestinationIp();
+                        }
+                    }
+                }
+            }
+
+            Binding {
+                target: guiBehind
+                property: "remoteDestinationAddress"
+                value: destinationText.text
             }
         }
-    }
 
-    ButtonDark {
-        id: buttonSendClipboardText
-        anchors.top: buttonSendText.bottom
-        anchors.topMargin: 15
-        anchors.left: localBuddy.left
-        anchors.right: localBuddy.right
-        label: "Send text from clipboard"
-        buttonEnabled: guiBehind.clipboardTextAvailable && (guiBehind.currentTransferBuddy !== "")
-        Connections {
-            function onClicked() {
-                guiBehind.sendClipboardText()
-            }
+        SText {
+            id: labelAction
+            anchors.left: localBuddy.left
+            anchors.top: localBuddy.bottom
+            anchors.topMargin: 35
+            font.pixelSize: 17
+            color: "#555555"
+            text: "What do you want to do?"
         }
-    }
 
-    ButtonDark {
-        id: buttonSendFiles
-        anchors.top: buttonSendClipboardText.bottom
-        anchors.topMargin: 15
-        anchors.left: localBuddy.left
-        anchors.right: localBuddy.right
-        buttonEnabled: guiBehind.currentTransferBuddy !== ""
-        label: "Send some files"
-        Connections {
-            function onClicked() {
-                guiBehind.sendSomeFiles()
+        ButtonDark {
+            id: buttonSendText
+            anchors.top: labelAction.bottom
+            anchors.topMargin: 15
+            anchors.left: localBuddy.left
+            anchors.right: localBuddy.right
+            buttonEnabled: guiBehind.currentTransferBuddy !== ""
+            label: "Send some text"
+            Connections {
+                function onClicked() {
+                    sendPage.showTextPage();
+                }
             }
         }
-    }
 
-    ButtonDark {
-        id: buttonSendFolder
-        anchors.top: buttonSendFiles.bottom
-        anchors.topMargin: 15
-        anchors.left: localBuddy.left
-        anchors.right: localBuddy.right
-        buttonEnabled: guiBehind.currentTransferBuddy !== ""
-        label: "Send a folder"
-        Connections {
-            function onClicked() {
-                guiBehind.sendFolder()
+        ButtonDark {
+            id: buttonSendClipboardText
+            anchors.top: buttonSendText.bottom
+            anchors.topMargin: 15
+            anchors.left: localBuddy.left
+            anchors.right: localBuddy.right
+            label: "Send text from clipboard"
+            buttonEnabled: guiBehind.clipboardTextAvailable && (guiBehind.currentTransferBuddy !== "")
+            Connections {
+                function onClicked() {
+                    guiBehind.sendClipboardText()
+                }
             }
         }
-    }
-/*
-    ButtonDark {
-        id: buttonSendScreen
-        anchors.top: buttonSendFolder.bottom
-        anchors.topMargin: 15
-        anchors.left: localBuddy.left
-        anchors.right: localBuddy.right
-        buttonEnabled: guiBehind.currentTransferBuddy !== ""
-        label: "Send a screenshot"
-        Connections {
-            function onClicked() {
-                guiBehind.sendScreen()
+
+        ButtonDark {
+            id: buttonSendFiles
+            anchors.top: buttonSendClipboardText.bottom
+            anchors.topMargin: 15
+            anchors.left: localBuddy.left
+            anchors.right: localBuddy.right
+            buttonEnabled: guiBehind.currentTransferBuddy !== ""
+            label: "Send some files"
+            Connections {
+                function onClicked() {
+                    guiBehind.sendSomeFiles()
+                }
             }
         }
-    }
-*/
-    SText {
-        id: labelDrop
-        visible: guiBehind.isDesktopApp()
-        anchors.left: localBuddy.left
-        anchors.right: localBuddy.right
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 20
-        wrapMode: Text.Wrap
-        font.pixelSize: 14
-        color: "#888888"
-        text: "Or simply drag & drop some files and folders over this window to send them to your buddy."
+
+        ButtonDark {
+            id: buttonSendFolder
+            anchors.top: buttonSendFiles.bottom
+            anchors.topMargin: 15
+            anchors.left: localBuddy.left
+            anchors.right: localBuddy.right
+            buttonEnabled: guiBehind.currentTransferBuddy !== ""
+            label: "Send a folder"
+            Connections {
+                function onClicked() {
+                    guiBehind.sendFolder()
+                }
+            }
+        }
+    /*
+        ButtonDark {
+            id: buttonSendScreen
+            anchors.top: buttonSendFolder.bottom
+            anchors.topMargin: 15
+            anchors.left: localBuddy.left
+            anchors.right: localBuddy.right
+            buttonEnabled: guiBehind.currentTransferBuddy !== ""
+            label: "Send a screenshot"
+            Connections {
+                function onClicked() {
+                    guiBehind.sendScreen()
+                }
+            }
+        }
+    */
+        SText {
+            id: labelDrop
+            visible: guiBehind.isDesktopApp()
+            anchors.left: localBuddy.left
+            anchors.right: localBuddy.right
+            anchors.top: buttonSendFolder.bottom
+            anchors.topMargin: 20
+            wrapMode: Text.Wrap
+            font.pixelSize: 14
+            color: "#888888"
+            text: "Or simply drag & drop some files and folders over this window to send them to your buddy."
+        }
     }
 }

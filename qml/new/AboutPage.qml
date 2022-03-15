@@ -20,9 +20,10 @@ import QtQuick 2.3
 
 Flickable {
     clip: true
-    interactive: !guiBehind.isDesktopApp()
+    interactive: (lastItem.y + lastItem.height + 20) > height
     flickableDirection: Flickable.VerticalFlick
-    contentHeight: container.height
+    contentHeight: lastItem.y + lastItem.height + 20
+    boundsBehavior: Flickable.StopAtBounds
 
     Item {
         id: container
@@ -67,12 +68,14 @@ Flickable {
             color: "#888888"
             Connections {
                 function onLinkActivated(link) {
+                    console.log(root.height, container.height, lastItem.y)
                     Qt.openUrlExternally(link)
                 }
             }
         }
 
         SText {
+            id: lastItem
             anchors.right: parent.right
             anchors.rightMargin: 40
             anchors.left: parent.left

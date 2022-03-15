@@ -25,6 +25,7 @@ Rectangle {
     border.color: buttonEnabled ? theme.mainColor : "#cccccc"
     border.width: 2
     color: buttonArea.containsMouse ? (buttonArea.pressed ? "#cccccc" : "#eeeeee") : "#ffffff"
+    clip: true
 
     property bool buttonEnabled: true
     property alias label: textLabel.text

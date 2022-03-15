@@ -18,9 +18,13 @@
 
 import QtQuick 2.3
 
-Item {
+Flickable {
     id: recentPage
     clip: true
+    interactive: (recentList.count === 0 && sorryText.y + sorryText.height + 20 > recentPage.height)
+    flickableDirection: Flickable.VerticalFlick
+    contentHeight: (recentList.count === 0 ? (sorryText.y + sorryText.height + 20) : recentPage.height)
+    boundsBehavior: Flickable.StopAtBounds
 
     signal showText();
 
@@ -36,6 +40,7 @@ Item {
     }
 
     SText  {
+        id: sorryText
         y: badSmile.y + badSmile.height / 2 + 20
         // anchors.topMargin: 10
         anchors.left: parent.left

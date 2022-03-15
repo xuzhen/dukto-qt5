@@ -20,9 +20,10 @@ import QtQuick 2.3
 
 Flickable {
     clip: true
-    interactive: !guiBehind.isDesktopApp()
+    interactive: (lastItem.y + lastItem.height + 20) > height
     flickableDirection: Flickable.VerticalFlick
-    contentHeight: container.height
+    contentHeight: lastItem.y + lastItem.height + 20
+    boundsBehavior: Flickable.StopAtBounds
 
     Item {
         id: container
@@ -69,6 +70,7 @@ Flickable {
         }
 
         SText {
+            id: lastItem
             anchors.right: parent.right
             anchors.rightMargin: 40
             anchors.left: parent.left
