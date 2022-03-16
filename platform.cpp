@@ -122,7 +122,11 @@ QString Platform::getPlatformName()
 QString Platform::getAvatarPath()
 {
     // user specified avatar
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+#else
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+#endif
     QString avatarFile = dir.filePath("avatar.png");
     QImage image(avatarFile);
     if (image.isNull() == false) {

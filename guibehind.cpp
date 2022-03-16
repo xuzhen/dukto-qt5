@@ -1057,7 +1057,11 @@ void GuiBehind::selectAvatar() {
         return;
     }
     image = image.scaled(64, 64);
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+#else
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+#endif
     dir.mkpath(dir.path());
     if (image.save(dir.filePath("avatar.png"), "png") == false) {
         return;
@@ -1069,7 +1073,11 @@ void GuiBehind::selectAvatar() {
 }
 
 void GuiBehind::resetBuddy() {
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+#else
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+#endif
     QFile::remove(dir.filePath("avatar.png"));
     mMiniWebServer->restart();
     gSettings->saveBuddyName("");

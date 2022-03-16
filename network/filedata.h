@@ -2,6 +2,8 @@
 #define FILEDATA_H
 
 #include <QList>
+#include <QStringList>
+#include <QByteArray>
 
 #ifdef Q_OS_ANDROID
 #include "androidutils.h"
