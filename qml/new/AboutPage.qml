@@ -68,7 +68,6 @@ Flickable {
             color: "#888888"
             Connections {
                 function onLinkActivated(link) {
-                    console.log(root.height, container.height, lastItem.y)
                     Qt.openUrlExternally(link)
                 }
             }
