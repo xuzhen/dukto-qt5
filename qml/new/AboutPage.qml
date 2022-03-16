@@ -19,6 +19,7 @@
 import QtQuick 2.3
 
 Flickable {
+    property var lastItem: authors
     clip: true
     interactive: (lastItem.y + lastItem.height + 20) > height
     flickableDirection: Flickable.VerticalFlick
@@ -27,12 +28,15 @@ Flickable {
 
     Item {
         id: container
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.fill: parent
+        anchors.leftMargin: 35
+        anchors.rightMargin: 35
 
         Rectangle {
-            x: 27
-            y: 15
+            id: logo
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.leftMargin: 3
             width: 64
             height: 64
             color: theme.mainColor
@@ -47,25 +51,34 @@ Flickable {
         }
 
         SmoothText {
-            y: 80
-            x: 22
-            font.pixelSize: 100
-            text: "Dukto R6"
+            id: name
+            anchors.left: parent.left
+            anchors.top: logo.bottom
+            anchors.topMargin: 10
+            font.pixelSize: 36
+            scale: 1
+            text: "Dukto"
             color: "#555555"
         }
-        SmoothText {
-            x: 25
-            y: 70 + 75
-            font.pixelSize: 38
-            text: "Created by Emanuele Colombo"
-            color: "#888888"
-        }
-        SmoothText {
-            x: 25
-            y: 100 + 75
+        SText {
+            anchors.left: name.right
+            anchors.leftMargin: 10
+            anchors.bottom: name.bottom
             font.pixelSize: 32
-            text: "Website: <a href=\"https://www.msec.it/blog/dukto/\">https://www.msec.it/blog/dukto/</a>"
-            color: "#888888"
+            text: guiBehind.version()
+            color: "#555555"
+        }
+
+        SmoothText {
+            id: website
+            anchors.left: parent.left
+            anchors.top: name.bottom
+            anchors.topMargin: 10
+            font.pixelSize: 18
+            scale: 1
+            text: "Website: <a href=\"https://github.com/xuzhen/dukto-qt5/\">Source Code Repository</a>"
+            color: "#555555"
+            linkColor: theme.mainColor
             Connections {
                 function onLinkActivated(link) {
                     Qt.openUrlExternally(link)
@@ -73,22 +86,34 @@ Flickable {
             }
         }
 
-        SText {
-            id: lastItem
-            anchors.right: parent.right
-            anchors.rightMargin: 40
+        SmoothText {
+            id: copyrights
             anchors.left: parent.left
-            anchors.leftMargin: 25
-            y: 240
-            font.pixelSize: 12
-            color: "#888888"
-            wrapMode: Text.WordWrap
-            text: "This application and it's source code are released freely as open source project.<br>If you like this application please consider <a href=\"https://www.msec.it/\">making a donation</a>."
+            anchors.top: website.bottom
+            anchors.topMargin: 10
+            font.pixelSize: 18
+            scale: 1
+            text: "Created by:"
+            color: "#555555"
+        }
+        SmoothText {
+            id: authors
+            anchors.left: parent.left
+            anchors.leftMargin: 16
+            anchors.top: copyrights.bottom
+            anchors.topMargin: 6
+            font.pixelSize: 16
+            lineHeight: 1.2
+            scale: 1
+            text: "2009-2013 © <a href=\"https://www.msec.it/blog/dukto/\">Emanuele Colombo</a><br>2015-2015 © <a href=\"https://github.com/arthurzam/\">Arthur Zamarin</a><br>2015-2021 © <a href=\"https://github.com/maz-1/\">maz-1</a><br>2021-2022 © <a href=\"https://github.com/xuzhen/\">Xu Zhen</a>"
+            color: "#555555"
+            linkColor: theme.mainColor
             Connections {
                 function onLinkActivated(link) {
                     Qt.openUrlExternally(link)
                 }
             }
         }
+
     }
 }

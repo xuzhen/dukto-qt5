@@ -24,6 +24,7 @@
 #include "platform.h"
 #include "updateschecker.h"
 #include "systemtray.h"
+#include "version.h"
 
 #ifdef Q_OS_ANDROID
 #include "androidutils.h"
@@ -1085,4 +1086,8 @@ void GuiBehind::resetBuddy() {
     mDuktoProtocol.updateBuddy();
     emit buddyAvatarChanged();
     emit buddyNameChanged();
+}
+
+QString GuiBehind::version() {
+    return QLatin1String(VERSION_TEXT);
 }

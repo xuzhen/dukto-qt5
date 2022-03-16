@@ -186,6 +186,7 @@ public slots:
     void showProfilePage();
     void selectAvatar();
     void resetBuddy();
+    QString version();
 
 private slots:
     void showRandomBack();

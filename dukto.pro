@@ -31,7 +31,7 @@ DEFINES += UNICODE
 
 CONFIG(release, debug|release):DEFINES += QT_NO_DEBUG_OUTPUT
 
-VERSION = 6.0.0
+VERSION=$$fromfile(version.h, VERSION)
 
 unix:!android {
     target.path = /usr/bin
@@ -83,7 +83,8 @@ HEADERS += \
     destinationbuddy.h \
     duktowindow.h \
     theme.h \
-    systemtray.h
+    systemtray.h \
+    version.h
 
 RESOURCES += \
     qml.qrc \
@@ -112,7 +113,7 @@ contains(DEFINES, NOTIFY_LIBNOTIFY) {
     PKGCONFIG+=libnotify
 }
 
-OTHER_FILES += CMakeLists.txt
+OTHER_FILES += CMakeLists.txt dukto.rc
 
 win32 {
     RC_FILE = dukto.rc
