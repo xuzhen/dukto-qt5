@@ -283,7 +283,7 @@ void GuiBehind::openFile(const QString &path)
 
 void GuiBehind::openDestinationFolder()
 {
-    QDesktopServices::openUrl(gSettings->destPath());
+    QDesktopServices::openUrl(QUrl::fromLocalFile(gSettings->destPath()));
 }
 
 void GuiBehind::changeDestinationFolder()
