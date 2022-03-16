@@ -192,9 +192,9 @@ void Messenger::sendPacket(const QByteArray &data, const QHostAddress &target, q
 
 
 QString Messenger::getSystemSignature() {
-    static QString signature;
-    if (signature.isEmpty()) {
-        signature = QStringLiteral("%1 at %2 (%3)").arg(Platform::getSystemUsername(), Platform::getHostname(), Platform::getPlatformName());
+    static QString staticSignature;
+    if (staticSignature.isEmpty()) {
+        staticSignature = QStringLiteral(" at %1 (%2)").arg(Platform::getHostname(), Platform::getPlatformName());
     }
-    return signature;
+    return Platform::getUsername() + staticSignature;
 }

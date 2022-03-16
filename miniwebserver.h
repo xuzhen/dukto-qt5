@@ -28,7 +28,8 @@ class MiniWebServer : public QTcpServer
     Q_OBJECT
 
 public:
-    MiniWebServer(int port);
+    MiniWebServer(quint16 port);
+    void restart();
 
 protected:
     void incomingConnection(qintptr handle) override;
@@ -37,6 +38,7 @@ private slots:
      void readClient();
 
 private:
+     quint16 port;
      QByteArray mAvatarData;
 
 };

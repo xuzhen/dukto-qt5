@@ -26,14 +26,15 @@ class QString;
 class Platform
 {
 public:
-    static QString getSystemUsername();
+    static QString getUsername();
     static QString getHostname();
     static QString getPlatformName();
     static QString getAvatarPath();
     static QString getDefaultPath();
 
-// private:
+private:
     Platform() {}
+    static QString getSystemUsername();
 #if defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)
     static QString getLinuxAvatarPath();
 #elif defined(Q_OS_MAC)

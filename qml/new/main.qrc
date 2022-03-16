@@ -27,5 +27,6 @@
         <file>TermsPage.qml</file>
         <file>ToolBar.qml</file>
         <file>UpdatesBox.qml</file>
+        <file>ProfilePage.qml</file>
     </qresource>
 </RCC>

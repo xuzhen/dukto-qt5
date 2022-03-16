@@ -40,6 +40,8 @@
 #include <QTemporaryFile>
 #include <QScreen>
 #include <QMessageBox>
+#include <QImage>
+#include <QStandardPaths>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 10 ,0)
 #include <QRandomGenerator>
@@ -440,7 +442,11 @@ void GuiBehind::sendScreen()
     // Minimize window
     mView->setWindowState(Qt::WindowMinimized);
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
     QTimer::singleShot(500, this, &GuiBehind::sendScreenStage2);
+#else
+    QTimer::singleShot(500, this, SLOT(sendScreenStage2()));
+#endif
 }
 
 void GuiBehind::sendScreenStage2() {
@@ -885,14 +891,26 @@ void GuiBehind::setShowUpdateBanner(bool show)
 void GuiBehind::setBuddyName(const QString &name)
 {
     gSettings->saveBuddyName(QString(name).replace(' ', ""));
-    mDuktoProtocol.updateBuddyName();
+    mDuktoProtocol.updateBuddy();
     mBuddiesList.updateMeElement();
     emit buddyNameChanged();
 }
 
 QString GuiBehind::buddyName()
 {
-    return gSettings->buddyName();
+    return Platform::getUsername();
+}
+
+QString GuiBehind::buddyAvatar() {
+    static int seq = 0;
+    QString path = Platform::getAvatarPath();
+    if (path.isEmpty()) {
+        return mBuddiesList.getMeGenericAvatar();
+    } else {
+        QUrl url = QUrl::fromLocalFile(path);
+        url.setQuery("a=" + QString::number(seq++));
+        return url.toString(QUrl::FullyEncoded);
+    }
 }
 
 void GuiBehind::setShowNotification(bool show) {
@@ -1012,4 +1030,51 @@ void GuiBehind::pasteDestinationIp() {
     if (text.isEmpty() == false) {
         setRemoteDestinationAddress(text);
     }
+}
+
+void GuiBehind::showProfilePage() {
+    emit gotoProfilePage();
+}
+
+void GuiBehind::selectAvatar() {
+#ifdef Q_OS_ANDROID
+    // Qt use QUrl::toString(QUrl::PrettyDecoded) to convert QUrl to QString in
+    // QFileDialog::getOpenFileName's internal implementation. Some characters
+    // like spaces will be wrongly decoded
+    const QUrl url = QFileDialog::getOpenFileUrl(mView, QStringLiteral("Select an image"));
+    if (url.isEmpty()) {
+        return;
+    }
+    QString file = url.toString(QUrl::FullyEncoded);
+#else
+    QString file = QFileDialog::getOpenFileName(mView, QStringLiteral("Select an image"), QString(), QStringLiteral("Images (*.bmp *.jpg *.jpeg *.png);;All Files (*)"));
+    if (file.isEmpty()) {
+        return;
+    }
+#endif
+    QImage image(file);
+    if (image.isNull()) {
+        return;
+    }
+    image = image.scaled(64, 64);
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
+    dir.mkpath(dir.path());
+    if (image.save(dir.filePath("avatar.png"), "png") == false) {
+        return;
+    }
+    mBuddiesList.updateMeElement();
+    mMiniWebServer->restart();
+    mDuktoProtocol.updateBuddy();
+    emit buddyAvatarChanged();
+}
+
+void GuiBehind::resetBuddy() {
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
+    QFile::remove(dir.filePath("avatar.png"));
+    mMiniWebServer->restart();
+    gSettings->saveBuddyName("");
+    mBuddiesList.updateMeElement();
+    mDuktoProtocol.updateBuddy();
+    emit buddyAvatarChanged();
+    emit buddyNameChanged();
 }

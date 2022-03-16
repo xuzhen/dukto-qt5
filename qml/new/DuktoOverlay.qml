@@ -157,6 +157,21 @@ Rectangle {
         }
     }
 
+    ProfilePage {
+        id: profilePage
+        anchors.top: parent.top
+        anchors.topMargin: 10
+        anchors.bottom: parent.bottom
+        width: parent.width
+        x: -parent.width
+        opacity: 0
+        Connections {
+            function onBack() {
+                state = ""
+            }
+        }
+    }
+
     states: [
         State {
             name: "ip"
@@ -233,6 +248,19 @@ Rectangle {
             name: "initerr"
             PropertyChanges {
                 target: initErrPage
+                opacity: 1
+                x: 0
+            }
+            PropertyChanges {
+                target: disabler
+                opacity: 1
+                visible: true
+            }
+        },
+        State {
+            name: "profile"
+            PropertyChanges {
+                target: profilePage
                 opacity: 1
                 x: 0
             }

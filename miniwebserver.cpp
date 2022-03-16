@@ -28,8 +28,13 @@
 
 #include "platform.h"
 
-MiniWebServer::MiniWebServer(int port)
+MiniWebServer::MiniWebServer(quint16 port) : port(port)
 {
+    restart();
+}
+
+void MiniWebServer::restart() {
+    close();
     // Load and convert avatar image
     QString path = Platform::getAvatarPath();
     if (!path.isEmpty()) {
@@ -57,7 +62,7 @@ void MiniWebServer::readClient()
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
     if (socket->canReadLine()) {
         QStringList tokens = QString(socket->readLine()).split(QRegularExpression("[ \r\n][ \r\n]*"));
-        if (tokens.at(0) == "GET" && (tokens.at(1) == "/" || tokens.at(1) == "/dukto/avatar")) {
+        if (tokens.at(0) == "GET" && (tokens.at(1) == "/" || tokens.at(1) == "/dukto/avatar" || tokens.at(1).startsWith("/dukto/avatar?"))) {
 
             QTextStream os(socket);
             os.setAutoDetectUnicode(true);

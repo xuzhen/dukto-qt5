@@ -55,6 +55,7 @@ class GuiBehind : public QObject
     Q_PROPERTY(bool showTermsOnStart READ showTermsOnStart WRITE setShowTermsOnStart NOTIFY showTermsOnStartChanged)
     Q_PROPERTY(bool showUpdateBanner READ showUpdateBanner WRITE setShowUpdateBanner NOTIFY showUpdateBannerChanged)
     Q_PROPERTY(QString buddyName READ buddyName WRITE setBuddyName NOTIFY buddyNameChanged)
+    Q_PROPERTY(QString buddyAvatar READ buddyAvatar NOTIFY buddyAvatarChanged)
     Q_PROPERTY(bool showNotification READ showNotification WRITE setShowNotification NOTIFY showNotificationChanged)
     Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
     Q_PROPERTY(QString initError READ initError NOTIFY initErrorChanged)
@@ -102,6 +103,7 @@ public:
     void setShowUpdateBanner(bool show);
     void setBuddyName(const QString &name);
     QString buddyName();
+    QString buddyAvatar();
     void setShowNotification(bool show);
     bool showNotification();
     void setCloseToTray(bool enabled);
@@ -131,6 +133,7 @@ signals:
     void showTermsOnStartChanged();
     void showUpdateBannerChanged();
     void buddyNameChanged();
+    void buddyAvatarChanged();
     void showNotificationChanged();
     void closeToTrayChanged();
     void initErrorChanged();
@@ -142,6 +145,7 @@ signals:
     void gotoTextSnippet();
     void gotoSendPage();
     void gotoMessagePage();
+    void gotoProfilePage();
     void hideAllOverlays();
 
 public slots:
@@ -179,6 +183,9 @@ public slots:
     void reinitialize(const QString &action);
     void refreshNeighbors();
     void pasteDestinationIp();
+    void showProfilePage();
+    void selectAvatar();
+    void resetBuddy();
 
 private slots:
     void showRandomBack();

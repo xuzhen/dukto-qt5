@@ -15,6 +15,7 @@
         <file>InitErrPage.qml</file>
         <file>IpPage.qml</file>
         <file>MessagePage.qml</file>
+        <file>ProfilePage.qml</file>
         <file>ProgressPage.qml</file>
         <file>RecentPage.qml</file>
         <file>SBPicker.qml</file>

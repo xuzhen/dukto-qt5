@@ -49,7 +49,7 @@ public:
     void sendText(const QString &ipDest, qint16 port, const QString &text);
     void sendScreen(const QString &ipDest, qint16 port, const QString &path);
     void abortCurrentTransfer();
-    void updateBuddyName();
+    void updateBuddy();
     void setDestDir(const QString &dir);
     
 private slots:

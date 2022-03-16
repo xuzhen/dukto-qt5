@@ -45,7 +45,7 @@ void BuddyListItemModel::addMeElement()
 {
     addBuddy("",
              0,
-             Platform::getSystemUsername() + " (You)",
+             Platform::getUsername() + " (You)",
              Platform::getHostname(),
              Platform::getPlatformName(),
              QUrl::fromLocalFile(Platform::getAvatarPath()));
@@ -127,6 +127,7 @@ void BuddyListItemModel::addBuddy(const QString &ip, qint16 port, const QString 
 
 void BuddyListItemModel::addBuddy(const Peer &peer)
 {
+    static int seq = 0;
     static QRegularExpression rx("^(.*)\\sat\\s(.*)\\s\\((.*)\\)$");
     QRegularExpressionMatch match = rx.match(peer.name);
 
@@ -134,6 +135,7 @@ void BuddyListItemModel::addBuddy(const Peer &peer)
     QString system = match.captured(2);
     QString platform = match.captured(3);
     QUrl avatarPath = QUrl("http://" + peer.address.toString() + ":" + QString::number(peer.port + 1) + "/dukto/avatar");
+    avatarPath.setQuery(QString::number(seq++));
 
     addBuddy(peer.address.toString(),
              peer.port,
@@ -196,5 +198,26 @@ QString BuddyListItemModel::fistBuddyIp()
 
 void BuddyListItemModel::updateMeElement()
 {
-    mMeItem->setData(Platform::getSystemUsername(), BuddyListItemModel::Username);
+    if (mMeItem == nullptr) {
+        return;
+    }
+    static int seq = 0;
+    QString path = Platform::getAvatarPath();
+    if (path.isEmpty()) {
+        mMeItem->setData("", BuddyListItemModel::Avatar);
+    } else {
+        QUrl url = QUrl::fromLocalFile(path);
+        // force update with a different url each time
+        url.setQuery("m=" + QString::number(++seq));
+        mMeItem->setData(url, BuddyListItemModel::Avatar);
+    }
+    mMeItem->setData(Platform::getUsername() + " (You)", BuddyListItemModel::Username);
 }
+
+QString BuddyListItemModel::getMeGenericAvatar() {
+    if (mMeItem == nullptr) {
+        return QString();
+    }
+    return mMeItem->data(BuddyListItemModel::GenericAvatar).toString();
+}
+

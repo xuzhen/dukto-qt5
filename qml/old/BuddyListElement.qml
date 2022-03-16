@@ -35,14 +35,20 @@ Flipable {
        id: buddyMouseArea
        anchors.fill: parent
        hoverEnabled: true
-       cursorShape: (buddyIp && buddyIp != "-" && containsMouse) ? Qt.PointingHandCursor : Qt.ArrowCursor
-       onClicked: guiBehind.showSendPage(buddyIp)
+       cursorShape: (buddyIp !== "-" && containsMouse) ? Qt.PointingHandCursor : Qt.ArrowCursor
+       onClicked: {
+           if (buddyIp !== "") {
+               guiBehind.showSendPage(buddyIp)
+           } else {
+               guiBehind.showProfilePage()
+           }
+       }
    }
 
    Rectangle {
        anchors.fill: parent
        color: "#00000000"
-       visible: buddyIp && buddyIp != "-" && buddyMouseArea.containsMouse;
+       visible: buddyIp !== "-" && buddyMouseArea.containsMouse;
        Rectangle {
            anchors.right: parent.right
            anchors.top: parent.top
@@ -76,6 +82,7 @@ Flipable {
                    id: buddyAvatarImage
                    anchors.fill: parent
                    smooth: true
+                   cache: false
                }
            }
 

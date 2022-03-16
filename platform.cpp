@@ -23,6 +23,9 @@
 #include <QFile>
 #include <QDir>
 #include <QRegularExpression>
+#include <QStandardPaths>
+#include <QImage>
+#include "settings.h"
 
 #if defined(Q_OS_MAC)
 #include <QTemporaryFile>
@@ -44,6 +47,16 @@
 #if defined(Q_OS_ANDROID)
 #include "androidutils.h"
 #endif
+
+// Returns the buddy name
+QString Platform::getUsername()
+{
+    QString buddyName = gSettings->buddyName();
+    if (buddyName.isEmpty() == false) {
+        return buddyName;
+    }
+    return getSystemUsername();
+}
 
 // Returns the system username
 QString Platform::getSystemUsername()
@@ -108,6 +121,15 @@ QString Platform::getPlatformName()
 // Returns the platform avatar path
 QString Platform::getAvatarPath()
 {
+    // user specified avatar
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation));
+    QString avatarFile = dir.filePath("avatar.png");
+    QImage image(avatarFile);
+    if (image.isNull() == false) {
+        return avatarFile;
+    }
+
+    // default avatar
 #if defined(Q_OS_WIN)
     QString username = getSystemUsername().replace("\\", "+");
     QString path = QString(getenv("LOCALAPPDATA")) + "\\Temp\\" + username + ".bmp";

@@ -202,10 +202,12 @@ void DuktoProtocol::abortCurrentTransfer()
 }
 
 // Aggiorna il buddy name dell'utente locale
-void DuktoProtocol::updateBuddyName()
+void DuktoProtocol::updateBuddy()
 {
-    // Invio pacchetto di annuncio con il nuovo nome
-    mMessenger->sayHello();
+    if (mMessenger != nullptr) {
+        mMessenger->sayGoodbye();
+        mMessenger->sayHello();
+    }
 }
 
 void DuktoProtocol::setDestDir(const QString &dir) {

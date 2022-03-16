@@ -102,7 +102,7 @@ bool Settings::showTermsOnStart()
 QString Settings::buddyName()
 {
     // Retrieve the last saved name (if any)
-    return mSettings.value("BuddyName", "User").toString();
+    return mSettings.value("BuddyName", "").toString();
 
 }
 

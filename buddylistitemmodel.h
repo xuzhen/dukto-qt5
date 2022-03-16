@@ -36,6 +36,7 @@ public:
     void clearBuddies();
     void showSingleBack(int idx);
     void updateMeElement();
+    QString getMeGenericAvatar();
     QString buddyNameByIp(const QString &ip);
     QStandardItem* buddyByIp(const QString &ip);
     QString fistBuddyIp();

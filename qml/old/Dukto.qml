@@ -46,6 +46,7 @@ Rectangle {
          onGotoTextSnippet: duktoOverlay.state = "showtext"
          onGotoSendPage: duktoOverlay.state = "send";
          onGotoMessagePage: duktoOverlay.state = "message";
+         onGotoProfilePage: duktoOverlay.state = "profile";
          onHideAllOverlays: duktoOverlay.state = "";
     }
 

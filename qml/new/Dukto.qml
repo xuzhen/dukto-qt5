@@ -54,6 +54,9 @@ Rectangle {
          function onGotoMessagePage() {
              duktoOverlay.state = "message";
          }
+         function onGotoProfilePage() {
+             duktoOverlay.state = "profile";
+         }
          function onHideAllOverlays() {
              duktoOverlay.state = "";
          }
