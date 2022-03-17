@@ -64,6 +64,7 @@ Flickable {
             anchors.left: name.right
             anchors.leftMargin: 10
             anchors.bottom: name.bottom
+            anchors.bottomMargin: 1
             font.pixelSize: 32
             text: guiBehind.version()
             color: "#555555"
