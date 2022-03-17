@@ -19,10 +19,11 @@
 import QtQuick 2.3
 
 Flickable {
+    property var lastItem: (guiBehind.isDesktopApp() ? labelDrop : buttonSendFolder)
     id: sendPage
-    interactive: (labelDrop.y + labelDrop.height + 20) > height
+    interactive: (lastItem.y + lastItem.height + 20) > height
     flickableDirection: Flickable.VerticalFlick
-    contentHeight: (labelDrop.y + labelDrop.height + 20)
+    contentHeight: (lastItem.y + lastItem.height + 20)
     boundsBehavior: Flickable.StopAtBounds
 
     signal back()
@@ -214,9 +215,10 @@ Flickable {
             label: "Send a folder"
             onClicked: guiBehind.sendFolder()
         }
-    /*
+
         ButtonDark {
             id: buttonSendScreen
+            visible: guiBehind.isDesktopApp()
             anchors.top: buttonSendFolder.bottom
             anchors.topMargin: 15
             anchors.left: localBuddy.left
@@ -225,13 +227,13 @@ Flickable {
             label: "Send a screenshot"
             onClicked: guiBehind.sendScreen()
         }
-    */
+
         SText {
             id: labelDrop
             visible: guiBehind.isDesktopApp()
             anchors.left: localBuddy.left
             anchors.right: localBuddy.right
-            anchors.top: buttonSendFolder.bottom
+            anchors.top: buttonSendScreen.bottom
             anchors.topMargin: 20
             wrapMode: Text.Wrap
             font.pixelSize: 14
