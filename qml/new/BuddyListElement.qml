@@ -79,12 +79,14 @@ Flipable {
                Image {
                    id: buddyGenericImage
                    anchors.fill: parent
+                   visible: buddyAvatarImage.status !== Image.Ready
                }
                Image {
                    id: buddyAvatarImage
                    anchors.fill: parent
                    smooth: true
                    cache: false
+                   visible: status === Image.Ready
                }
            }
 
