@@ -229,7 +229,7 @@ if(ANDROID AND QT_MAJOR_VERSION EQUAL 5)
         DEPENDS "${PROJECT_NAME}"
         COMMENT "Preparing APK directory"
     )
-    add_custom_target("${PROJECT_NAME}_apkconf" ALL
+    add_custom_target("${PROJECT_NAME}_apkconf"
         COMMAND "${QT_BINARY_ROOT}/qmake"
             "${CMAKE_CURRENT_SOURCE_DIR}/dukto.pro"
             "-spec" "android-clang"
