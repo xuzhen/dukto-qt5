@@ -75,7 +75,9 @@ void BuddyListItemModel::addBuddy(const QString &ip, qint16 port, const QString 
         it = new QStandardItem();
     it->setData(ip, BuddyListItemModel::Ip);
     it->setData(port, BuddyListItemModel::Port);
-    it->setData(false, BuddyListItemModel::ShowBack);
+    if (add) {
+        it->setData(false, BuddyListItemModel::ShowBack);
+    }
 
     // Set (or update) data
     it->setData(username, BuddyListItemModel::Username);
