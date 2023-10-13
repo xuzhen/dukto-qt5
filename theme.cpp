@@ -30,8 +30,12 @@ Theme::Theme(QObject *parent) :
 
 void Theme::setThemeColor(const QString &color)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    QColor c = QColor::fromString(color);
+#else
     QColor c;
     c.setNamedColor(color);
+#endif
     c.setRed(qMin(c.red() + 40, 255));
     c.setGreen(qMin(c.green() + 40, 255));
     c.setBlue(qMin(c.blue() + 40, 255));
@@ -44,24 +48,36 @@ void Theme::setThemeColor(const QString &color)
 
 float Theme::getHue(const QString &color) {
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    QColor c = QColor::fromString(color);
+#else
     QColor c;
     c.setNamedColor(color);
+#endif
     QColor converted = c.toHsv();
     return converted.hsvHueF();
 }
 
 float Theme::getSaturation(const QString &color) {
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    QColor c = QColor::fromString(color);
+#else
     QColor c;
     c.setNamedColor(color);
+#endif
     QColor converted = c.toHsv();
     return converted.hsvSaturationF();
 }
 
 float Theme::getLightness(const QString &color) {
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    QColor c = QColor::fromString(color);
+#else
     QColor c;
     c.setNamedColor(color);
+#endif
     QColor converted = c.toHsv();
     return converted.valueF();
 }

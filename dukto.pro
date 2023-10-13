@@ -1,4 +1,4 @@
-QT += core network qml quickwidgets
+QT += core gui network qml quickwidgets
 linux:!android:QT += dbus
 CONFIG += c++11
 
