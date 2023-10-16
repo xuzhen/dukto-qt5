@@ -26,6 +26,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QNetworkInterface>
+#include <QNetworkProxy>
 #include <QTimer>
 
 #include "network/messenger.h"
@@ -46,6 +47,7 @@ enum MSG_TYPE {
 DuktoProtocol::DuktoProtocol(QObject *parent)
     : QObject(parent), mLocalTcpPort(DEFAULT_TCP_PORT)
 {
+    QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::NoProxy));
 }
 
 DuktoProtocol::~DuktoProtocol()
