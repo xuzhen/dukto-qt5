@@ -4,6 +4,9 @@ Dukto is an easy file transfer tool for LAN. It was created by Emanuele Colombo,
 
 Now it supports Windows, Linux, MacOS and Android.
 
+## Warning
+Dukto transfers files and text without encryption and is only designed for use in trusted network environments.
+
 ### Prebuilt Packages
 
 #### Windows
