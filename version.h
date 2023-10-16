@@ -3,10 +3,10 @@
 
 #define VERSION_MAJOR 6
 #define VERSION_MINOR 1
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 #if 0   // Next line will be read by dukto.pro, DON'T REMOVE
-VERSION=6.1.0
+VERSION=6.1.1
 #endif
 
 #define ___xstr(s) ___str(s)
