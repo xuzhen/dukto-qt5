@@ -30,8 +30,8 @@ DEFINE_GUID(IID_ITaskbarList3,0xea1afb91,0x9e28,0x4b86,0x90,0xE9,0x9e,0x9f,0x8a,
 #define MSGFLT_ALLOW 1
 #endif
 
-typedef BOOL (*ChangeWindowMessageFilterExFunc)(HWND,UINT,DWORD,PVOID); // Win7+
-typedef BOOL (*ChangeWindowMessageFilterFunc)(UINT,DWORD); // WinVista+
+typedef BOOL (WINAPI *ChangeWindowMessageFilterExFunc)(HWND,UINT,DWORD,PVOID); // Win7+
+typedef BOOL (WINAPI *ChangeWindowMessageFilterFunc)(UINT,DWORD); // WinVista+
 
 // Constructor: variabiles initialization
 EcWin7::EcWin7(QWindow *window)
