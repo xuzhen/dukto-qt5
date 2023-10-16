@@ -137,10 +137,17 @@ android {
         for (segment, $$list($$member(segments, 1, -1))) {
             verCode = "$${verCode}$$format_number($$segment, width=2 zeropad)"
         }
-        equals(ANDROID_ABIS, arm64-v8a): abiCode = 1
-        else: equals(ANDROID_ABIS, armeabi-v7a): abiCode = 0
-        else: abiCode = 2
-        return ($$first(segments)$${verCode}$${ANDROID_MIN_SDK_VERSION}$${abiCode})
+        abiCode = 0
+        arch = $$ANDROID_ABIS
+        isEmpty(arch): arch = $$ANDROID_TARGET_ARCH
+        for (abi, $$list($$split(arch, " "))) {
+            equals(abi, armeabi-v7a): abiCode = $$num_add($$abiCode, 1)
+            else: equals(abi, arm64-v8a): abiCode = $$num_add($$abiCode, 2)
+            else: equals(abi, x86_64): abiCode = $$num_add($$abiCode, 4)
+            else: equals(abi, x86): abiCode = $$num_add($$abiCode, 8)
+            else: error("Unknown ABI: $$abi")
+        }
+        return ($$first(segments)$${verCode}$${ANDROID_MIN_SDK_VERSION}$$format_number($$abiCode, width=2 zeropad))
     }
     ANDROID_VERSION_CODE = $$androidVersionCode($$VERSION)
 
