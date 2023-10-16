@@ -21,7 +21,6 @@
 #include <QCommandLineParser>
 #include "systemtray.h"
 
-#include "settings.h"
 #include "guibehind.h"
 #include "duktowindow.h"
 

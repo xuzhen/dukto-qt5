@@ -18,7 +18,6 @@
 
 #include "duktowindow.h"
 #include "guibehind.h"
-#include "platform.h"
 #include "settings.h"
 
 #ifdef Q_OS_WIN

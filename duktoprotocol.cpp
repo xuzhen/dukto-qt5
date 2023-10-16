@@ -31,11 +31,6 @@
 #include "network/messenger.h"
 #include "network/receiver.h"
 #include "network/sender.h"
-#include "platform.h"
-
-#ifdef Q_OS_ANDROID
-#include "androidutils.h"
-#endif
 
 #define DEFAULT_UDP_PORT 4644
 #define DEFAULT_TCP_PORT 4644
