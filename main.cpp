@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
     tray.show();
 #else
     gb.setViewer(&viewer, nullptr);
-    viewer.showMaximized();
 #endif
 
     return app.exec();

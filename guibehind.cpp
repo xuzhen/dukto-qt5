@@ -147,7 +147,11 @@ void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
 
     // Load GUI
     view->setSource(QUrl("qrc:/qml/dukto/Dukto.qml"));
+#ifndef MOBILE_APP
     view->restoreGeometry(gSettings->windowGeometry());
+#else
+    view->showMaximized();
+#endif
 
     if (tray != nullptr) {
         connect(&mDuktoProtocol, &DuktoProtocol::receiveTextCompleted, tray, &SystemTray::received_text);

@@ -41,12 +41,17 @@ DuktoWindow::DuktoWindow(GuiBehind *gb, QWidget *parent) :
     QQuickWidget(parent), mGuiBehind(gb)
 {
     // Configure window
+#ifndef MOBILE_APP
     setAcceptDrops(true);
     setWindowTitle("Dukto");
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint | Qt::WindowMinimizeButtonHint);
     setMaximumWidth(350);
     setMinimumSize(350, 500);
     setWindowIcon(QIcon(":/dukto.png"));
+#else
+    // workaround Qt 5 window size bug
+    setMinimumSize(1, 1);
+#endif
     setResizeMode(QQuickWidget::SizeRootObjectToView);
     connect(engine(), &QQmlEngine::quit, this, &DuktoWindow::close);
 #ifdef Q_OS_MAC
@@ -160,6 +165,7 @@ void DuktoWindow::dropEvent(QDropEvent *event)
 
 void DuktoWindow::closeEvent(QCloseEvent *event)
 {
+#ifndef MOBILE_APP
     if (isVisible() && gSettings->closeToTrayEnabled()) {
         event->ignore();
         hide();
@@ -167,6 +173,9 @@ void DuktoWindow::closeEvent(QCloseEvent *event)
         gSettings->saveWindowGeometry(saveGeometry());
         event->accept();
     }
+#else
+    event->accept();
+#endif
 }
 
 void DuktoWindow::showEvent(QShowEvent *event) {
