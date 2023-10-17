@@ -57,17 +57,20 @@ DuktoProtocol::~DuktoProtocol()
     delete mTcpServer;
 }
 
-bool DuktoProtocol::setupUdpServer(quint16 port)
+bool DuktoProtocol::setupUdpServer(quint16 port, QString &error)
 {
     if (mMessenger == nullptr) {
         mMessenger = new Messenger(DEFAULT_UDP_PORT, this);
         connect(mMessenger, &Messenger::buddyFound, this, &DuktoProtocol::peerListAdded, Qt::QueuedConnection);
         connect(mMessenger, &Messenger::buddyGone, this, &DuktoProtocol::peerListRemoved, Qt::QueuedConnection);
     }
-    return mMessenger->start(port);
+    if (mMessenger->start(port, error) == false) {
+        return false;
+    }
+    return true;
 }
 
-bool DuktoProtocol::setupTcpServer(quint16 port)
+bool DuktoProtocol::setupTcpServer(quint16 port, QString &error)
 {
     if (mTcpServer == nullptr) {
         mTcpServer = new QTcpServer(this);
@@ -77,6 +80,13 @@ bool DuktoProtocol::setupTcpServer(quint16 port)
         mTcpServer->close();
     }
     if (mTcpServer->isListening() == false && mTcpServer->listen(QHostAddress::AnyIPv4, mLocalTcpPort) == false) {
+        switch (mTcpServer->serverError()) {
+            case QAbstractSocket::AddressInUseError:
+                error = QStringLiteral("The TCP port %1 has been occupied by another application. Please quit that application and try again.").arg(QString::number(port));
+                break;
+            default:
+                error = QStringLiteral("Can not use TCP port %1. %2").arg(QString::number(port), mTcpServer->errorString());
+        }
         return false;
     }
     connect(mTcpServer, &QTcpServer::newConnection, this, &DuktoProtocol::newIncomingConnection, Qt::UniqueConnection);

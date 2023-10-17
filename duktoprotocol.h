@@ -41,8 +41,8 @@ class DuktoProtocol : public QObject
 public:
     DuktoProtocol(QObject *parent = nullptr);
     virtual ~DuktoProtocol();
-    bool setupUdpServer(quint16 port);
-    bool setupTcpServer(quint16 port);
+    bool setupUdpServer(quint16 port, QString &error);
+    bool setupTcpServer(quint16 port, QString &error);
     void closeServers();
     void greeting();
     void sendFile(const QString &ipDest, qint16 port, const QStringList &files);

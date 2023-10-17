@@ -1003,14 +1003,15 @@ void GuiBehind::initialize() {
         return;
 #endif
     }
-    if (mDuktoProtocol.setupUdpServer(NETWORK_PORT) == false) {
+    QString error;
+    if (mDuktoProtocol.setupUdpServer(NETWORK_PORT, error) == false) {
         mDuktoProtocol.closeServers();
-        setInitError(QStringLiteral("The UDP port %1 has been used by another application. Please quit that application and try again.").arg(QString::number(NETWORK_PORT)));
+        setInitError(error);
         return;
     }
-    if (mDuktoProtocol.setupTcpServer(NETWORK_PORT) == false) {
+    if (mDuktoProtocol.setupTcpServer(NETWORK_PORT, error) == false) {
         mDuktoProtocol.closeServers();
-        setInitError(QStringLiteral("The TCP port %1 has been used by another application. Please quit that application and try again.").arg(QString::number(NETWORK_PORT)));
+        setInitError(error);
         return;
     }
     setInitError(QString(""));

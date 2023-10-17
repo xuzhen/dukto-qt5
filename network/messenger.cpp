@@ -22,7 +22,7 @@ Messenger::~Messenger() {
 }
 
 
-bool Messenger::start(quint16 listenPort) {
+bool Messenger::start(quint16 listenPort, QString &error) {
     if (socket->state() == QUdpSocket::BoundState) {
         if (listenPort == localPort) {
             return true;
@@ -43,7 +43,17 @@ bool Messenger::start(quint16 listenPort) {
     }
 #endif
 
-    return socket->bind(QHostAddress::AnyIPv4, listenPort);
+    if (socket->bind(QHostAddress::AnyIPv4, listenPort) == false) {
+        switch (socket->error()) {
+            case QAbstractSocket::AddressInUseError:
+                error = QStringLiteral("The UDP port %1 has been occupied by another application. Please quit that application and try again.").arg(QString::number(listenPort));
+                break;
+            default:
+                error = QStringLiteral("Can not use UDP port %1. %2").arg(QString::number(listenPort), socket->errorString());
+        }
+        return false;
+    }
+    return true;
 }
 
 void Messenger::stop() {

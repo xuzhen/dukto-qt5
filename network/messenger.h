@@ -22,7 +22,7 @@ public:
     explicit Messenger(quint16 defaultPort, QObject *parent = nullptr);
     ~Messenger();
 
-    bool start(quint16 listenPort);
+    bool start(quint16 listenPort, QString &error);
     void stop();
     void sayHello();
     void sayHello(const QHostAddress &target, quint16 port);
