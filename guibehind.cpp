@@ -149,9 +149,11 @@ void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
     view->setSource(QUrl("qrc:/qml/dukto/Dukto.qml"));
     view->restoreGeometry(gSettings->windowGeometry());
 
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveTextCompleted, tray, &SystemTray::received_text);
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveFileCompleted, tray, &SystemTray::received_file);
-    connect(&mDuktoProtocol, &DuktoProtocol::receiveDirCompleted, tray, &SystemTray::received_folder);
+    if (tray != nullptr) {
+        connect(&mDuktoProtocol, &DuktoProtocol::receiveTextCompleted, tray, &SystemTray::received_text);
+        connect(&mDuktoProtocol, &DuktoProtocol::receiveFileCompleted, tray, &SystemTray::received_file);
+        connect(&mDuktoProtocol, &DuktoProtocol::receiveDirCompleted, tray, &SystemTray::received_folder);
+    }
 }
 
 // Add the new buddy to the buddy list

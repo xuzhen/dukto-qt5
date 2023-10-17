@@ -19,10 +19,13 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
-#include "systemtray.h"
 
 #include "guibehind.h"
 #include "duktowindow.h"
+
+#ifndef MOBILE_APP
+#include "systemtray.h"
+#endif
 
 #ifdef SINGLE_APP
 #include <singleapplication.h>
@@ -79,15 +82,15 @@ int main(int argc, char *argv[])
     QObject::connect(&app, &SingleApplication::receivedMessage, &viewer, &DuktoWindow::activateWindow);
 #endif
 
-    SystemTray tray(viewer);
-
-    gb.setViewer(&viewer, &tray);
 #ifndef MOBILE_APP
+    SystemTray tray(viewer);
+    gb.setViewer(&viewer, &tray);
     viewer.setVisible(!parser.isSet(hideOption));
+    tray.show();
 #else
+    gb.setViewer(&viewer, nullptr);
     viewer.showMaximized();
 #endif
-    tray.show();
 
     return app.exec();
 }
