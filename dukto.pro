@@ -1,6 +1,11 @@
 QT += core gui network qml quickwidgets
 linux:!android:QT += dbus
-CONFIG += c++11
+
+greaterThan(QT_MAJOR_VERSION, 5) {
+    CONFIG += c++17
+} else {
+    CONFIG += c++11
+}
 
 #============Compiling Options=============
 
@@ -129,7 +134,11 @@ android {
     lessThan(QT_MAJOR_VERSION, 6): QT += androidextras
     TARGET = Dukto
 
-    ANDROID_MIN_SDK_VERSION = 21
+    lessThan(QT_MAJOR_VERSION, 6) {
+        ANDROID_MIN_SDK_VERSION = 21
+    } else {
+        ANDROID_MIN_SDK_VERSION = 26
+    }
 
     ANDROID_VERSION_NAME = $$VERSION
     defineReplace(androidVersionCode) {

@@ -206,52 +206,114 @@ If (APPLE)
     target_link_options(${PROJECT_NAME} PRIVATE "${CORE_SERVICES}/CoreServices.tbd")
 endif()
 
-if(ANDROID AND QT_MAJOR_VERSION EQUAL 5)
-    # find the Android SDK
-    set(ANDROID_SDK_ROOT $ENV{ANDROID_SDK_ROOT})
-    if(NOT ANDROID_SDK_ROOT)
-        message(FATAL_ERROR "You need to set the ANDROID_SDK_ROOT environment variable to your Android SDK directory")
+if(ANDROID)
+    if(QT_MAJOR_VERSION EQUAL 5)
+        # find the Android SDK
+        set(ANDROID_SDK_ROOT $ENV{ANDROID_SDK_ROOT})
+        if(NOT ANDROID_SDK_ROOT)
+            message(FATAL_ERROR "You need to set the ANDROID_SDK_ROOT environment variable to your Android SDK directory")
+        endif()
+        message(STATUS "Android SDK: ${ANDROID_SDK_ROOT}")
+    
+        # find the Android NDK
+        set(ANDROID_NDK_ROOT $ENV{ANDROID_NDK_ROOT})
+        if(NOT ANDROID_NDK_ROOT)
+            message(FATAL_ERROR "You need to set the ANDROID_NDK_ROOT environment variable to your Android NDK directory")
+        endif()
+        message(STATUS "Android NDK: ${ANDROID_NDK_ROOT}")
+    
+        get_filename_component(QT_BINARY_ROOT "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
+    
+        add_custom_target("${PROJECT_NAME}_apkdir"
+            COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/apk"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/apk"
+            DEPENDS "${PROJECT_NAME}"
+            COMMENT "Preparing APK directory"
+        )
+        add_custom_target("${PROJECT_NAME}_apkconf"
+            COMMAND "${QT_BINARY_ROOT}/qmake"
+                "${CMAKE_CURRENT_SOURCE_DIR}/dukto.pro"
+                "-spec" "android-clang"
+                "CONFIG+=qtquickcompiler"
+                "ANDROID_ABIS=${ANDROID_ABI}"
+            DEPENDS "${PROJECT_NAME}_apkdir"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/apk"
+            COMMENT "Generating APK configuration"
+        )
+        add_custom_target(apk ALL
+            COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}"
+            COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/libdukto.so" "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}/libDukto_${ANDROID_ABI}.so"
+            COMMAND "${QT_BINARY_ROOT}/androiddeployqt"
+                --output "${CMAKE_CURRENT_BINARY_DIR}/apk"
+                --input android-Dukto-deployment-settings.json
+                --gradle
+            DEPENDS "${PROJECT_NAME}_apkconf"
+            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/apk"
+            COMMENT "Generating APK"
+        )
+    elseif(QT_MAJOR_VERSION EQUAL 6)
+        if(Qt6Core_VERSION VERSION_GREATER_EQUAL "6.6.0")
+            qt6_policy(SET QTP0002 NEW)
+        endif()
+        # get version
+        file(READ "${CMAKE_CURRENT_SOURCE_DIR}/version.h" ver)
+        string(REGEX MATCH "#define VERSION_MAJOR ([0-9]+)" _ ${ver})
+        set(ver_major ${CMAKE_MATCH_1})
+        string(REGEX MATCH "#define VERSION_MINOR ([0-9]+)" _ ${ver})
+        set(ver_minor ${CMAKE_MATCH_1})
+        string(REGEX MATCH "#define VERSION_PATCH ([0-9]+)" _ ${ver})
+        set(ver_patch ${CMAKE_MATCH_1})
+        # get target abis
+        if(QT_ANDROID_BUILD_ALL_ABIS)
+            set(target_abis ${QT_DEFAULT_ANDROID_ABIS})
+        else()
+            set(target_abis ${QT_ANDROID_ABIS})
+        endif()
+        # calculate abi code
+        set(abi_code 0)
+        foreach(abi IN ITEMS ${target_abis})
+            if(abi STREQUAL "armeabi-v7a")
+                math(EXPR abi_code "${abi_code} | 1")
+            elseif(abi STREQUAL "arm64-v8a")
+                math(EXPR abi_code "${abi_code} | 2")
+            elseif(abi STREQUAL "x86_64")
+                math(EXPR abi_code "${abi_code} | 4")
+            elseif(abi STREQUAL "x86")
+                math(EXPR abi_code "${abi_code} | 8")
+            else()
+                message(FATAL_ERROR "Unknown ABI: ${abi}")
+            endif()
+        endforeach()
+        # calculate version code
+        set(ver_code "${ver_major}")
+        string(LENGTH "${ver_minor}" len)
+        if(len EQUAL 1)
+            set(ver_code "${ver_code}0${ver_minor}")
+        else()
+            set(ver_code "${ver_code}${ver_minor}")
+        endif()
+        string(LENGTH "${ver_patch}" len)
+        if(len EQUAL 1)
+            set(ver_code "${ver_code}0${ver_patch}")
+        else()
+            set(ver_code "${ver_code}${ver_patch}")
+        endif()
+        string(LENGTH "${abi_code}" len)
+        if(len EQUAL 1)
+            set(ver_code "${ver_code}260${abi_code}")
+        else()
+            set(ver_code "${ver_code}26${abi_code}")
+        endif()
+    
+        set_target_properties(dukto PROPERTIES
+            QT_ANDROID_MIN_SDK_VERSION 26
+            QT_ANDROID_VERSION_NAME "${ver_major}.${ver_minor}.${ver_patch}"
+            QT_ANDROID_VERSION_CODE "${ver_code}"
+            QT_ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android/qt6"
+        )
     endif()
-    message(STATUS "Android SDK: ${ANDROID_SDK_ROOT}")
-
-    # find the Android NDK
-    set(ANDROID_NDK_ROOT $ENV{ANDROID_NDK_ROOT})
-    if(NOT ANDROID_NDK_ROOT)
-        message(FATAL_ERROR "You need to set the ANDROID_NDK_ROOT environment variable to your Android NDK directory")
-    endif()
-    message(STATUS "Android NDK: ${ANDROID_NDK_ROOT}")
-
-    get_filename_component(QT_BINARY_ROOT "${Qt5Core_DIR}/../../../bin" ABSOLUTE)
-
-    add_custom_target("${PROJECT_NAME}_apkdir"
-        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/apk"
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/apk"
-        DEPENDS "${PROJECT_NAME}"
-        COMMENT "Preparing APK directory"
-    )
-    add_custom_target("${PROJECT_NAME}_apkconf"
-        COMMAND "${QT_BINARY_ROOT}/qmake"
-            "${CMAKE_CURRENT_SOURCE_DIR}/dukto.pro"
-            "-spec" "android-clang"
-            "CONFIG+=qtquickcompiler"
-            "ANDROID_ABIS=${ANDROID_ABI}"
-        DEPENDS "${PROJECT_NAME}_apkdir"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/apk"
-        COMMENT "Generating APK configuration"
-    )
-    add_custom_target(apk ALL
-        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}"
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}"
-        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/libdukto.so" "${CMAKE_CURRENT_BINARY_DIR}/apk/libs/${ANDROID_ABI}/libDukto_${ANDROID_ABI}.so"
-        COMMAND "${QT_BINARY_ROOT}/androiddeployqt"
-            --output "${CMAKE_CURRENT_BINARY_DIR}/apk"
-            --input android-Dukto-deployment-settings.json
-            --gradle
-        DEPENDS "${PROJECT_NAME}_apkconf"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/apk"
-        COMMENT "Generating APK"
-    )
-endif()
+endif(ANDROID)
 
 if(UNIX AND NOT APPLE AND NOT ANDROID)
     install(TARGETS ${PROJECT_NAME}
