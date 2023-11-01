@@ -60,8 +60,9 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
         AllowSetForegroundWindow(static_cast<DWORD>(app.primaryPid()));
 #endif
-        app.sendMessage(QByteArray("A"));
-        return 0;
+        if (app.sendMessage(QByteArray("A"))) {
+            return 0;
+        }
     }
 #endif
 
