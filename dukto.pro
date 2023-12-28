@@ -140,6 +140,13 @@ android {
         ANDROID_MIN_SDK_VERSION = 26
     }
 
+    lessThan(QT_MAJOR_VERSION, 6) {
+        ANDROID_ABIS=$$replace(ANDROID_ABIS, arm-linux-android-elf-32bit, armeabi-v7a)
+        ANDROID_ABIS=$$replace(ANDROID_ABIS, arm-linux-android-elf-64bit, arm64-v8a)
+        ANDROID_ABIS=$$replace(ANDROID_ABIS, x86-linux-android-elf-32bit, x86)
+        ANDROID_ABIS=$$replace(ANDROID_ABIS, x86-linux-android-elf-64bit, x86_64)
+    }
+
     ANDROID_VERSION_NAME = $$VERSION
     defineReplace(androidVersionCode) {
         segments = $$split(1, ".")
