@@ -23,6 +23,10 @@ Direct links: [X64](https://aka.ms/vs/17/release/vc_redist.x64.exe) or [X86](htt
 #### Android
 APKs can be downloaded from [the releases page](https://github.com/xuzhen/dukto-qt5/releases)
 
+The `dukto_*_qt6.apk` supports Android 8.0 (Oreo) and later.
+
+The `dukto_*_qt5.apk` supports Android 5.0 (Lollipop) and later.
+
 #### Ubuntu and derivatives:
 Use [this PPA](https://launchpad.net/~xuzhen666/+archive/ubuntu/dukto) 
 
