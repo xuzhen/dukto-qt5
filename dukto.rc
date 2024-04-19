@@ -12,7 +12,7 @@ IDI_ICON1               ICON    DISCARDABLE     "dukto.ico"
 #define VER_PRODUCTVERSION_STR      VERSION_TEXT
 
 #define VER_FILEDESCRIPTION_STR     "A simple, fast and multi-platform file transfer tool for LAN users"
-#define VER_LEGALCOPYRIGHT_STR      "Copyright © 2023 Xu Zhen"
+#define VER_LEGALCOPYRIGHT_STR      "Copyright © 2024 Xu Zhen"
 #define VER_LEGALTRADEMARKS1_STR    "All Rights Reserved"
 #define VER_ORIGINALFILENAME_STR    "dukto.exe"
 #define VER_PRODUCTNAME_STR         SOFTWARE_NAME
