@@ -19,6 +19,10 @@ If you can not open the 7z files, visit https://7-zip.org/ and install 7-zip
 If you get `The program can't start because MSVCP140.dll is missing from your computer. Try reinstalling the program to fix this problem` error , download and install the Visual C++ Redistributable packages for VS2015-2022 from [Microsoft](https://learn.microsoft.com/en-US/cpp/windows/latest-supported-vc-redist#visual-studio-2015-2017-2019-and-2022). 
 Direct links: [X64](https://aka.ms/vs/17/release/vc_redist.x64.exe) or [X86](https://aka.ms/vs/17/release/vc_redist.x86.exe)
 
+#### macOS
+The universal app for macOS can be downloaded from [the releases page](https://github.com/xuzhen/dukto-qt5/releases)
+
+Supports macOS 11+
 
 #### Android
 APKs can be downloaded from [the releases page](https://github.com/xuzhen/dukto-qt5/releases)
