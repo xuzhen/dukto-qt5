@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.7.0 FATAL_ERROR)
+If (APPLE)
+    set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
+endif()
 project(dukto)
 
 #FIXME: updater no longer works
@@ -198,8 +201,8 @@ if(WIN32)
 endif()
 
 If (APPLE)
-    SET( MACOSX_BUNDLE_ICON_FILE dukto.icns )
-    SET_SOURCE_FILES_PROPERTIES( "dukto.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources )
+    set(MACOSX_BUNDLE_ICON_FILE dukto.icns)
+    set_source_files_properties("dukto.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     target_sources(${PROJECT_NAME} PRIVATE ${MACOSX_BUNDLE_ICON_FILE})
     set_property(TARGET ${PROJECT_NAME} PROPERTY MACOSX_BUNDLE 1)
     find_library(CORE_SERVICES CoreServices REQUIRED)

@@ -128,7 +128,10 @@ win32 {
     SOURCES += ecwin7.cpp
 }
 
-mac:ICON = dukto.icns
+mac {
+    ICON = dukto.icns
+    QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+}
 
 android {
     lessThan(QT_MAJOR_VERSION, 6): QT += androidextras
