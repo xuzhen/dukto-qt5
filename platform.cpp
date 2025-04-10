@@ -25,6 +25,7 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 #include <QImage>
+#include <QProcessEnvironment>
 #include "settings.h"
 
 #if defined(Q_OS_MAC)
@@ -69,10 +70,10 @@ QString Platform::getSystemUsername()
     username = "User";
 #else
     // Looking for the username
-    QString uname(getenv("USERNAME"));
+    QString uname(env("USERNAME"));
     if (uname.isEmpty())
     {
-        uname = getenv("USER");
+        uname = env("USER");
         if (uname.isEmpty())
             uname = "Unknown";
     }
@@ -136,15 +137,15 @@ QString Platform::getAvatarPath()
     // default avatar
 #if defined(Q_OS_WIN)
     QString username = getSystemUsername().replace("\\", "+");
-    QString path = QString(getenv("LOCALAPPDATA")) + "\\Temp\\" + username + ".bmp";
+    QString path = env("LOCALAPPDATA") + "\\Temp\\" + username + ".bmp";
     if (!QFile::exists(path))
         path = getWinTempAvatarPath();
     if (!QFile::exists(path))
-        path = QString(getenv("PROGRAMDATA")) + "\\Microsoft\\User Account Pictures\\Guest.bmp";
+        path = env("PROGRAMDATA") + "\\Microsoft\\User Account Pictures\\Guest.bmp";
     if (!QFile::exists(path))
-        path = QString(getenv("ALLUSERSPROFILE")) + "\\" + QDir(getenv("APPDATA")).dirName() + "\\Microsoft\\User Account Pictures\\" + username + ".bmp";
+        path = env("ALLUSERSPROFILE") + "\\" + QDir(env("APPDATA")).dirName() + "\\Microsoft\\User Account Pictures\\" + username + ".bmp";
     if (!QFile::exists(path))
-        path = QString(getenv("ALLUSERSPROFILE")) + "\\" + QDir(getenv("APPDATA")).dirName() + "\\Microsoft\\User Account Pictures\\Guest.bmp";
+        path = env("ALLUSERSPROFILE") + "\\" + QDir(env("APPDATA")).dirName() + "\\Microsoft\\User Account Pictures\\Guest.bmp";
     return path;
 #elif defined(Q_OS_MAC)
     return getMacTempAvatarPath();
@@ -162,13 +163,13 @@ QString Platform::getDefaultPath()
 {
     // For Windows it's the Desktop folder
 #if defined(Q_OS_WIN)
-    return QString(getenv("USERPROFILE")) + "\\Desktop";
+    return env("USERPROFILE") + "\\Desktop";
 #elif defined(Q_OS_MAC)
-    return QString(getenv("HOME")) + "/Desktop";
+    return env("HOME") + "/Desktop";
 #elif defined(Q_OS_ANDROID)
     return "";
 #elif defined(Q_OS_UNIX)
-    return QString(getenv("HOME"));
+    return env("HOME");
 #else
     #error "Unknown default path for this platform"
 #endif
@@ -182,7 +183,7 @@ QString Platform::getLinuxAvatarPath()
     QString path;
 
     // Gnome2 / Xfce / KDE5 check
-    path = QString::fromUtf8(getenv("HOME")) + "/.face";
+    path = env("HOME") + "/.face";
     if (QFile::exists(path)) return path;
 
     // KDE5 check
@@ -291,3 +292,8 @@ QString Platform::getWinTempAvatarPath()
 }
 
 #endif
+
+QString Platform::env(const QString &name) {
+    static const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    return env.value(name);
+}
