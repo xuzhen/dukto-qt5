@@ -20,6 +20,7 @@
 
 #include <QUdpSocket>
 #include <QNetworkInterface>
+#include <QDebug>
 
 #include "platform.h"
 #include "buddymessage.h"
