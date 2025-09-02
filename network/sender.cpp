@@ -93,7 +93,6 @@ void Sender::sendData() {
     while (socket != nullptr) {
         switch (sendStatus) {
             case PHASE_TOTAL_ELEMENTS_AND_SIZE: {
-                qint64 totalElements;
                 if (filesToSend.size() == 0) {
                     // text
                     totalElements = 1;
@@ -109,12 +108,13 @@ void Sender::sendData() {
                 return;
             }
             case PHASE_ELEMENT_NAME_AND_SIZE: {
-                QByteArray fileName;
+                QString fileName;
                 qint64 size;
                 if (filesToSend.size() == 0) {
                     // text
                     fileName = textElementName;
                     size = textToSend.size();
+                    emit itemProgress(totalElements, currentFileIndex + 1, QStringLiteral("Text snippet"));
                 } else {
                     // file / directory
                     currentFile = &(filesToSend[currentFileIndex]);
@@ -126,9 +126,11 @@ void Sender::sendData() {
                             return;
                         }
                     }
+                    emit itemProgress(totalElements, currentFileIndex + 1, fileName);
                 }
 
-                QByteArray bytes = fileName;
+                QByteArray bytes = fileName.toUtf8();
+                bytes.append('\0');
                 bytes.append(reinterpret_cast<char *>(&size), sizeof(size));
                 socket->write(bytes);
                 sendStatus = PHASE_ELEMENT_DATA;

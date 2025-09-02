@@ -40,6 +40,7 @@ public:
 signals:
     void started(qint64 totalSize);
     void progress(qint64 total, qint64 sent);
+    void itemProgress(qint64 total, qint64 current, QString name);
     void completed();
     void aborted(QString error);
 
@@ -55,6 +56,7 @@ private:
     quint16 port;
 
     QList<FileData> filesToSend;
+    qint64 totalElements = 0;
     int currentFileIndex = 0;
     FileData *currentFile = nullptr;
     QByteArray textToSend;

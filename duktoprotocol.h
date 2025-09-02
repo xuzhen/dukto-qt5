@@ -68,6 +68,7 @@ signals:
      void receiveDirCompleted(QString name, QString path);
      void receiveTextCompleted(QString text);
      void transferStatusUpdate(qint64 total, qint64 partial);
+     void transferItemUpdate(qint64 total, qint64 current, QString name);
 
 private:
     void createSender(const QString &ipDest, qint16 port);

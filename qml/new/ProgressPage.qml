@@ -30,7 +30,7 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 200
+        height: 220
 
         Rectangle {
             id: backRecangle
@@ -85,14 +85,26 @@ Rectangle {
             text: (guiBehind.currentTransferSending ? "to " : "from ") + guiBehind.currentTransferBuddy
         }
 
+        SText {
+            id: boxItem
+            anchors.left: parent.left
+            anchors.top: boxSender.bottom
+            anchors.leftMargin: 17
+            anchors.right: progressBar.right
+            anchors.topMargin: 15
+            elide: Text.ElideRight
+            font.pixelSize: 16
+            text: guiBehind.currentTransferItem
+        }
+
         Rectangle {
             id: progressBar
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.top: boxSender.bottom
+            anchors.top: boxItem.bottom
             anchors.leftMargin: 17
             anchors.rightMargin: 17
-            anchors.topMargin: 25
+            anchors.topMargin: 10
             color: theme.lighterColor
             height: 40
 

@@ -134,6 +134,7 @@ void Receiver::processData() {
                         readBuffer.append(c);
                     }
                 }
+                emit itemProgress(sessionElements, sessionElementsReceived + 1, (currentElementName == textElementName ? QStringLiteral("Text snippet") : currentElementName));
                 break;
             }
             case PHASE_ELEMENT_SIZE: {

@@ -41,6 +41,7 @@ public:
 signals:
     void started(qint64 totalSize);
     void progress(qint64 total, qint64 received);
+    void itemProgress(qint64 total, qint64 current, QString name);
     void completed();
     void aborted(QString error);
     void dirReceived(QString name, QString path);

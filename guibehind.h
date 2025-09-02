@@ -41,6 +41,7 @@ class GuiBehind : public QObject
     Q_PROPERTY(QString currentTransferBuddy READ currentTransferBuddy NOTIFY currentTransferBuddyChanged)
     Q_PROPERTY(int currentTransferProgress READ currentTransferProgress NOTIFY currentTransferProgressChanged)
     Q_PROPERTY(QString currentTransferStats READ currentTransferStats NOTIFY currentTransferStatsChanged)
+    Q_PROPERTY(QString currentTransferItem READ currentTransferItem NOTIFY currentTransferItemChanged)
     Q_PROPERTY(bool currentTransferSending READ currentTransferSending NOTIFY currentTransferSendingChanged)
     Q_PROPERTY(QString textSnippetBuddy READ textSnippetBuddy NOTIFY textSnippetBuddyChanged)
     Q_PROPERTY(QString textSnippet READ textSnippet WRITE setTextSnippet NOTIFY textSnippetChanged)
@@ -76,6 +77,8 @@ public:
     void setCurrentTransferProgress(int value);
     QString currentTransferStats();
     void setCurrentTransferStats(const QString &stats);
+    QString currentTransferItem();
+    void setCurrentTransferItem(const QString &item);
     QString textSnippetBuddy();
     void setTextSnippetBuddy(const QString &buddy);
     QString textSnippet();
@@ -119,6 +122,7 @@ signals:
     void currentTransferBuddyChanged();
     void currentTransferProgressChanged();
     void currentTransferStatsChanged();
+    void currentTransferItemChanged();
     void currentTransferSendingChanged();
     void textSnippetBuddyChanged();
     void textSnippetChanged();
@@ -154,6 +158,7 @@ public slots:
     void peerListRemoved(const Peer &peer);
     void receiveFileStart(const QString &senderIp);
     void transferStatusUpdate(qint64 total, qint64 partial);
+    void transferItemUpdate(qint64 total, qint64 current, const QString &name);
     void receiveFileComplete(const QString &name, const QString &path, qint64 size);
     void receiveDirComplete(const QString &name, const QString &path);
     void receiveTextComplete(const QString &text);
@@ -214,6 +219,7 @@ private:
     int mCurrentTransferProgress;
     QString mCurrentTransferBuddy;
     QString mCurrentTransferStats;
+    QString mCurrentTransferItem;
     bool mCurrentTransferSending;
     QString mTextSnippetBuddy;
     QString mTextSnippet;

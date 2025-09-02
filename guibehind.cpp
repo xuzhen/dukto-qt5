@@ -85,6 +85,7 @@ GuiBehind::GuiBehind() : QObject(nullptr)
     connect(&mDuktoProtocol, &DuktoProtocol::peerListAdded, this, &GuiBehind::peerListAdded);
     connect(&mDuktoProtocol, &DuktoProtocol::peerListRemoved, this, &GuiBehind::peerListRemoved);
     connect(&mDuktoProtocol, &DuktoProtocol::transferStatusUpdate, this, &GuiBehind::transferStatusUpdate);
+    connect(&mDuktoProtocol, &DuktoProtocol::transferItemUpdate, this, &GuiBehind::transferItemUpdate);
     connect(&mDuktoProtocol, &DuktoProtocol::receiveStarted, this, &GuiBehind::receiveFileStart);
     connect(&mDuktoProtocol, &DuktoProtocol::receiveAborted, this, &GuiBehind::receiveFileCancelled);
     connect(&mDuktoProtocol, &DuktoProtocol::receiveCompleted, this, &GuiBehind::receiveComplete);
@@ -241,6 +242,11 @@ void GuiBehind::transferStatusUpdate(qint64 total, qint64 partial)
 #ifdef Q_OS_WIN
     mView->showTaskbarProgress(percent);
 #endif
+}
+
+void GuiBehind::transferItemUpdate(qint64 total, qint64 current, const QString &name) {
+    const static QString textTemplate = QStringLiteral("(%1 / %2)  %3");
+    setCurrentTransferItem(textTemplate.arg(current).arg(total).arg(name));
 }
 
 void GuiBehind::receiveFileComplete(const QString &name, const QString &path, qint64 size) {
@@ -550,6 +556,7 @@ bool GuiBehind::prepareStartTransfer(QString *ip, qint16 *port)
     // Update GUI for file transfer
     setCurrentTransferSending(true);
     setCurrentTransferStats("Connecting...");
+    setCurrentTransferItem("");
     setCurrentTransferProgress(0);
 #ifdef Q_OS_WIN
     mView->showTaskbarProgress(0);
@@ -747,6 +754,19 @@ void GuiBehind::setCurrentTransferStats(const QString &stats)
     if (stats == mCurrentTransferStats) return;
     mCurrentTransferStats = stats;
     emit currentTransferStatsChanged();
+}
+
+QString GuiBehind::currentTransferItem()
+{
+    return mCurrentTransferItem;
+}
+
+void GuiBehind::setCurrentTransferItem(const QString &item)
+{
+    if (item == mCurrentTransferItem) return;
+    mCurrentTransferItem = item;
+    qDebug() << mCurrentTransferItem.toUtf8().toHex();
+    emit currentTransferItemChanged();
 }
 
 QString GuiBehind::textSnippetBuddy()

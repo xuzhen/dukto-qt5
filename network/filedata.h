@@ -36,7 +36,7 @@ public:
 
     static QList<FileData> generateList(const QStringList &paths, qint64 &totalSize, QString &error);
     qint64 getSize() const;
-    QByteArray getName() const;
+    QString getName() const;
     QString getPath() const;
     bool isDir() const;
 
@@ -49,7 +49,7 @@ public:
 
 private:
     qint64 size;
-    QByteArray name;
+    QString name;
 
 #ifdef Q_OS_ANDROID
     FileData(qint64 size, const QString &relPath, const QJniObject &fullPath);

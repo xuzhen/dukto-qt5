@@ -122,6 +122,7 @@ void DuktoProtocol::newIncomingConnection()
 
     mReceiver = new Receiver(s, mDestDir, this);
     connect(mReceiver, &Receiver::progress, this, &DuktoProtocol::transferStatusUpdate);
+    connect(mReceiver, &Receiver::itemProgress, this, &DuktoProtocol::transferItemUpdate);
     connect(mReceiver, &Receiver::dirReceived, this, &DuktoProtocol::receiveDirCompleted);
     connect(mReceiver, &Receiver::fileReceived, this, &DuktoProtocol::receiveFileCompleted);
     connect(mReceiver, &Receiver::textReceived, this, &DuktoProtocol::receiveTextCompleted);
@@ -143,6 +144,7 @@ void DuktoProtocol::newIncomingConnection()
 void DuktoProtocol::createSender(const QString &ipDest, qint16 port) {
     mSender = new Sender(ipDest, port);
     connect(mSender, &Sender::progress, this, &DuktoProtocol::transferStatusUpdate);
+    connect(mSender, &Sender::itemProgress, this, &DuktoProtocol::transferItemUpdate);
     connect(mSender, &Sender::completed, this, [this]() {
         mSender->deleteLater();
         mSender = nullptr;

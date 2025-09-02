@@ -29,7 +29,7 @@ FileData::FileData(qint64 size, const QString &relPath, const QJniObject &fullPa
 #else
 FileData::FileData(qint64 size, const QString &relPath, const QString &fullPath)
 #endif
- : size(size), name(relPath.toUtf8().append('\0')), path(fullPath) {
+ : size(size), name(relPath), path(fullPath) {
 }
 
 FileData::~FileData() {
@@ -40,7 +40,7 @@ qint64 FileData::getSize() const {
     return size;
 }
 
-QByteArray FileData::getName() const {
+QString FileData::getName() const {
     return name;
 }
 
