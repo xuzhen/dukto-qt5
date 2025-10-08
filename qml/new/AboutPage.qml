@@ -106,7 +106,7 @@ Flickable {
             font.pixelSize: 16
             lineHeight: 1.2
             scale: 1
-            text: "2009-2013 © <a href=\"https://www.msec.it/blog/dukto/\">Emanuele Colombo</a><br>2015-2015 © <a href=\"https://github.com/arthurzam/\">Arthur Zamarin</a><br>2015-2021 © <a href=\"https://github.com/maz-1/\">maz-1</a><br>2021-2024 © <a href=\"https://github.com/xuzhen/\">Xu Zhen</a>"
+            text: "2009-2013 © <a href=\"https://www.msec.it/blog/dukto/\">Emanuele Colombo</a><br>2015-2015 © <a href=\"https://github.com/arthurzam/\">Arthur Zamarin</a><br>2015-2021 © <a href=\"https://github.com/maz-1/\">maz-1</a><br>2021-2025 © <a href=\"https://github.com/xuzhen/\">Xu Zhen</a>"
             color: "#555555"
             linkColor: theme.mainColor
             Connections {
