@@ -20,7 +20,7 @@
 #include <QTcpSocket>
 #include <QTimer>
 
-QByteArray Sender::textElementName = QStringLiteral("___DUKTO___TEXT___").toUtf8().append('\0');
+QByteArray Sender::textElementName = QStringLiteral("___DUKTO___TEXT___").toUtf8();
 
 
 Sender::Sender(const QString &dest, quint16 port, QObject *parent) : QObject(parent), socket(new QTcpSocket()), dest(dest), port(port) {
