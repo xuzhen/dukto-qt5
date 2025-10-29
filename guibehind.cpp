@@ -470,21 +470,36 @@ void GuiBehind::sendScreenStage2() {
     // Restore window
     mView->setWindowState(Qt::WindowActive);
 
-    // Salvataggio screenshot in file
-    QTemporaryFile tempFile;
-    tempFile.setAutoRemove(false);
-    tempFile.open();
-    mScreenTempPath = tempFile.fileName();
-    tempFile.close();
-    screen.save(mScreenTempPath, "JPG", 95);
+    QString error;
+    if (screen.isNull()) {
+        error = QStringLiteral("Failed to take screenshot");
+    } else {
+        // Salvataggio screenshot in file
+        QTemporaryFile tempFile;
+        tempFile.setAutoRemove(false);
+        if (tempFile.open()) {
+            mScreenTempPath = tempFile.fileName();
+            tempFile.close();
+            if (screen.save(mScreenTempPath, "JPG", 95)) {
+                // Prepare file transfer
+                QString ip;
+                qint16 port;
+                if (!prepareStartTransfer(&ip, &port)) return;
 
-    // Prepare file transfer
-    QString ip;
-    qint16 port;
-    if (!prepareStartTransfer(&ip, &port)) return;
-
-    // Start screen transfer
-    mDuktoProtocol.sendScreen(ip, port, mScreenTempPath);
+                // Start screen transfer
+                mDuktoProtocol.sendScreen(ip, port, mScreenTempPath);
+                return;
+            } else {
+                tempFile.remove();
+                error = QStringLiteral("Failed to save screenshot to a temporary file");
+            }
+        } else {
+            error = tempFile.errorString();
+        }
+    }
+    setMessagePageTitle("Error");
+    setMessagePageText("Sorry, an error has occurred while sending your screenshot...\n\n" + error);
+    setMessagePageBackState("send");
 }
 
 void GuiBehind::startTransfer(const QStringList &files)
