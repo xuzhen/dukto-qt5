@@ -142,7 +142,7 @@ void Receiver::processData() {
                     // wait for more data
                     return;
                 }
-                socket->read((char*) &currentElementBytes, sizeof(qint64));
+                socket->read(reinterpret_cast<char*>(&currentElementBytes), sizeof(qint64));
                 if (currentElementBytes < -1) {
                     // invalid data;
                     terminateSession(QStringLiteral("received invalid data from %1").arg(socket->peerAddress().toString()));

@@ -61,7 +61,8 @@ void MiniWebServer::readClient()
 {
     QTcpSocket* socket = qobject_cast<QTcpSocket*>(sender());
     if (socket->canReadLine()) {
-        QStringList tokens = QString(socket->readLine()).split(QRegularExpression("[ \r\n][ \r\n]*"));
+        static const QRegularExpression re("[ \r\n][ \r\n]*");
+        QStringList tokens = QString(socket->readLine()).split(re);
         if (tokens.at(0) == "GET" && (tokens.at(1) == "/" || tokens.at(1) == "/dukto/avatar" || tokens.at(1).startsWith("/dukto/avatar?"))) {
 
             QTextStream os(socket);

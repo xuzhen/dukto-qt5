@@ -18,7 +18,10 @@
 
 #include "duktowindow.h"
 #include "guibehind.h"
+
+#ifndef MOBILE_APP
 #include "settings.h"
+#endif
 
 #ifdef Q_OS_WIN
 #include "ecwin7.h"

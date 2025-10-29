@@ -203,11 +203,11 @@ void BuddyListItemModel::updateMeElement()
     if (mMeItem == nullptr) {
         return;
     }
-    static int seq = 0;
     QString path = Platform::getAvatarPath();
     if (path.isEmpty()) {
         mMeItem->setData("", BuddyListItemModel::Avatar);
     } else {
+        static int seq = 0;
         QUrl url = QUrl::fromLocalFile(path);
         // force update with a different url each time
         url.setQuery("m=" + QString::number(++seq));

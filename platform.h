@@ -42,7 +42,9 @@ private:
 #elif defined(Q_OS_WIN)
     static QString getWinTempAvatarPath();
 #endif
+#if !defined(Q_OS_ANDROID)
     static QString env(const QString &name);
+#endif
 };
 
 #endif // PLATFORM_H

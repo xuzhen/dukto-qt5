@@ -944,12 +944,13 @@ QString GuiBehind::buddyName()
 }
 
 QString GuiBehind::buddyAvatar() {
-    static int seq = 0;
     QString path = Platform::getAvatarPath();
     if (path.isEmpty()) {
         return mBuddiesList.getMeGenericAvatar();
     } else {
+        static int seq = 0;
         QUrl url = QUrl::fromLocalFile(path);
+        // force update with a different url each time
         url.setQuery("a=" + QString::number(seq++));
         return url.toString(QUrl::FullyEncoded);
     }

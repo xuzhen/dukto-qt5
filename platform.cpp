@@ -240,9 +240,9 @@ QString Platform::getMacTempAvatarPath()
         if (CFArrayGetCount(foundIds) == 1) {
             CSIdentityRef userId = (CSIdentityRef) CFArrayGetValueAtIndex(foundIds, 0);
             CFDataRef data = CSIdentityGetImageData(userId);
-            qDebug() << CFDataGetLength(data);
+            //qDebug() << CFDataGetLength(data);
             qdata.resize(CFDataGetLength(data));
-            CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), (uint8*)qdata.data());
+            CFDataGetBytes(data, CFRangeMake(0, CFDataGetLength(data)), reinterpret_cast<uint8*>(qdata.data()));
         }
     }
     CFRelease(query);
@@ -293,7 +293,11 @@ QString Platform::getWinTempAvatarPath()
 
 #endif
 
+#if !defined(Q_OS_ANDROID)
+
 QString Platform::env(const QString &name) {
     static const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
     return env.value(name);
 }
+
+#endif
