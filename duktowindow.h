@@ -41,7 +41,6 @@ public slots:
 
 signals:
 #ifdef Q_OS_ANDROID
-    void cursorPositionChanged();
     void sizeChanged();
 #endif
 

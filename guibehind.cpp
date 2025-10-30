@@ -157,11 +157,6 @@ void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
     view->setWindowFlag(Qt::MaximizeUsingFullscreenGeometryHint, true);
 #endif
     view->showMaximized();
-    AndroidScreenArea::setSystemBarsMode(false);
-
-    // As of Qt 6.10.0, QScreen::orientationChanged and other signals won't be
-    // emitted after rotation between Landscape & InvertedLandscape
-    QObject::connect(view, &DuktoWindow::sizeChanged, this, &GuiBehind::updateScreenPadding);
 #endif
 
     if (tray != nullptr) {
@@ -1012,6 +1007,9 @@ void GuiBehind::updateScreenPadding() {
     if (m != mScreenPadding) {
         mScreenPadding = m;
         emit screenPaddingChanged();
+#ifdef Q_OS_ANDROID
+        AndroidTheme::setSystemBarsMode(false);
+#endif
     }
 }
 

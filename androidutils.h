@@ -162,10 +162,19 @@ class AndroidScreenArea : public AndroidUtilsBase
 public:
     AndroidScreenArea() = default;
     static QMargins getMargins();
-    static void setSystemBarsMode(bool dark);
 private:
     static QMargins getSafeAreaMargins();
     static QMargins getSystemBarsMargins();
+};
+
+/*============================================================*/
+
+class AndroidTheme : public AndroidUtilsBase
+{
+public:
+    AndroidTheme() = default;
+    static bool isNightMode();
+    static void setSystemBarsMode(bool nightMode);
 };
 
 #endif

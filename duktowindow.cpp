@@ -61,6 +61,14 @@ DuktoWindow::DuktoWindow(GuiBehind *gb, QQuickWidget *parent) :
     instance = this;
     setupDockHandler();
 #endif
+
+#ifdef Q_OS_ANDROID
+    connect(this, &DuktoWindow::statusChanged, this, [this](QQuickWidget::Status status) {
+        if (status == QQuickWidget::Ready) {
+            mGuiBehind->updateScreenPadding();
+        }
+    });
+#endif
 }
 
 DuktoWindow::~DuktoWindow() {
@@ -183,9 +191,6 @@ void DuktoWindow::closeEvent(QCloseEvent *event)
 
 void DuktoWindow::showEvent(QShowEvent *event) {
     QQuickWidget::showEvent(event);
-#ifdef Q_OS_ANDROID
-    mGuiBehind->updateScreenPadding();
-#endif
 #ifdef Q_OS_WIN
     // Taskbar integration with Win7+
     if (mWin7 == nullptr) {
@@ -195,10 +200,12 @@ void DuktoWindow::showEvent(QShowEvent *event) {
 }
 
 void DuktoWindow::resizeEvent(QResizeEvent *event) {
-#ifdef Q_OS_ANDROID
-    emit sizeChanged();
-#endif
     QQuickWidget::resizeEvent(event);
+#ifdef Q_OS_ANDROID
+    // As of Qt 6.10.0, QScreen::orientationChanged and other signals won't be
+    // emitted after rotation between Landscape & InvertedLandscape
+    mGuiBehind->updateScreenPadding();
+#endif
 }
 
 #ifdef Q_OS_MAC

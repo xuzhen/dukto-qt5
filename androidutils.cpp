@@ -726,14 +726,33 @@ QMargins AndroidScreenArea::getSystemBarsMargins() {
     return m;
 }
 
-void AndroidScreenArea::setSystemBarsMode(bool dark) {
-    auto code = [dark]() {
+bool AndroidTheme::isNightMode() {
+    bool r;
+    auto code = [&r]() {
+        QJniObject resources = getResources();
+        QJniObject conf = resources.callObjectMethod("getConfiguration", "()Landroid/content/res/Configuration;");
+        r = ((conf.getField<int>("uiMode") & 32) == 32);    // UI_MODE_NIGHT_YES
+    };
+    runOnAndroidThread(code);
+    return r;
+}
+
+void AndroidTheme::setSystemBarsMode(bool nightMode) {
+    auto code = [nightMode]() {
         QJniObject decorView = getDecorView();
         if (decorView.isValid() == false) {
             return;
         }
         int ver = AndroidEnvironment::sdkVersion();
-        if (ver >= 26 && ver < 30) {
+        if (ver >= 30) {
+            QJniObject controller = decorView.callObjectMethod("getWindowInsetsController", "()Landroid/view/WindowInsetsController;");
+            if (controller.isValid() == false) {
+                return;
+            }
+            // APPEARANCE_LIGHT_NAVIGATION_BARS = 16
+            // APPEARANCE_LIGHT_STATUS_BARS = 8
+            controller.callMethod<void>("setSystemBarsAppearance", "(II)V", static_cast<jint>(nightMode ? 0 : 24), static_cast<jint>(24));
+        } else if (ver >= 26) {
             QJniObject window = getWindow();
             QJniObject res = getResources();
             if (window.isValid() == false || res.isValid() == false) {
@@ -741,20 +760,12 @@ void AndroidScreenArea::setSystemBarsMode(bool dark) {
             }
             // R.color.white = 0x0106000b
             // R.color.darker_gray = 0x01060000
-            jint color = res.callMethod<jint>("getColor", "(ILandroid/content/res/Resources$Theme;)I", static_cast<jint>(dark ? 0x01060000 : 0x0106000b), nullptr);
+            jint color = res.callMethod<jint>("getColor", "(ILandroid/content/res/Resources$Theme;)I", static_cast<jint>(nightMode ? 0x01060000 : 0x0106000b), nullptr);
             window.callMethod<void>("setNavigationBarColor", "(I)V", color);
             window.callMethod<void>("setStatusBarColor", "(I)V", color);
             // SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR = 16
             // SYSTEM_UI_FLAG_LAYOUT_STABLE = 256
-            decorView.callMethod<void>("setSystemUiVisibility", "(I)V", static_cast<jint>(dark ? 256 : 16));
-        } else if (ver >= 30) {
-            QJniObject controller = decorView.callObjectMethod("getWindowInsetsController", "()Landroid/view/WindowInsetsController;");
-            if (controller.isValid() == false) {
-                return;
-            }
-            // APPEARANCE_LIGHT_NAVIGATION_BARS = 16
-            // APPEARANCE_LIGHT_STATUS_BARS = 8
-            controller.callMethod<void>("setSystemBarsAppearance", "(II)V", static_cast<jint>(dark ? 0 : 24), static_cast<jint>(24));
+            decorView.callMethod<void>("setSystemUiVisibility", "(I)V", static_cast<jint>(nightMode ? 256 : 16));
         }
     };
     runOnAndroidThread(code);
