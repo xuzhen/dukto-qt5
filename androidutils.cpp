@@ -91,6 +91,17 @@ QJniObject AndroidUtilsBase::getResources() {
     return getActivity().callObjectMethod("getResources", "()Landroid/content/res/Resources;");
 }
 
+QJniObject AndroidUtilsBase::getDecorView() {
+    QJniObject win = getWindow();
+    if (win.isValid()) {
+        QJniObject decorView = win.callObjectMethod("getDecorView", "()Landroid/view/View;");
+        clearExceptions();
+        return decorView;
+    } else {
+        return QJniObject();
+    }
+}
+
 void AndroidUtilsBase::runOnAndroidThread(const std::function<void()> &runnable) {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QtAndroid::runOnAndroidThreadSync(runnable);
@@ -734,7 +745,7 @@ QMargins AndroidScreenArea::getSafeAreaMargins() {
     if (AndroidEnvironment::sdkVersion() >= 28) {
         // DisplayCutout added in API level 28
         auto code = [&m]() {
-            QJniObject decorView = getWindow().callObjectMethod("getDecorView", "()Landroid/view/View;");
+            QJniObject decorView = getDecorView();
             if (decorView.isValid()) {
                 QJniObject insets = decorView.callObjectMethod("getRootWindowInsets", "()Landroid/view/WindowInsets;");
                 if (insets.isValid()) {
@@ -753,5 +764,40 @@ QMargins AndroidScreenArea::getSafeAreaMargins() {
     }
     return m;
 }
+
+void AndroidScreenArea::setSystemBarsMode(bool dark) {
+    auto code = [dark]() {
+        QJniObject decorView = getDecorView();
+        if (decorView.isValid() == false) {
+            return;
+        }
+        int ver = AndroidEnvironment::sdkVersion();
+        if (ver >= 26 && ver < 30) {
+            QJniObject window = getWindow();
+            QJniObject res = getResources();
+            if (window.isValid() == false || res.isValid() == false) {
+                return;
+            }
+            // R.color.white = 0x0106000b
+            // R.color.darker_gray = 0x01060000
+            jint color = res.callMethod<jint>("getColor", "(ILandroid/content/res/Resources$Theme;)I", static_cast<jint>(dark ? 0x01060000 : 0x0106000b), nullptr);
+            window.callMethod<void>("setNavigationBarColor", "(I)V", color);
+            window.callMethod<void>("setStatusBarColor", "(I)V", color);
+            // SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR = 16
+            // SYSTEM_UI_FLAG_LAYOUT_STABLE = 256
+            decorView.callMethod<void>("setSystemUiVisibility", "(I)V", static_cast<jint>(dark ? 256 : 16));
+        } else if (ver >= 30) {
+            QJniObject controller = decorView.callObjectMethod("getWindowInsetsController", "()Landroid/view/WindowInsetsController;");
+            if (controller.isValid() == false) {
+                return;
+            }
+            // APPEARANCE_LIGHT_NAVIGATION_BARS = 16
+            // APPEARANCE_LIGHT_STATUS_BARS = 8
+            controller.callMethod<void>("setSystemBarsAppearance", "(II)V", static_cast<jint>(dark ? 0 : 24), static_cast<jint>(24));
+        }
+    };
+    runOnAndroidThread(code);
+}
+
 
 #endif

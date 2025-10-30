@@ -37,6 +37,7 @@ protected:
     static QJniObject getActivity();
     static QJniObject getWindow();
     static QJniObject getResources();
+    static QJniObject getDecorView();
     static void runOnAndroidThread(const std::function<void()> &runnable);
 };
 
@@ -161,6 +162,7 @@ class AndroidScreenArea : public AndroidUtilsBase
 public:
     AndroidScreenArea() = default;
     static QMargins calcScreenSafeMargins();
+    static void setSystemBarsMode(bool dark);
 private:
     static Qt::ScreenOrientation getRotation();
     static int getResIdentifier(QJniObject &res, const QString &name);
