@@ -689,7 +689,7 @@ int AndroidScreenArea::getResIdentifier(QJniObject &res, const QString &name) {
 
 Qt::ScreenOrientation AndroidScreenArea::getRotation() {
     QJniObject display;
-    if (true || AndroidEnvironment::sdkVersion() < 30) {
+    if (AndroidEnvironment::sdkVersion() < 30) {
         QJniObject windowManager = getSystemService("window");
         if (windowManager.isValid()) {
             display = windowManager.callObjectMethod("getDefaultDisplay", "()Landroid/view/Display;");
