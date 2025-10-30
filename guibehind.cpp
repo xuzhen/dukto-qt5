@@ -1005,7 +1005,7 @@ QString GuiBehind::initErrorAction() {
 void GuiBehind::updateScreenPadding() {
     QMargins m;
 #ifdef Q_OS_ANDROID
-    m = AndroidScreenArea::calcScreenSafeMargins();
+    m = AndroidScreenArea::getMargins();
 #else
     m = QMargins(0, 0, 0, 0);
 #endif

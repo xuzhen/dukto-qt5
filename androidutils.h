@@ -161,14 +161,11 @@ class AndroidScreenArea : public AndroidUtilsBase
 {
 public:
     AndroidScreenArea() = default;
-    static QMargins calcScreenSafeMargins();
+    static QMargins getMargins();
     static void setSystemBarsMode(bool dark);
 private:
-    static Qt::ScreenOrientation getRotation();
-    static int getResIdentifier(QJniObject &res, const QString &name);
-    static int getStatusBarHeight();
-    static int getNavBarHeight();
     static QMargins getSafeAreaMargins();
+    static QMargins getSystemBarsMargins();
 };
 
 #endif

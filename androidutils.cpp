@@ -658,86 +658,15 @@ bool AndroidStorage::removeFile(const QJniObject &uri) {
 
 /*============================================================*/
 
-QMargins AndroidScreenArea::calcScreenSafeMargins() {
-    // As of Qt 6.10.0, QScreen::orientation() can not report Landscape/InvertedLandscape correctly after rotation
-    Qt::ScreenOrientations orient = getRotation();
-    QMargins m = getSafeAreaMargins();
-    if (orient == Qt::LandscapeOrientation) {
-        m.setTop(qMax(getStatusBarHeight(), m.top()));
-        m.setLeft(0);
-        m.setRight(qMax(getNavBarHeight(), m.right()));
-    } else if (orient == Qt::InvertedLandscapeOrientation) {
-        m.setTop(qMax(getStatusBarHeight(), m.top()));
-        m.setLeft(qMax(getNavBarHeight(), m.left()));
-        m.setRight(0);
-    } else {
-        m.setTop(qMax(getStatusBarHeight(), m.top()));
-        m.setBottom(qMax(getNavBarHeight(), m.bottom()));
-    }
+QMargins AndroidScreenArea::getMargins() {
+    QMargins m;
+    QMargins m1 = getSystemBarsMargins();
+    QMargins m2 = getSafeAreaMargins();
+    m.setTop(qMax(m1.top(), m2.top()));
+    m.setBottom(qMax(m1.bottom(), m2.bottom()));
+    m.setLeft(qMax(m1.left(), m2.left()));
+    m.setRight(qMax(m1.right(), m2.right()));
     return m;
-}
-
-int AndroidScreenArea::getResIdentifier(QJniObject &res, const QString &name) {
-    static const QJniObject type = QJniObject::fromString("dimen");
-    static const QJniObject package = QJniObject::fromString("android");
-    if (res.isValid()) {
-        return res.callMethod<int>("getIdentifier", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I", QJniObject::fromString(name).object<jstring>(), type.object<jstring>(), package.object<jstring>());
-    } else {
-        return -1;
-    }
-}
-
-Qt::ScreenOrientation AndroidScreenArea::getRotation() {
-    QJniObject display;
-    if (AndroidEnvironment::sdkVersion() < 30) {
-        QJniObject windowManager = getSystemService("window");
-        if (windowManager.isValid()) {
-            display = windowManager.callObjectMethod("getDefaultDisplay", "()Landroid/view/Display;");
-        }
-    } else {
-        QJniObject context = getContext();
-        display = context.callObjectMethod("getDisplay", "()Landroid/view/Display;");
-    }
-    if (display.isValid()) {
-        int rotation = display.callMethod<jint>("getRotation", "()I");
-        switch (rotation) {
-        case 0: // Surface.ROTATION_0
-            return Qt::PortraitOrientation;
-        case 1: // Surface.ROTATION_90
-            return Qt::LandscapeOrientation;
-        case 2: // Surface.ROTATION_180
-            return Qt::InvertedPortraitOrientation;
-        case 3: // Surface.ROTATION_270
-            return Qt::InvertedLandscapeOrientation;
-        }
-    }
-    return Qt::PrimaryOrientation;
-}
-
-int AndroidScreenArea::getStatusBarHeight() {
-    int r = 24;
-    auto code = [&r]() {
-        QJniObject resources = getResources();
-        int identifier = getResIdentifier(resources, "status_bar_height");
-        if (identifier > 0) {
-            r = resources.callMethod<int>("getDimensionPixelSize", "(I)I", identifier) / qApp->devicePixelRatio();
-        }
-    };
-    runOnAndroidThread(code);
-    return r;
-}
-
-int AndroidScreenArea::getNavBarHeight() {
-    int r = 48;
-    auto code = [&r]() {
-        QJniObject resources = getResources();
-        int identifier = getResIdentifier(resources, "navigation_bar_height");
-        if (identifier > 0) {
-            r = resources.callMethod<int>("getDimensionPixelSize", "(I)I", identifier) / qApp->devicePixelRatio();
-        }
-    };
-    runOnAndroidThread(code);
-    return r;
 }
 
 QMargins AndroidScreenArea::getSafeAreaMargins() {
@@ -752,16 +681,48 @@ QMargins AndroidScreenArea::getSafeAreaMargins() {
                     QJniObject displayCutout = insets.callObjectMethod("getDisplayCutout", "()Landroid/view/DisplayCutout;");
                     if (displayCutout.isValid()) {
                         qreal ratio = qApp->devicePixelRatio();
-                        m.setTop(displayCutout.callMethod<int>("getSafeInsetTop", "()I") / ratio);
-                        m.setBottom(displayCutout.callMethod<int>("getSafeInsetBottom", "()I") / ratio);
-                        m.setLeft(displayCutout.callMethod<int>("getSafeInsetLeft", "()I") / ratio);
-                        m.setRight(displayCutout.callMethod<int>("getSafeInsetRight", "()I") / ratio);
+                        m.setTop(displayCutout.callMethod<jint>("getSafeInsetTop", "()I") / ratio);
+                        m.setBottom(displayCutout.callMethod<jint>("getSafeInsetBottom", "()I") / ratio);
+                        m.setLeft(displayCutout.callMethod<jint>("getSafeInsetLeft", "()I") / ratio);
+                        m.setRight(displayCutout.callMethod<jint>("getSafeInsetRight", "()I") / ratio);
                     }
                 }
             }
         };
         runOnAndroidThread(code);
     }
+    return m;
+}
+QMargins AndroidScreenArea::getSystemBarsMargins() {
+    QMargins m(0, 0, 0, 0);
+    auto code = [&m]() {
+        QJniObject decorView = getDecorView();
+        if (decorView.isValid()) {
+            QJniObject insets = decorView.callObjectMethod("getRootWindowInsets", "()Landroid/view/WindowInsets;");
+            if (insets.isValid()) {
+                if (AndroidEnvironment::sdkVersion() >= 30) {
+                    jint captionBarType = QJniObject::callStaticMethod<jint>("android/view/WindowInsets$Type", "captionBar", "()I");
+                    jint statusBarType = QJniObject::callStaticMethod<jint>("android/view/WindowInsets$Type", "statusBars", "()I");
+                    jint navBarType = QJniObject::callStaticMethod<jint>("android/view/WindowInsets$Type", "navigationBars", "()I");
+                    insets = insets.callObjectMethod("getInsets", "(I)Landroid/graphics/Insets;", captionBarType | statusBarType | navBarType);
+                    if (insets.isValid()) {
+                        qreal ratio = qApp->devicePixelRatio();
+                        m.setTop(insets.getField<jint>("top") / ratio);
+                        m.setBottom(insets.getField<jint>("bottom") / ratio);
+                        m.setLeft(insets.getField<jint>("left") / ratio);
+                        m.setRight(insets.getField<jint>("right") / ratio);
+                    }
+                } else {
+                    qreal ratio = qApp->devicePixelRatio();
+                    m.setTop(insets.callMethod<jint>("getSystemWindowInsetTop", "()I") / ratio);
+                    m.setBottom(insets.callMethod<jint>("getSystemWindowInsetBottom", "()I") / ratio);
+                    m.setLeft(insets.callMethod<jint>("getSystemWindowInsetLeft", "()I") / ratio);
+                    m.setRight(insets.callMethod<jint>("getSystemWindowInsetRight", "()I") / ratio);
+                }
+            }
+        }
+    };
+    runOnAndroidThread(code);
     return m;
 }
 
