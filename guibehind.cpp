@@ -151,7 +151,16 @@ void GuiBehind::setViewer(DuktoWindow *view, SystemTray *tray) {
 #ifndef MOBILE_APP
     view->restoreGeometry(gSettings->windowGeometry());
 #else
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+    view->setWindowFlag(Qt::ExpandedClientAreaHint, true);
+#else
+    view->setWindowFlag(Qt::MaximizeUsingFullscreenGeometryHint, true);
+#endif
     view->showMaximized();
+
+    // As of Qt 6.10.0, QScreen::orientationChanged and other signals won't be
+    // emitted after rotation between Landscape & InvertedLandscape
+    QObject::connect(view, &DuktoWindow::sizeChanged, this, &GuiBehind::updateScreenPadding);
 #endif
 
     if (tray != nullptr) {
@@ -780,7 +789,6 @@ void GuiBehind::setCurrentTransferItem(const QString &item)
 {
     if (item == mCurrentTransferItem) return;
     mCurrentTransferItem = item;
-    qDebug() << mCurrentTransferItem.toUtf8().toHex();
     emit currentTransferItemChanged();
 }
 
@@ -991,6 +999,23 @@ QString GuiBehind::initError() {
 
 QString GuiBehind::initErrorAction() {
     return mInitErrorAction;
+}
+
+void GuiBehind::updateScreenPadding() {
+    QMargins m;
+#ifdef Q_OS_ANDROID
+    m = AndroidScreenArea::calcScreenSafeMargins();
+#else
+    m = QMargins(0, 0, 0, 0);
+#endif
+    if (m != mScreenPadding) {
+        mScreenPadding = m;
+        emit screenPaddingChanged();
+    }
+}
+
+QMargins GuiBehind::screenPadding() {
+    return mScreenPadding;
 }
 
 bool GuiBehind::isDesktopApp() {

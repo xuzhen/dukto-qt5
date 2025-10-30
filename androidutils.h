@@ -12,6 +12,8 @@ typedef QAndroidJniObject QJniObject;
 #include <QJniObject>
 #endif
 
+#include <QMargins>
+
 
 namespace AndroidEnvironment {
     int sdkVersion();
@@ -33,6 +35,9 @@ protected:
     static QJniObject getContentResolver();
     static QJniObject getContext();
     static QJniObject getActivity();
+    static QJniObject getWindow();
+    static QJniObject getResources();
+    static void runOnAndroidThread(const std::function<void()> &runnable);
 };
 
 /*============================================================*/
@@ -64,6 +69,8 @@ public:
 private:
     QJniObject lock;
 };
+
+/*============================================================*/
 
 class AndroidScreenOn : public AndroidUtilsBase
 {
@@ -147,6 +154,20 @@ private:
     static QString dirMimeType;
 };
 
+/*============================================================*/
+
+class AndroidScreenArea : public AndroidUtilsBase
+{
+public:
+    AndroidScreenArea() = default;
+    static QMargins calcScreenSafeMargins();
+private:
+    static Qt::ScreenOrientation getRotation();
+    static int getResIdentifier(QJniObject &res, const QString &name);
+    static int getStatusBarHeight();
+    static int getNavBarHeight();
+    static QMargins getSafeAreaMargins();
+};
 
 #endif
 

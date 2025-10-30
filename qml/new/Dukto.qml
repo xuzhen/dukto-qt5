@@ -62,29 +62,71 @@ Rectangle {
          }
     }
 
-    DuktoInner {
-        id: duktoInner
-        anchors.fill: parent
-        Connections {
-            function onShowIpList() {
-                duktoOverlay.state = "ip"
-            }
-            function onShowSettings() {
-                duktoOverlay.refreshSettingsColor();
-                duktoOverlay.state = "settings";
-            }
-        }
+    Rectangle {
+        id: duktoTopPad
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        height: guiBehind.screenPadding.top
     }
 
-    UpdatesBox {
+    Rectangle {
+        id: duktoBottomPad
+        anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 100
+        height: guiBehind.screenPadding.bottom
     }
 
-    DuktoOverlay {
-        id: duktoOverlay
-        anchors.fill: parent
+    Item {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: duktoTopPad.bottom
+        anchors.bottom: duktoBottomPad.top
+
+        Rectangle {
+            id: duktoLeftPad
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: guiBehind.screenPadding.left
+        }
+
+        Rectangle {
+            id: duktoRightPad
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: guiBehind.screenPadding.right
+        }
+
+        DuktoInner {
+            id: duktoInner
+            anchors.left: duktoLeftPad.right
+            anchors.right: duktoRightPad.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            Connections {
+                function onShowIpList() {
+                    duktoOverlay.state = "ip"
+                }
+                function onShowSettings() {
+                    duktoOverlay.refreshSettingsColor();
+                    duktoOverlay.state = "settings";
+                }
+            }
+        }
+
+        UpdatesBox {
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 100
+        }
+
+        DuktoOverlay {
+            id: duktoOverlay
+            anchors.fill: duktoInner
+        }
     }
 
     Binding {

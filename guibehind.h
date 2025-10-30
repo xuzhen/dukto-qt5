@@ -61,6 +61,7 @@ class GuiBehind : public QObject
     Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
     Q_PROPERTY(QString initError READ initError NOTIFY initErrorChanged)
     Q_PROPERTY(QString initErrorAction READ initErrorAction NOTIFY initErrorActionChanged)
+    Q_PROPERTY(QMargins screenPadding READ screenPadding NOTIFY screenPaddingChanged)
 
 public:
     explicit GuiBehind();
@@ -114,6 +115,10 @@ public:
     void setInitError(const QString &error, const QString &action = "Retry");
     QString initError();
     QString initErrorAction();
+    QMargins screenPadding();
+
+public slots:
+    void updateScreenPadding();
 
 protected:
     bool eventFilter(QObject *, QEvent *event) override;
@@ -142,6 +147,7 @@ signals:
     void closeToTrayChanged();
     void initErrorChanged();
     void initErrorActionChanged();
+    void screenPaddingChanged();
 
     // Received by QML
     void transferStart();
@@ -234,6 +240,8 @@ private:
     QString mScreenTempPath;
     QString mInitError;
     QString mInitErrorAction;
+
+    QMargins mScreenPadding;
 
     bool testFolder(const QString &dir);
     bool prepareStartTransfer(QString *ip, qint16 *port);

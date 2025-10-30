@@ -40,7 +40,7 @@
 static DuktoWindow *instance = nullptr;
 #endif
 
-DuktoWindow::DuktoWindow(GuiBehind *gb, QWidget *parent) :
+DuktoWindow::DuktoWindow(GuiBehind *gb, QQuickWidget *parent) :
     QQuickWidget(parent), mGuiBehind(gb)
 {
     // Configure window
@@ -183,12 +183,22 @@ void DuktoWindow::closeEvent(QCloseEvent *event)
 
 void DuktoWindow::showEvent(QShowEvent *event) {
     QQuickWidget::showEvent(event);
+#ifdef Q_OS_ANDROID
+    mGuiBehind->updateScreenPadding();
+#endif
 #ifdef Q_OS_WIN
     // Taskbar integration with Win7+
     if (mWin7 == nullptr) {
         mWin7 = new EcWin7(this->windowHandle());
     }
 #endif
+}
+
+void DuktoWindow::resizeEvent(QResizeEvent *event) {
+#ifdef Q_OS_ANDROID
+    emit sizeChanged();
+#endif
+    QQuickWidget::resizeEvent(event);
 }
 
 #ifdef Q_OS_MAC

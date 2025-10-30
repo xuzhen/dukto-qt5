@@ -8,13 +8,13 @@
 #include <QAndroidJniEnvironment>
 typedef QAndroidJniEnvironment QJniEnvironment;
 #else
-#include <QCoreApplication>
 #include <QJniEnvironment>
 #include <QFutureWatcher>
 #endif
 
 #include <QUrl>
 #include <QDir>
+#include <QGuiApplication>
 
 int AndroidEnvironment::sdkVersion() {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -80,6 +80,22 @@ QJniObject AndroidUtilsBase::getActivity() {
     return QtAndroid::androidActivity();
 #else
     return QNativeInterface::QAndroidApplication::context();
+#endif
+}
+
+QJniObject AndroidUtilsBase::getWindow() {
+    return getActivity().callObjectMethod("getWindow", "()Landroid/view/Window;");
+}
+
+QJniObject AndroidUtilsBase::getResources() {
+    return getActivity().callObjectMethod("getResources", "()Landroid/content/res/Resources;");
+}
+
+void AndroidUtilsBase::runOnAndroidThread(const std::function<void()> &runnable) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QtAndroid::runOnAndroidThreadSync(runnable);
+#else
+    QNativeInterface::QAndroidApplication::runOnAndroidMainThread(runnable).waitForFinished();
 #endif
 }
 
@@ -163,16 +179,12 @@ void AndroidMulticastLock::release() {
 
 /*============================================================*/
 
-AndroidScreenOn::AndroidScreenOn() : window(getActivity().callObjectMethod("getWindow", "()Landroid/view/Window;")) {
+AndroidScreenOn::AndroidScreenOn() : window(getWindow()) {
     auto code = [this]() {
         // 128 = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         window.callMethod<void>("addFlags", "(I)V", static_cast<jint>(128));
     };
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
-    QNativeInterface::QAndroidApplication::runOnAndroidMainThread(code).waitForFinished();
-#else
-    QtAndroid::runOnAndroidThreadSync(code);
-#endif
+    runOnAndroidThread(code);
 }
 
 AndroidScreenOn::~AndroidScreenOn() {
@@ -180,11 +192,7 @@ AndroidScreenOn::~AndroidScreenOn() {
         // 128 = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
         window.callMethod<void>("clearFlags", "(I)V", static_cast<jint>(128));
     };
-#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
-    QNativeInterface::QAndroidApplication::runOnAndroidMainThread(code).waitForFinished();
-#else
-    QtAndroid::runOnAndroidThreadSync(code);
-#endif
+    runOnAndroidThread(code);
 }
 
 /*============================================================*/
@@ -635,6 +643,115 @@ bool AndroidStorage::removeFile(const QJniObject &uri) {
         return false;
     }
     return QJniObject::callStaticMethod<jboolean>("android/provider/DocumentsContract", "deleteDocument", "(Landroid/content/ContentResolver;Landroid/net/Uri;)Z", getContentResolver().object(), docUri.object());
+}
+
+/*============================================================*/
+
+QMargins AndroidScreenArea::calcScreenSafeMargins() {
+    // As of Qt 6.10.0, QScreen::orientation() can not report Landscape/InvertedLandscape correctly after rotation
+    Qt::ScreenOrientations orient = getRotation();
+    QMargins m = getSafeAreaMargins();
+    if (orient == Qt::LandscapeOrientation) {
+        m.setTop(qMax(getStatusBarHeight(), m.top()));
+        m.setLeft(0);
+        m.setRight(qMax(getNavBarHeight(), m.right()));
+    } else if (orient == Qt::InvertedLandscapeOrientation) {
+        m.setTop(qMax(getStatusBarHeight(), m.top()));
+        m.setLeft(qMax(getNavBarHeight(), m.left()));
+        m.setRight(0);
+    } else {
+        m.setTop(qMax(getStatusBarHeight(), m.top()));
+        m.setBottom(qMax(getNavBarHeight(), m.bottom()));
+    }
+    return m;
+}
+
+int AndroidScreenArea::getResIdentifier(QJniObject &res, const QString &name) {
+    static const QJniObject type = QJniObject::fromString("dimen");
+    static const QJniObject package = QJniObject::fromString("android");
+    if (res.isValid()) {
+        return res.callMethod<int>("getIdentifier", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I", QJniObject::fromString(name).object<jstring>(), type.object<jstring>(), package.object<jstring>());
+    } else {
+        return -1;
+    }
+}
+
+Qt::ScreenOrientation AndroidScreenArea::getRotation() {
+    QJniObject display;
+    if (true || AndroidEnvironment::sdkVersion() < 30) {
+        QJniObject windowManager = getSystemService("window");
+        if (windowManager.isValid()) {
+            display = windowManager.callObjectMethod("getDefaultDisplay", "()Landroid/view/Display;");
+        }
+    } else {
+        QJniObject context = getContext();
+        display = context.callObjectMethod("getDisplay", "()Landroid/view/Display;");
+    }
+    if (display.isValid()) {
+        int rotation = display.callMethod<jint>("getRotation");
+        switch (rotation) {
+        case 0: // Surface.ROTATION_0
+            return Qt::PortraitOrientation;
+        case 1: // Surface.ROTATION_90
+            return Qt::LandscapeOrientation;
+        case 2: // Surface.ROTATION_180
+            return Qt::InvertedPortraitOrientation;
+        case 3: // Surface.ROTATION_270
+            return Qt::InvertedLandscapeOrientation;
+        }
+    }
+    return Qt::PrimaryOrientation;
+}
+
+int AndroidScreenArea::getStatusBarHeight() {
+    int r = 24;
+    auto code = [&r]() {
+        QJniObject resources = getResources();
+        int identifier = getResIdentifier(resources, "status_bar_height");
+        if (identifier > 0) {
+            r = resources.callMethod<int>("getDimensionPixelSize", "(I)I", identifier) / qApp->devicePixelRatio();
+        }
+    };
+    runOnAndroidThread(code);
+    return r;
+}
+
+int AndroidScreenArea::getNavBarHeight() {
+    int r = 48;
+    auto code = [&r]() {
+        QJniObject resources = getResources();
+        int identifier = getResIdentifier(resources, "navigation_bar_height");
+        if (identifier > 0) {
+            r = resources.callMethod<int>("getDimensionPixelSize", "(I)I", identifier) / qApp->devicePixelRatio();
+        }
+    };
+    runOnAndroidThread(code);
+    return r;
+}
+
+QMargins AndroidScreenArea::getSafeAreaMargins() {
+    QMargins m(0, 0, 0, 0);
+    if (AndroidEnvironment::sdkVersion() >= 28) {
+        // DisplayCutout added in API level 28
+        auto code = [&m]() {
+            QJniObject decorView = getWindow().callObjectMethod("getDecorView", "()Landroid/view/View;");
+            if (decorView.isValid()) {
+                QJniObject insets = decorView.callObjectMethod("getRootWindowInsets", "()Landroid/view/WindowInsets;");
+                if (insets.isValid()) {
+                    QJniObject displayCutout = insets.callObjectMethod("getDisplayCutout", "()Landroid/view/DisplayCutout;");
+                    if (displayCutout.isValid()) {
+                        qreal ratio = qApp->devicePixelRatio();
+                        m.setTop(displayCutout.callMethod<int>("getSafeInsetTop", "()I") / ratio);
+                        m.setBottom(displayCutout.callMethod<int>("getSafeInsetBottom", "()I") / ratio);
+                        m.setLeft(displayCutout.callMethod<int>("getSafeInsetLeft", "()I") / ratio);
+                        m.setRight(displayCutout.callMethod<int>("getSafeInsetRight", "()I") / ratio);
+                    }
+                }
+            }
+        };
+        runOnAndroidThread(code);
+    }
+    return m;
 }
 
 #endif

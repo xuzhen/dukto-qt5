@@ -20,13 +20,12 @@ import QtQuick 2.3
 
 Item {
     id: toolBar
-    height: 71
-    anchors.bottomMargin: -18
+    height: 53
     state: "WithoutLabels"
 
     signal clicked(string command)
 
-    Behavior on anchors.bottomMargin { NumberAnimation { duration: 200; easing.type: "OutCubic" } }
+    Behavior on height { NumberAnimation { duration: 200; easing.type: "OutCubic" } }
 
     Image {
         source: "BottomShadow.png"
@@ -37,11 +36,14 @@ Item {
     }
 
     Rectangle {
+        id: bar
         y: 3
         anchors.left: parent.left
         anchors.right: parent.right
-        height: 68
+        height: 50
         color: theme.mainColor
+
+        Behavior on height { NumberAnimation { duration: 200; easing.type: "OutCubic" } }
 
         Image {
             anchors.top: parent.top
@@ -160,7 +162,12 @@ Item {
 
             PropertyChanges {
                 target: toolBar
-                anchors.bottomMargin: -18
+                height: 53
+            }
+
+            PropertyChanges {
+                target: bar
+                height: 50
             }
         },
         State {
@@ -168,7 +175,12 @@ Item {
 
             PropertyChanges {
                 target: toolBar
-                anchors.bottomMargin: 0
+                height: 71
+            }
+
+            PropertyChanges {
+                target: bar
+                height: 68
             }
         }
     ]

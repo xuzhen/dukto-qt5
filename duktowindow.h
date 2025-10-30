@@ -30,7 +30,7 @@ class DuktoWindow : public QQuickWidget
 {
     Q_OBJECT
 public:
-    explicit DuktoWindow(GuiBehind* gb, QWidget *parent = nullptr);
+    explicit DuktoWindow(GuiBehind* gb, QQuickWidget *parent = nullptr);
     virtual ~DuktoWindow();
     void showTaskbarProgress(uint percent);
     void hideTaskbarProgress();
@@ -42,6 +42,7 @@ public slots:
 signals:
 #ifdef Q_OS_ANDROID
     void cursorPositionChanged();
+    void sizeChanged();
 #endif
 
 protected:
@@ -59,6 +60,7 @@ protected:
     void dropEvent(QDropEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
 
 private:
     GuiBehind *mGuiBehind;
