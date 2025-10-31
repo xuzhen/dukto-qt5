@@ -1008,7 +1008,7 @@ void GuiBehind::updateScreenPadding() {
         mScreenPadding = m;
         emit screenPaddingChanged();
 #ifdef Q_OS_ANDROID
-        AndroidTheme::setSystemBarsMode(false);
+        AndroidTheme::setAppNightMode(false);
 #endif
     }
 }

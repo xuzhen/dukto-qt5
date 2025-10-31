@@ -174,7 +174,10 @@ class AndroidTheme : public AndroidUtilsBase
 public:
     AndroidTheme() = default;
     static bool isNightMode();
-    static void setSystemBarsMode(bool nightMode);
+    static void setAppNightMode(bool nightMode);
+private:
+    static void setDefaultNightMode(bool nightMode, QJniObject &decorView);
+    static void setSystemBarsNightMode(bool nightMode, QJniObject &decorView);
 };
 
 #endif
